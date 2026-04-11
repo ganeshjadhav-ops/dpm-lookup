@@ -3,757 +3,387 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AppLookup — Data Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<title>APP ID LOOKUP — DPM Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #1a1a24;
-    --surface3: #22222f;
-    --accent: #6c63ff;
-    --accent2: #a78bfa;
-    --accent-glow: rgba(108,99,255,0.3);
-    --text: #f0eeff;
-    --text2: #9994b8;
-    --text3: #5a5675;
-    --border: rgba(108,99,255,0.2);
-    --border2: rgba(255,255,255,0.06);
-    --green: #22d3a5;
-    --red: #ff5c7c;
-    --yellow: #fbbf24;
-    --radius: 12px;
-    --radius-sm: 8px;
+    --green-dark: #1a5c1a;
+    --green-mid: #2d7a2d;
+    --green-light: #3a9a3a;
+    --gold: #f5c518;
+    --blue: #1565c0;
+    --pink: #c2185b;
+    --orange: #e65100;
+    --dark-header: #1a1a1a;
+    --white: #ffffff;
+    --light-yellow: #fffde7;
+    --border: #c8e6c9;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+  body { font-family: 'Inter', sans-serif; background: #f0f4f0; min-height: 100vh; }
 
-  /* ── BG GRID ── */
-  body::before {
-    content: '';
-    position: fixed; inset: 0; z-index: 0;
-    background-image:
-      linear-gradient(rgba(108,99,255,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(108,99,255,0.04) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-  }
-  body::after {
-    content: '';
-    position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
-    width: 800px; height: 400px;
-    background: radial-gradient(ellipse, rgba(108,99,255,0.12) 0%, transparent 70%);
-    pointer-events: none; z-index: 0;
-  }
-
-  /* ── SCREENS ── */
-  .screen { position: relative; z-index: 1; }
+  /* LOGIN */
   #login-screen {
-    min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    padding: 2rem;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #1a5c1a 0%, #2d7a2d 50%, #1565c0 100%);
   }
-  #app-screen { display: none; min-height: 100vh; }
+  .login-card {
+    background: white; border-radius: 12px; padding: 2.5rem;
+    width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .login-header { text-align: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 2px solid var(--green-dark); }
+  .login-icon { font-size: 36px; margin-bottom: 8px; }
+  .login-title { font-size: 20px; font-weight: 700; color: var(--green-dark); }
+  .login-sub { font-size: 13px; color: #666; margin-top: 4px; }
+  .login-field { margin-bottom: 1rem; }
+  .login-field label { display: block; font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .login-field input { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 6px; font-size: 14px; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s; }
+  .login-field input:focus { border-color: var(--green-dark); }
+  .login-btn { width: 100%; padding: 12px; background: var(--green-dark); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.2s; margin-top: 0.5rem; }
+  .login-btn:hover { background: var(--green-mid); }
+  .login-error { background: #ffebee; border: 1px solid #ef9a9a; border-radius: 6px; padding: 8px 12px; font-size: 13px; color: #c62828; margin-bottom: 1rem; display: none; }
+  .login-hint { text-align: center; font-size: 12px; color: #999; margin-top: 1rem; }
 
-  /* ── LOGIN ── */
-  .login-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 3rem;
-    width: 100%; max-width: 420px;
-    box-shadow: 0 0 80px rgba(108,99,255,0.1), 0 0 0 1px var(--border);
-    animation: fadeUp 0.5s ease both;
-  }
-  .login-logo {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 2rem;
-  }
-  .logo-icon {
-    width: 44px; height: 44px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-  }
-  .logo-name { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-  .logo-name span { color: var(--accent2); }
-  .login-title { font-size: 28px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; }
-  .login-sub { font-size: 14px; color: var(--text2); margin-bottom: 2rem; }
-  .field { margin-bottom: 1.25rem; }
-  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-  .field input {
-    width: 100%; padding: 12px 16px;
-    background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: var(--radius-sm); color: var(--text);
-    font-family: 'DM Mono', monospace; font-size: 14px;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    outline: none;
-  }
-  .field input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-glow);
-  }
-  .login-btn {
-    width: 100%; padding: 13px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border: none; border-radius: var(--radius-sm);
-    color: white; font-family: 'Syne', sans-serif;
-    font-size: 15px; font-weight: 700;
-    cursor: pointer; transition: opacity 0.2s, transform 0.1s;
-    letter-spacing: 0.3px;
-  }
-  .login-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-  .login-btn:active { transform: translateY(0); }
-  .login-error {
-    background: rgba(255,92,124,0.1); border: 1px solid rgba(255,92,124,0.3);
-    border-radius: var(--radius-sm); padding: 10px 14px;
-    font-size: 13px; color: var(--red); margin-bottom: 1rem; display: none;
-  }
+  /* APP */
+  #app-screen { display: none; }
+  .topbar { background: var(--green-dark); color: white; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .topbar-title { font-size: 16px; font-weight: 700; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+  .logout-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; padding: 4px 12px; color: white; font-size: 12px; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .logout-btn:hover { background: rgba(255,255,255,0.25); }
 
-  /* ── APP LAYOUT ── */
-  .topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 1rem 2rem;
-    background: rgba(10,10,15,0.8);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border2);
-    position: sticky; top: 0; z-index: 100;
-  }
-  .topbar-logo { display: flex; align-items: center; gap: 8px; }
-  .topbar-logo .logo-icon { width: 32px; height: 32px; font-size: 14px; border-radius: 7px; }
-  .topbar-logo .logo-name { font-size: 16px; font-weight: 800; }
-  .topbar-right { display: flex; align-items: center; gap: 12px; }
-  .user-badge {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: 20px; padding: 5px 12px 5px 5px;
-    font-size: 13px; color: var(--text2);
-  }
-  .user-avatar {
-    width: 24px; height: 24px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700;
-  }
-  .logout-btn {
-    background: none; border: 1px solid var(--border2);
-    border-radius: 20px; padding: 5px 14px;
-    color: var(--text2); font-family: 'Syne', sans-serif;
-    font-size: 13px; cursor: pointer; transition: all 0.2s;
-  }
-  .logout-btn:hover { border-color: var(--red); color: var(--red); }
+  .main { max-width: 1400px; margin: 0 auto; padding: 16px; }
 
-  .main { padding: 2rem; max-width: 1100px; margin: 0 auto; }
-
-  /* ── UPLOAD ZONE ── */
-  .upload-section { margin-bottom: 2rem; }
-  .section-label {
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 2px; color: var(--text3); margin-bottom: 12px;
-  }
-  .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: var(--radius);
-    padding: 2.5rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.25s;
-    background: var(--surface);
-    position: relative; overflow: hidden;
-  }
-  .upload-zone::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(108,99,255,0.05), transparent);
-    opacity: 0; transition: opacity 0.25s;
-  }
-  .upload-zone:hover, .upload-zone.dragover {
-    border-color: var(--accent);
-    box-shadow: 0 0 30px rgba(108,99,255,0.15);
-  }
-  .upload-zone:hover::before, .upload-zone.dragover::before { opacity: 1; }
-  .upload-icon-wrap {
-    width: 56px; height: 56px; margin: 0 auto 1rem;
-    background: var(--surface2); border-radius: var(--radius);
-    border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
-  }
-  .upload-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
-  .upload-sub { font-size: 13px; color: var(--text2); }
-  .upload-sub strong { color: var(--accent2); }
+  /* UPLOAD */
+  .upload-card { background: white; border-radius: 8px; padding: 16px; border: 1px solid var(--border); margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+  .upload-card-title { font-size: 13px; font-weight: 600; color: var(--green-dark); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .upload-zone { border: 2px dashed #a5d6a7; border-radius: 6px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; background: #f9fbe7; }
+  .upload-zone:hover, .upload-zone.dragover { border-color: var(--green-dark); background: #f1f8e9; }
   #file-input { display: none; }
-  .file-loaded {
-    display: none;
-    align-items: center; gap: 12px;
-    background: rgba(34,211,165,0.08);
-    border: 1px solid rgba(34,211,165,0.25);
-    border-radius: var(--radius); padding: 1rem 1.25rem;
-    margin-top: 1rem;
-  }
-  .file-loaded.show { display: flex; }
-  .file-loaded-icon { font-size: 20px; }
-  .file-info { flex: 1; }
-  .file-name { font-size: 14px; font-weight: 600; color: var(--green); }
-  .file-meta { font-size: 12px; color: var(--text2); margin-top: 2px; font-family: 'DM Mono', monospace; }
-  .change-btn {
-    background: none; border: 1px solid var(--border2);
-    border-radius: 20px; padding: 4px 12px;
-    color: var(--text2); font-size: 12px; font-family: 'Syne', sans-serif;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .change-btn:hover { border-color: var(--accent); color: var(--accent2); }
+  .file-bar { display: none; align-items: center; gap: 10px; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 6px; padding: 8px 14px; margin-top: 10px; }
+  .file-bar.show { display: flex; }
+  .file-bar-name { font-size: 13px; font-weight: 600; color: var(--green-dark); flex: 1; }
+  .file-bar-meta { font-size: 11px; color: #666; font-family: 'JetBrains Mono', monospace; }
+  .change-btn { background: none; border: 1px solid #a5d6a7; border-radius: 4px; padding: 3px 10px; font-size: 11px; color: var(--green-dark); cursor: pointer; }
 
-  /* ── CONTROLS ROW ── */
-  .controls-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem; margin-bottom: 1.5rem;
-  }
-  .control-group label {
-    display: block; font-size: 11px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 1.5px;
-    color: var(--text3); margin-bottom: 8px;
-  }
-  .control-group select {
-    width: 100%; padding: 11px 14px;
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: var(--radius-sm); color: var(--text);
-    font-family: 'DM Mono', monospace; font-size: 13px;
-    outline: none; cursor: pointer; transition: border-color 0.2s;
-  }
-  .control-group select:focus { border-color: var(--accent); }
+  /* LOOKUP CARD */
+  .lookup-card { background: white; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.08); overflow: hidden; }
+  .lookup-titlebar { background: var(--green-dark); color: white; text-align: center; padding: 10px; font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+  .lookup-subbar { background: var(--green-mid); color: rgba(255,255,255,0.9); text-align: center; padding: 6px; font-size: 11px; font-style: italic; }
 
-  /* ── SEARCH BAR ── */
-  .search-wrap { position: relative; margin-bottom: 1.5rem; }
-  .search-input {
-    width: 100%; padding: 15px 60px 15px 50px;
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: var(--radius); color: var(--text);
-    font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 500;
-    outline: none; transition: all 0.25s;
-  }
-  .search-input::placeholder { color: var(--text3); font-weight: 400; }
-  .search-input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-glow);
-  }
-  .search-icon {
-    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-    font-size: 18px; pointer-events: none;
-  }
-  .search-clear {
-    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-    background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: 50%; width: 28px; height: 28px;
-    display: none; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 14px; color: var(--text2);
-    transition: all 0.15s;
-  }
-  .search-clear:hover { border-color: var(--red); color: var(--red); }
-  .search-clear.show { display: flex; }
+  .input-row { display: flex; align-items: center; gap: 0; padding: 12px 16px; background: #f9fbe7; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 8px; }
+  .input-label { background: var(--green-dark); color: white; padding: 10px 16px; font-size: 13px; font-weight: 700; border-radius: 4px 0 0 4px; white-space: nowrap; }
+  .app-id-input { padding: 10px 14px; border: 2px solid var(--gold); background: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: #1a1a1a; outline: none; width: 160px; text-align: center; border-radius: 0; }
+  .app-id-input:focus { background: #fff9c4; }
+  .search-btn { padding: 10px 20px; background: var(--green-dark); color: white; border: none; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 0 4px 4px 0; font-family: 'Inter', sans-serif; }
+  .search-btn:hover { background: var(--green-light); }
+  .clear-btn { padding: 10px 14px; background: #ef5350; color: white; border: none; font-size: 12px; font-weight: 600; cursor: pointer; border-radius: 4px; font-family: 'Inter', sans-serif; }
+  .example-hint { font-size: 12px; color: #888; font-style: italic; }
 
-  /* ── STATS ── */
-  .stats-bar {
-    display: flex; gap: 1rem; margin-bottom: 1.5rem; display: none;
-  }
-  .stats-bar.show { display: flex; }
-  .stat-chip {
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: 20px; padding: 6px 14px;
-    font-size: 12px; display: flex; align-items: center; gap: 6px;
-  }
-  .stat-dot { width: 7px; height: 7px; border-radius: 50%; }
-  .stat-dot.green { background: var(--green); }
-  .stat-dot.purple { background: var(--accent); }
-  .stat-dot.yellow { background: var(--yellow); }
-  .stat-val { font-family: 'DM Mono', monospace; font-weight: 500; }
-  .stat-key { color: var(--text2); }
+  /* STATS */
+  .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); }
+  .stat-box { border-right: 1px solid var(--border); }
+  .stat-box:last-child { border-right: none; }
+  .stat-head { font-size: 10px; font-weight: 700; color: white; padding: 6px; text-align: center; line-height: 1.3; }
+  .stat-val { font-size: 20px; font-weight: 700; padding: 10px 4px; text-align: center; font-family: 'JetBrains Mono', monospace; }
+  .bg-green { background: var(--green-dark); }
+  .bg-blue { background: var(--blue); }
+  .bg-pink { background: var(--pink); }
+  .bg-orange { background: var(--orange); }
+  .bg-dark { background: var(--dark-header); }
+  .val-green { background: #e8f5e9; color: var(--green-dark); }
+  .val-blue { background: #e3f2fd; color: var(--blue); }
+  .val-pink { background: #fce4ec; color: var(--pink); }
+  .val-orange { background: #fff3e0; color: var(--orange); }
+  .val-dark { background: #f5f5f5; color: var(--dark-header); }
 
-  /* ── RESULT CARD ── */
-  #result-area { animation: fadeUp 0.3s ease; }
-  .result-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin-bottom: 1rem;
-    box-shadow: 0 0 40px rgba(108,99,255,0.08);
-  }
-  .result-header {
-    display: flex; align-items: center; gap: 12px;
-    padding: 1rem 1.25rem;
-    background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(167,139,250,0.05));
-    border-bottom: 1px solid var(--border2);
-  }
-  .found-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: rgba(34,211,165,0.12); border: 1px solid rgba(34,211,165,0.3);
-    border-radius: 20px; padding: 4px 10px;
-    font-size: 11px; font-weight: 700; color: var(--green);
-    text-transform: uppercase; letter-spacing: 1px;
-  }
-  .found-badge::before { content: ''; width: 6px; height: 6px; background: var(--green); border-radius: 50%; }
-  .result-id {
-    font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500;
-    color: var(--accent2);
-  }
-  .result-body { padding: 0; }
-  .result-row {
-    display: flex; align-items: flex-start;
-    padding: 12px 1.25rem;
-    border-bottom: 1px solid var(--border2);
-    transition: background 0.15s;
-  }
-  .result-row:last-child { border-bottom: none; }
-  .result-row:hover { background: var(--surface2); }
-  .result-key {
-    font-size: 12px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.5px; color: var(--text3);
-    width: 35%; min-width: 140px; padding-right: 1rem;
-    font-family: 'DM Mono', monospace; padding-top: 2px;
-  }
-  .result-val {
-    flex: 1; font-size: 14px; color: var(--text);
-    font-family: 'DM Mono', monospace; word-break: break-all;
-  }
-  .result-val.empty { color: var(--text3); font-style: italic; }
+  /* TABLE */
+  .table-wrap { overflow-x: auto; border-top: 1px solid var(--border); }
+  table.dt { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.dt thead th { background: var(--green-dark); color: white; padding: 8px 10px; text-align: center; font-weight: 600; font-size: 11px; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.2); position: sticky; top: 0; }
+  table.dt thead th:last-child { border-right: none; }
+  table.dt tbody tr:nth-child(even) { background: var(--light-yellow); }
+  table.dt tbody tr:hover { background: #c8e6c9; cursor: pointer; }
+  table.dt tbody td { padding: 7px 10px; border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e8e8e8; font-family: 'JetBrains Mono', monospace; font-size: 11px; white-space: nowrap; color: #1a1a1a; }
+  table.dt tbody td:last-child { border-right: none; }
+  .td-sr { text-align: center; color: #888; }
+  .td-sheet { background: #e3f2fd; color: var(--blue); font-weight: 600; font-size: 10px; text-align: center; font-family: 'Inter', sans-serif; }
+  .td-appid { font-weight: 700; color: var(--green-dark); text-align: center; }
+  .td-amt { text-align: right; font-weight: 600; color: var(--green-dark); }
+  .sec-row td { background: var(--blue); color: white; font-weight: 700; text-align: center; font-size: 12px; padding: 8px; font-family: 'Inter', sans-serif; }
+  .sec-row2 td { background: var(--green-mid); color: white; font-weight: 700; text-align: center; font-size: 12px; padding: 8px; font-family: 'Inter', sans-serif; }
+  .total-row td { background: var(--green-dark); color: white; font-weight: 700; font-family: 'JetBrains Mono', monospace; padding: 9px 10px; }
 
-  /* ── MULTI RESULTS TABLE ── */
-  .multi-card {
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: var(--radius); overflow: hidden; margin-bottom: 1rem;
-  }
-  .multi-header {
-    padding: 1rem 1.25rem; border-bottom: 1px solid var(--border2);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .multi-title { font-size: 14px; font-weight: 700; }
-  .multi-count {
-    background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3);
-    border-radius: 20px; padding: 3px 10px;
-    font-size: 11px; font-weight: 700; color: var(--accent2);
-    font-family: 'DM Mono', monospace;
-  }
-  .multi-table { width: 100%; border-collapse: collapse; }
-  .multi-table th {
-    padding: 10px 14px; text-align: left;
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1px; color: var(--text3);
-    background: var(--surface2); border-bottom: 1px solid var(--border2);
-  }
-  .multi-table td {
-    padding: 11px 14px; font-size: 13px;
-    font-family: 'DM Mono', monospace;
-    border-bottom: 1px solid var(--border2);
-    color: var(--text2); transition: color 0.15s;
-  }
-  .multi-table td:first-child { color: var(--accent2); font-weight: 500; }
-  .multi-table tr:last-child td { border-bottom: none; }
-  .multi-table tr:hover td { background: var(--surface2); cursor: pointer; color: var(--text); }
-  .multi-table tr:hover td:first-child { color: var(--accent); }
+  /* States */
+  .placeholder { text-align: center; padding: 3rem; color: #aaa; }
+  .placeholder .ph { font-size: 36px; margin-bottom: 8px; opacity: 0.5; }
+  .no-result { text-align: center; padding: 3rem; background: #fff3f3; border-top: 1px solid #ffcdd2; }
+  .no-result .no-icon { font-size: 36px; margin-bottom: 8px; }
+  .no-result p { font-size: 14px; color: #888; }
+  .loading { text-align: center; padding: 1.5rem; color: var(--green-dark); font-size: 14px; font-weight: 500; display: none; }
+  .loading.show { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 3px solid #c8e6c9; border-top-color: var(--green-dark); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
 
-  /* ── EMPTY / NO RESULT ── */
-  .empty-state {
-    text-align: center; padding: 4rem 2rem;
-    color: var(--text3);
-  }
-  .empty-state .empty-icon { font-size: 48px; margin-bottom: 1rem; opacity: 0.5; }
-  .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text2); margin-bottom: 8px; }
-  .empty-state p { font-size: 14px; }
-
-  .no-data-state {
-    background: rgba(255,92,124,0.06); border: 1px solid rgba(255,92,124,0.2);
-    border-radius: var(--radius); padding: 1.5rem; text-align: center;
-  }
-  .no-data-state .no-icon { font-size: 32px; margin-bottom: 8px; }
-  .no-data-state p { font-size: 14px; color: var(--text2); }
-  .no-data-state strong { color: var(--red); font-family: 'DM Mono', monospace; }
-
-  /* ── PLACEHOLDER STATE ── */
-  .placeholder-state {
-    text-align: center; padding: 3rem 2rem; color: var(--text3);
-  }
-  .placeholder-state .ph-icon { font-size: 40px; margin-bottom: 1rem; opacity: 0.4; }
-  .placeholder-state p { font-size: 14px; }
-
-  /* ── ANIMATIONS ── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-
-  /* ── SHEET PILL ── */
-  .sheet-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
-  .sheet-pill {
-    padding: 5px 14px; border-radius: 20px;
-    border: 1px solid var(--border2); background: var(--surface);
-    font-size: 13px; cursor: pointer; transition: all 0.15s;
-    color: var(--text2);
-  }
-  .sheet-pill.active {
-    border-color: var(--accent); background: rgba(108,99,255,0.15);
-    color: var(--accent2); font-weight: 600;
-  }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 600px) {
-    .main { padding: 1rem; }
-    .controls-row { grid-template-columns: 1fr; }
-    .topbar { padding: 0.75rem 1rem; }
-    .login-box { padding: 2rem 1.5rem; }
+  @media (max-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .main { padding: 10px; }
   }
 </style>
 </head>
 <body>
 
-<!-- ─────────── LOGIN SCREEN ─────────── -->
-<div id="login-screen" class="screen">
-  <div class="login-box">
-    <div class="login-logo">
-      <div class="logo-icon">🔍</div>
-      <div class="logo-name">App<span>Lookup</span></div>
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-icon">🔍</div>
+      <div class="login-title">DPM — APP ID LOOKUP</div>
+      <div class="login-sub">Team Portal · Authorized Access Only</div>
     </div>
-    <h1 class="login-title">Team Portal</h1>
-    <p class="login-sub">Sign in with your team credentials to continue</p>
-    <div class="login-error" id="login-error">❌ Galat username ya password hai</div>
-    <div class="field">
+    <div class="login-error" id="lerr">❌ Galat username ya password</div>
+    <div class="login-field">
       <label>Username</label>
-      <input type="text" id="username" placeholder="Enter username" autocomplete="username" />
+      <input type="text" id="uname" placeholder="Enter username" autocomplete="username" />
     </div>
-    <div class="field">
+    <div class="login-field">
       <label>Password</label>
-      <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" />
+      <input type="password" id="upass" placeholder="Enter password" />
     </div>
     <button class="login-btn" onclick="doLogin()">Sign In →</button>
-    <p style="text-align:center;margin-top:1rem;font-size:12px;color:var(--text3);">
-      Default: admin / admin123 &nbsp;|&nbsp; Change in config.js
-    </p>
+    <div class="login-hint">Default: admin / admin123 · Change in config.js</div>
   </div>
 </div>
 
-<!-- ─────────── APP SCREEN ─────────── -->
-<div id="app-screen" class="screen">
+<div id="app-screen">
   <div class="topbar">
-    <div class="topbar-logo">
-      <div class="logo-icon">🔍</div>
-      <div class="logo-name">App<span>Lookup</span></div>
-    </div>
+    <div class="topbar-title">🔍 DPM — APP ID LOOKUP PORTAL</div>
     <div class="topbar-right">
-      <div class="user-badge">
-        <div class="user-avatar" id="user-initials">AD</div>
-        <span id="user-name-display">Admin</span>
-      </div>
+      <span id="topbar-user">Welcome, Admin</span>
       <button class="logout-btn" onclick="doLogout()">Logout</button>
     </div>
   </div>
 
   <div class="main">
-    <!-- Upload Section -->
-    <div class="upload-section">
-      <div class="section-label">Step 1 — Excel File Upload Karo</div>
+    <div class="upload-card">
+      <div class="upload-card-title">📂 Step 1 — DPM Excel File Upload Karo</div>
       <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-        <div class="upload-icon-wrap">📊</div>
-        <div class="upload-title">Excel file yahan drop karo</div>
-        <div class="upload-sub">ya click karo &nbsp;·&nbsp; <strong>.xlsx / .xls</strong> supported</div>
+        <div style="font-size:28px;margin-bottom:8px">📊</div>
+        <div style="font-size:14px;font-weight:600;color:var(--green-dark)">Excel file yahan drag & drop karo ya click karo</div>
+        <div style="font-size:12px;color:#888;margin-top:4px">.xlsx / .xls · DPM MAIN SHEET upload karo</div>
         <input type="file" id="file-input" accept=".xlsx,.xls">
       </div>
-      <div class="file-loaded" id="file-loaded">
-        <div class="file-loaded-icon">✅</div>
-        <div class="file-info">
-          <div class="file-name" id="loaded-name">file.xlsx</div>
-          <div class="file-meta" id="loaded-meta">0 rows · 0 columns</div>
-        </div>
+      <div class="file-bar" id="file-bar">
+        <span>✅</span>
+        <span class="file-bar-name" id="f-name">—</span>
+        <span class="file-bar-meta" id="f-meta">—</span>
         <button class="change-btn" onclick="document.getElementById('file-input').click()">Change File</button>
       </div>
     </div>
 
-    <!-- Sheet Selector -->
-    <div id="sheet-section" style="display:none;margin-bottom:1.5rem;">
-      <div class="section-label">Sheets</div>
-      <div class="sheet-pills" id="sheet-pills"></div>
-    </div>
+    <div class="lookup-card">
+      <div class="lookup-titlebar">🔍 &nbsp; APP ID LOOKUP</div>
+      <div class="lookup-subbar">App ID type karo → Enter dabao ya Search click karo → Data turant dikhega</div>
 
-    <!-- Column Config -->
-    <div id="config-section" style="display:none;">
-      <div class="section-label">Step 2 — App ID Column Select Karo</div>
-      <div class="controls-row">
-        <div class="control-group">
-          <label>App ID Column</label>
-          <select id="col-select"></select>
+      <div class="input-row">
+        <div class="input-label">ENTER APP ID :</div>
+        <input type="text" class="app-id-input" id="aid-input" placeholder="e.g. 1000975" />
+        <button class="search-btn" onclick="doSearch()">🔍 Search</button>
+        <button class="clear-btn" onclick="clearAll()">✕ Clear</button>
+        <span class="example-hint">← e.g. 1000975</span>
+      </div>
+
+      <div id="stats-grid" class="stats-grid" style="display:none;border-bottom:1px solid var(--border)">
+        <div class="stat-box">
+          <div class="stat-head bg-green">Total<br>Transactions</div>
+          <div class="stat-val val-green" id="s1">0</div>
         </div>
-        <div class="control-group">
-          <label>Search Mode</label>
-          <select id="search-mode">
-            <option value="exact">Exact Match (APP001)</option>
-            <option value="contains" selected>Contains (partial match)</option>
-            <option value="startswith">Starts With</option>
-          </select>
+        <div class="stat-box">
+          <div class="stat-head bg-green">Total Amount (₹)</div>
+          <div class="stat-val val-green" id="s2">₹0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-head bg-blue">OCT24-DEC25<br>Count</div>
+          <div class="stat-val val-blue" id="s3">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-head bg-pink">JAN26-Till<br>Date Count</div>
+          <div class="stat-val val-pink" id="s4">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-head bg-orange">OCT24<br>Amount</div>
+          <div class="stat-val val-orange" id="s5">₹0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-head bg-dark">JAN26<br>Amount</div>
+          <div class="stat-val val-dark" id="s6">₹0</div>
         </div>
       </div>
-    </div>
 
-    <!-- Search Bar -->
-    <div id="search-section" style="display:none;">
-      <div class="section-label">Step 3 — App ID Search Karo</div>
-      <div class="search-wrap">
-        <span class="search-icon">🔎</span>
-        <input type="text" class="search-input" id="search-input"
-               placeholder="App ID daalo... (jaise APP001, 1023, INV-2024)" />
-        <div class="search-clear" id="search-clear" onclick="clearSearch()">✕</div>
+      <div class="loading" id="loading"><span class="spinner"></span>Data search ho raha hai...</div>
+      <div id="result-area">
+        <div class="placeholder"><div class="ph">📋</div><p>Excel upload karo aur App ID daalo — data yahan dikhega</p></div>
       </div>
     </div>
-
-    <!-- Stats Bar -->
-    <div class="stats-bar" id="stats-bar">
-      <div class="stat-chip"><div class="stat-dot green"></div><span class="stat-val" id="s-rows">0</span><span class="stat-key">rows loaded</span></div>
-      <div class="stat-chip"><div class="stat-dot purple"></div><span class="stat-val" id="s-cols">0</span><span class="stat-key">columns</span></div>
-      <div class="stat-chip"><div class="stat-dot yellow"></div><span class="stat-val" id="s-results">—</span><span class="stat-key">results</span></div>
-    </div>
-
-    <!-- Result Area -->
-    <div id="result-area"></div>
   </div>
 </div>
 
 <script src="config.js"></script>
 <script>
-/* ── AUTH ── */
+// AUTH
 function doLogin() {
-  const u = document.getElementById('username').value.trim();
-  const p = document.getElementById('password').value;
-  const err = document.getElementById('login-error');
-
-  const match = TEAM_USERS.find(user => user.username === u && user.password === p);
+  const u = document.getElementById('uname').value.trim();
+  const p = document.getElementById('upass').value;
+  const err = document.getElementById('lerr');
+  const match = TEAM_USERS.find(x => x.username === u && x.password === p);
   if (match) {
     err.style.display = 'none';
-    sessionStorage.setItem('loggedIn', 'true');
-    sessionStorage.setItem('userName', match.name);
+    sessionStorage.setItem('li','1');
+    sessionStorage.setItem('un', match.name);
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-screen').style.display = 'block';
-    const initials = match.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-    document.getElementById('user-initials').textContent = initials;
-    document.getElementById('user-name-display').textContent = match.name;
+    document.getElementById('topbar-user').textContent = 'Welcome, ' + match.name;
   } else {
     err.style.display = 'block';
-    document.getElementById('password').value = '';
+    document.getElementById('upass').value = '';
   }
 }
-
-function doLogout() {
-  sessionStorage.clear();
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('app-screen').style.display = 'none';
-  document.getElementById('username').value = '';
-  document.getElementById('password').value = '';
-}
-
-// Enter key login
-['username','password'].forEach(id => {
-  document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-});
-
-// Auto-restore session
-if (sessionStorage.getItem('loggedIn')) {
-  const name = sessionStorage.getItem('userName') || 'User';
+function doLogout() { sessionStorage.clear(); location.reload(); }
+['uname','upass'].forEach(id => document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); }));
+if (sessionStorage.getItem('li')) {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
-  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  document.getElementById('user-initials').textContent = initials;
-  document.getElementById('user-name-display').textContent = name;
+  document.getElementById('topbar-user').textContent = 'Welcome, ' + (sessionStorage.getItem('un') || 'User');
 }
 
-/* ── DATA ── */
-let allData = [], headers = [], workbook = null, activeSheet = '';
-
-const dropZone = document.getElementById('drop-zone');
-const fileInput = document.getElementById('file-input');
-
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
-fileInput.addEventListener('change', e => { if(e.target.files[0]) loadFile(e.target.files[0]); });
+// FILE
+let wb = null, sd = {};
+const dz = document.getElementById('drop-zone');
+const fi = document.getElementById('file-input');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+fi.addEventListener('change', e => { if(e.target.files[0]) loadFile(e.target.files[0]); });
 
 function loadFile(file) {
+  document.getElementById('loading').classList.add('show');
   const reader = new FileReader();
   reader.onload = function(e) {
-    workbook = XLSX.read(e.target.result, {type:'binary', cellDates:true});
-    const sheets = workbook.SheetNames;
-
-    // sheet pills
-    const pillsCont = document.getElementById('sheet-pills');
-    pillsCont.innerHTML = sheets.map((s,i) =>
-      `<div class="sheet-pill ${i===0?'active':''}" onclick="switchSheet('${s}',this)">${s}</div>`
-    ).join('');
-    document.getElementById('sheet-section').style.display = sheets.length > 1 ? 'block' : 'none';
-
-    document.getElementById('loaded-name').textContent = file.name;
-    document.getElementById('file-loaded').classList.add('show');
-    loadSheet(sheets[0], file.name);
+    wb = XLSX.read(e.target.result, {type:'binary', cellDates:true, raw:false});
+    sd = {};
+    wb.SheetNames.forEach(n => { sd[n] = XLSX.utils.sheet_to_json(wb.Sheets[n], {defval:'', raw:false}); });
+    const total = Object.values(sd).reduce((a,b) => a+b.length, 0);
+    document.getElementById('f-name').textContent = file.name;
+    document.getElementById('f-meta').textContent = total.toLocaleString() + ' total rows · ' + wb.SheetNames.length + ' sheets';
+    document.getElementById('file-bar').classList.add('show');
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('result-area').innerHTML = '<div class="placeholder"><div class="ph">✅</div><p>File loaded! Ab App ID daalo aur Search karo</p></div>';
   };
   reader.readAsBinaryString(file);
 }
 
-function switchSheet(name, el) {
-  document.querySelectorAll('.sheet-pill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  loadSheet(name);
+// SEARCH
+document.getElementById('aid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+
+function findAppIdKey(row) {
+  return Object.keys(row).find(k => /app.?id/i.test(k.replace(/\n.*/,'')));
 }
-
-function loadSheet(sheetName, fileName) {
-  activeSheet = sheetName;
-  const ws = workbook.Sheets[sheetName];
-  const json = XLSX.utils.sheet_to_json(ws, {defval:''});
-  allData = json;
-  headers = json.length > 0 ? Object.keys(json[0]) : [];
-
-  document.getElementById('loaded-meta').textContent = `${json.length} rows · ${headers.length} columns · Sheet: ${sheetName}`;
-  document.getElementById('s-rows').textContent = json.length.toLocaleString();
-  document.getElementById('s-cols').textContent = headers.length;
-  document.getElementById('stats-bar').classList.add('show');
-
-  // Auto-detect App ID column
-  const colSel = document.getElementById('col-select');
-  colSel.innerHTML = headers.map(h => `<option value="${h}">${h}</option>`).join('');
-  const guess = headers.findIndex(h => /app.?id|appid|app_id|application.?id|id/i.test(h));
-  if (guess >= 0) colSel.selectedIndex = guess;
-
-  document.getElementById('config-section').style.display = 'block';
-  document.getElementById('search-section').style.display = 'block';
-
-  clearSearch();
-  document.getElementById('result-area').innerHTML = `
-    <div class="placeholder-state">
-      <div class="ph-icon">🔎</div>
-      <p>Upar App ID daalo — data turant dikhega</p>
-    </div>`;
+function findAmtKey(row) {
+  const keys = Object.keys(row);
+  // Prefer exact "Amount" column, avoid "EMI Due Amount", "Diff"
+  return keys.find(k => /^amount/i.test(k.replace(/\n.*/,'').trim())) ||
+         keys.find(k => /amount/i.test(k) && !/due|diff|emi due/i.test(k));
 }
-
-/* ── SEARCH ── */
-const searchInput = document.getElementById('search-input');
-const searchClear = document.getElementById('search-clear');
-
-searchInput.addEventListener('input', function() {
-  searchClear.classList.toggle('show', this.value.length > 0);
-  if (this.value.trim().length > 0) doSearch();
-  else {
-    document.getElementById('s-results').textContent = '—';
-    document.getElementById('result-area').innerHTML = `
-      <div class="placeholder-state">
-        <div class="ph-icon">🔎</div>
-        <p>Upar App ID daalo — data turant dikhega</p>
-      </div>`;
-  }
-});
-
-searchInput.addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
-
-function clearSearch() {
-  searchInput.value = '';
-  searchClear.classList.remove('show');
-  document.getElementById('s-results').textContent = '—';
-  document.getElementById('result-area').innerHTML = '';
-}
+function cleanNum(v) { return parseFloat(String(v).replace(/[^0-9.-]/g,'')) || 0; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function friendly(k) { return k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim(); }
 
 function doSearch() {
-  const query = searchInput.value.trim().toLowerCase();
-  const col = document.getElementById('col-select').value;
-  const mode = document.getElementById('search-mode').value;
-  if (!query || !col || allData.length === 0) return;
-
-  let matches;
-  if (mode === 'exact')
-    matches = allData.filter(r => String(r[col]).toLowerCase() === query);
-  else if (mode === 'startswith')
-    matches = allData.filter(r => String(r[col]).toLowerCase().startsWith(query));
-  else
-    matches = allData.filter(r => String(r[col]).toLowerCase().includes(query));
-
-  document.getElementById('s-results').textContent = matches.length;
-  renderResults(matches, query, col);
+  const query = document.getElementById('aid-input').value.trim();
+  if (!query) return;
+  if (!wb) { alert('Pehle Excel file upload karo!'); return; }
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('result-area').innerHTML = '';
+  document.getElementById('stats-grid').style.display = 'none';
+  setTimeout(() => {
+    const names = wb.SheetNames;
+    const sheet1 = names[0], sheet2 = names[1] || null;
+    const r1 = (sd[sheet1]||[]).filter(r => { const k=findAppIdKey(r); return k && String(r[k]).trim()===query; });
+    const r2 = sheet2 ? (sd[sheet2]||[]).filter(r => { const k=findAppIdKey(r); return k && String(r[k]).trim()===query; }) : [];
+    document.getElementById('loading').classList.remove('show');
+    const total = r1.length + r2.length;
+    if (!total) {
+      document.getElementById('result-area').innerHTML = `<div class="no-result"><div class="no-icon">🔍</div><p>Koi record nahi mila App ID <b>${esc(query)}</b> ke liye</p></div>`;
+      return;
+    }
+    // amounts
+    const amt1 = r1.reduce((s,r) => { const k=findAmtKey(r); return s + (k?cleanNum(r[k]):0); }, 0);
+    const amt2 = r2.reduce((s,r) => { const k=findAmtKey(r); return s + (k?cleanNum(r[k]):0); }, 0);
+    const totalAmt = amt1 + amt2;
+    // stats
+    document.getElementById('s1').textContent = total;
+    document.getElementById('s2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+    document.getElementById('s3').textContent = r1.length;
+    document.getElementById('s4').textContent = r2.length;
+    document.getElementById('s5').textContent = '₹'+amt1.toLocaleString('en-IN');
+    document.getElementById('s6').textContent = '₹'+amt2.toLocaleString('en-IN');
+    document.getElementById('stats-grid').style.display = 'grid';
+    renderTable(r1, r2, sheet1, sheet2, totalAmt);
+  }, 100);
 }
 
-function renderResults(matches, query, col) {
-  const area = document.getElementById('result-area');
-  if (matches.length === 0) {
-    area.innerHTML = `
-      <div class="no-data-state">
-        <div class="no-icon">🔍</div>
-        <p>Koi record nahi mila <strong>"${query}"</strong> ke liye is column mein</p>
-      </div>`;
-    return;
-  }
-  if (matches.length === 1) {
-    renderSingle(matches[0], col, area);
-  } else {
-    renderMulti(matches, col, area);
-  }
-}
+function renderTable(r1, r2, n1, n2, totalAmt) {
+  // Get headers from first available row (prefer sheet with more columns)
+  const sample = (r2[0] && Object.keys(r2[0]).length > (r1[0]?Object.keys(r1[0]).length:0)) ? r2[0] : (r1[0]||{});
+  const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
 
-function renderSingle(row, col, area) {
-  const rows = Object.entries(row).map(([k, v]) => {
-    const isEmpty = v === '' || v === null || v === undefined;
-    return `<div class="result-row">
-      <div class="result-key">${k}</div>
-      <div class="result-val ${isEmpty?'empty':''}">${isEmpty ? 'N/A' : escHtml(String(v))}</div>
-    </div>`;
+  const thead = '<tr><th>Sr</th><th>Sheet</th>' + cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('') + '</tr>';
+
+  let tbody = ''; let sr = 1;
+
+  const makeRows = (rows, secLabel, secClass, sheetLabel) => {
+    if (!rows.length) return '';
+    let html = `<tr class="${secClass}"><td colspan="${cols.length+2}">${esc(secLabel)}</td></tr>`;
+    rows.forEach(row => {
+      const cells = cols.map(k => {
+        // Try to find matching key in this row
+        const val = row[k] !== undefined ? row[k] :
+          (Object.entries(row).find(([rk]) => friendly(rk).toLowerCase() === friendly(k).toLowerCase())||['',])[1] || '';
+        const kl = k.toLowerCase();
+        if (/^amount/i.test(friendly(k)) || (/amount/i.test(kl) && !/due|diff/i.test(kl))) {
+          const n = cleanNum(val);
+          return `<td class="td-amt">₹${n.toLocaleString('en-IN')}</td>`;
+        }
+        if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(val))}</td>`;
+        return `<td>${esc(String(val))}</td>`;
+      }).join('');
+      html += `<tr><td class="td-sr">${sr++}</td><td class="td-sheet">${esc(sheetLabel)}</td>${cells}</tr>`;
+    });
+    return html;
+  };
+
+  tbody += makeRows(r1, n1, 'sec-row', n1.replace('DPM DATA ',''));
+  if (n2) tbody += makeRows(r2, n2, 'sec-row2', n2.replace('DPM DATA ',''));
+
+  // Grand total row
+  const totalCells = cols.map(k => {
+    if (/^amount/i.test(friendly(k)) || (/amount/i.test(k) && !/due|diff/i.test(k))) {
+      return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`;
+    }
+    return '<td></td>';
   }).join('');
-  area.innerHTML = `
-    <div class="result-card">
-      <div class="result-header">
-        <span class="found-badge">Found</span>
-        <span class="result-id">${escHtml(String(row[col]))}</span>
-      </div>
-      <div class="result-body">${rows}</div>
+  tbody += `<tr class="total-row"><td colspan="2" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${totalCells}</tr>`;
+
+  document.getElementById('result-area').innerHTML = `
+    <div class="table-wrap">
+      <table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table>
     </div>`;
 }
 
-function renderMulti(matches, col, area) {
-  const displayCols = headers.slice(0, 7);
-  const thead = displayCols.map(h => `<th>${h}</th>`).join('');
-  const tbody = matches.map((r, i) =>
-    `<tr onclick="selectRow(${i})">
-      ${displayCols.map(c => `<td>${escHtml(String(r[c]??''))}</td>`).join('')}
-    </tr>`
-  ).join('');
-  area.innerHTML = `
-    <div class="multi-card">
-      <div class="multi-header">
-        <span class="multi-title">Multiple records mile — row pe click karo detail dekhne ke liye</span>
-        <span class="multi-count">${matches.length} results</span>
-      </div>
-      <div style="overflow-x:auto">
-        <table class="multi-table">
-          <thead><tr>${thead}</tr></thead>
-          <tbody id="multi-tbody">${tbody}</tbody>
-        </table>
-      </div>
-    </div>`;
-  area.__multiData = matches;
-  area.__col = col;
-}
-
-window.selectRow = function(i) {
-  const area = document.getElementById('result-area');
-  renderSingle(area.__multiData[i], area.__col, area);
-  document.getElementById('s-results').textContent = 1;
-};
-
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function clearAll() {
+  document.getElementById('aid-input').value = '';
+  document.getElementById('stats-grid').style.display = 'none';
+  document.getElementById('result-area').innerHTML = '<div class="placeholder"><div class="ph">📋</div><p>App ID daalo aur Search karo</p></div>';
 }
 </script>
 </body>
