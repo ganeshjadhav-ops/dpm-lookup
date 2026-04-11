@@ -414,19 +414,32 @@ function deleteFromDB(id) {
 
 function loadStoredFiles() {
   return getAllFromDB().then(files => {
+    // First update UI with file names immediately (before parsing)
+    updateFileListFromDB(files);
+    // Then parse in background
     allSheets = [];
     files.forEach(f => {
-      try {
-        parseFileData(f.name, f.data, f.id);
-      } catch(e) {
-        console.error('Error loading file from DB:', f.name, e);
-      }
+      try { parseFileData(f.name, f.data, f.id); } 
+      catch(e) { console.error('Parse error:', f.name, e); }
     });
     updateUI();
-  }).catch(e => {
-    console.error('DB load error:', e);
-    updateUI();
-  });
+  }).catch(e => { console.error('DB error:', e); updateUI(); });
+}
+
+function updateFileListFromDB(files) {
+  const info = document.getElementById('storage-info');
+  const list = document.getElementById('file-list');
+  info.textContent = files.length + ' file(s) stored in browser';
+  if (!files.length) { list.innerHTML = ''; return; }
+  list.innerHTML = files.map(f => `
+    <div class="file-item">
+      <span style="font-size:16px">📊</span>
+      <div style="flex:1">
+        <div class="file-item-name">${esc(f.name)}</div>
+        <div class="file-item-meta">Stored · Loading rows...</div>
+      </div>
+      <button class="file-item-remove" onclick="removeFile(${f.id})">✕ Remove</button>
+    </div>`).join('');
 }
 
 function parseFileData(name, data, dbId) {
