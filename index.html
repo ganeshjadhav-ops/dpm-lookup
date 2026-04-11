@@ -178,6 +178,7 @@ table.dt tbody td:last-child{border-right:none;}
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('appid',this)">🔍 App ID Search</button>
       <button class="tab-btn" onclick="switchTab('payid',this)">💳 Pay ID Search</button>
+      <button class="tab-btn" onclick="switchTab('utrid',this)">🏦 UTR Search</button>
       <button class="tab-btn" onclick="switchTab('bulk',this)">📋 Bulk Search</button>
       <button class="tab-btn" onclick="switchTab('files',this)">📂 Manage Files</button>
     </div>
@@ -269,6 +270,39 @@ table.dt tbody td:last-child{border-right:none;}
       </div>
     </div>
 
+    <!-- UTR PANEL -->
+    <div class="panel" id="panel-utrid">
+      <div class="lookup-card">
+        <div class="lookup-titlebar">🏦 UTR SEARCH</div>
+        <div class="lookup-subbar">Enter UTR Number → Press Enter or click Search → Data loads instantly</div>
+        <div class="single-search-row">
+          <div class="input-label">ENTER UTR :</div>
+          <input type="text" class="app-id-input" id="utrid-input" placeholder="e.g. UTIBR720..." style="width:220px"/>
+          <select class="search-type-sel" id="utrid-mode">
+            <option value="exact">Exact Match</option>
+            <option value="contains" selected>Contains</option>
+            <option value="startswith">Starts With</option>
+          </select>
+          <button class="search-btn" onclick="doSingleSearch('utrid')">🔍 Search</button>
+          <button class="clear-btn" onclick="clearResult('utrid')">✕ Clear</button>
+        </div>
+        <div class="stats-grid" id="utrid-stats" style="display:none;">
+          <div class="stat-box"><div class="stat-head bg-g">Total Transactions</div><div class="stat-val vg" id="us1">0</div></div>
+          <div class="stat-box"><div class="stat-head bg-g">Total Amount (₹)</div><div class="stat-val vg" id="us2">₹0</div></div>
+          <div class="stat-box"><div class="stat-head bg-b">OCT24-DEC25 Count</div><div class="stat-val vb" id="us3">0</div></div>
+          <div class="stat-box"><div class="stat-head bg-p">JAN26-Till Date Count</div><div class="stat-val vp" id="us4">0</div></div>
+          <div class="stat-box"><div class="stat-head bg-o">OCT24 Amount</div><div class="stat-val vo" id="us5">₹0</div></div>
+          <div class="stat-box"><div class="stat-head bg-d">JAN26 Amount</div><div class="stat-val vd" id="us6">₹0</div></div>
+        </div>
+        <div class="loading" id="utrid-loading"><span class="spinner"></span>Searching...</div>
+        <div class="export-row" id="utrid-export">
+          <span class="export-label">Export results:</span>
+          <button class="export-btn export-csv" onclick="exportCSV('utrid')">⬇ Download CSV</button>
+        </div>
+        <div id="utrid-result"><div class="placeholder"><div class="ph">🏦</div><p>Upload Excel files and enter UTR number to search</p></div></div>
+      </div>
+    </div>
+
     <!-- BULK PANEL -->
     <div class="panel" id="panel-bulk">
       <div class="lookup-card">
@@ -277,6 +311,7 @@ table.dt tbody td:last-child{border-right:none;}
         <div class="search-mode-row">
           <button class="mode-btn active" id="bulk-mode-appid" onclick="setBulkMode('appid')">App ID Search</button>
           <button class="mode-btn" id="bulk-mode-payid" onclick="setBulkMode('payid')">Pay ID Search</button>
+          <button class="mode-btn" id="bulk-mode-utrid" onclick="setBulkMode('utrid')">UTR Search</button>
         </div>
         <div class="bulk-section">
           <div class="bulk-label" id="bulk-label">Enter App IDs (one per line):</div>
@@ -458,12 +493,17 @@ async function removeFile(id) {
 }
 
 // ── SEARCH ──
-let lastResults = {appid:[], payid:[], bulk:[]};
+let lastResults = {appid:[], payid:[], utrid:[], bulk:[]};
 
 function findKey(row, type) {
   const keys = Object.keys(row);
+  const clean = k => k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim().toLowerCase();
   if (type === 'appid') return keys.find(k => /app.?id/i.test(k.replace(/\n.*/,'')));
-  if (type === 'payid') return keys.find(k => /pay.?id/i.test(k.replace(/\n.*/,'')));
+  if (type === 'payid') return keys.find(k => {
+    const c = clean(k);
+    return c === 'pay id' || c === 'payid' || c === 'pay_id' || /^pay.?id$/i.test(c);
+  });
+  if (type === 'utrid') return keys.find(k => /^utr$/i.test(clean(k)) || /^utr\b/i.test(clean(k)));
   if (type === 'amt') {
     return keys.find(k => /^amount/i.test(k.replace(/\n.*/,'').trim())) ||
            keys.find(k => /amount/i.test(k) && !/due|diff|emi due/i.test(k));
@@ -535,13 +575,20 @@ function renderStatsAndTable(type, results) {
     document.getElementById('as4').textContent = sheet2Matches.length;
     document.getElementById('as5').textContent = '₹'+amt1.toLocaleString('en-IN');
     document.getElementById('as6').textContent = '₹'+amt2.toLocaleString('en-IN');
-  } else {
+  } else if (type === 'payid') {
     document.getElementById('ps1').textContent = allMatches.length;
     document.getElementById('ps2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
     document.getElementById('ps3').textContent = sheet1Matches.length;
     document.getElementById('ps4').textContent = sheet2Matches.length;
     document.getElementById('ps5').textContent = '₹'+amt1.toLocaleString('en-IN');
     document.getElementById('ps6').textContent = '₹'+amt2.toLocaleString('en-IN');
+  } else if (type === 'utrid') {
+    document.getElementById('us1').textContent = allMatches.length;
+    document.getElementById('us2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+    document.getElementById('us3').textContent = sheet1Matches.length;
+    document.getElementById('us4').textContent = sheet2Matches.length;
+    document.getElementById('us5').textContent = '₹'+amt1.toLocaleString('en-IN');
+    document.getElementById('us6').textContent = '₹'+amt2.toLocaleString('en-IN');
   }
   statsEl.style.display = 'grid';
   exportEl.classList.add('show');
@@ -581,8 +628,11 @@ function setBulkMode(mode) {
   bulkMode = mode;
   document.getElementById('bulk-mode-appid').classList.toggle('active', mode==='appid');
   document.getElementById('bulk-mode-payid').classList.toggle('active', mode==='payid');
-  document.getElementById('bulk-label').textContent = mode==='appid' ? 'Enter App IDs (one per line):' : 'Enter Pay IDs (one per line):';
-  document.getElementById('bulk-input').placeholder = mode==='appid' ? '1208596\n1629979\n1331126\n...' : 'pay_Sa7ru...\npay_Sadj...\n...';
+  document.getElementById('bulk-mode-utrid').classList.toggle('active', mode==='utrid');
+  const labels = {appid:'Enter App IDs (one per line):', payid:'Enter Pay IDs (one per line):', utrid:'Enter UTR Numbers (one per line):'};
+  const placeholders = {appid:'1208596\n1629979\n1331126\n...', payid:'pay_Sa7ru...\npay_Sadj...\n...', utrid:'UTIBR720...\nYESOB400...\n...'};
+  document.getElementById('bulk-label').textContent = labels[mode];
+  document.getElementById('bulk-input').placeholder = placeholders[mode];
 }
 
 function doBulkSearch() {
@@ -615,33 +665,136 @@ function renderBulkResults(allResults, ids) {
   }
   const found = allResults.length;
   const notFound = ids.filter(id => !allResults.find(r => r.id === id));
+
+  // Build summary header
   let html = `<div style="padding:10px 16px;background:#e8f5e9;border-bottom:1px solid var(--border);font-size:13px;">
-    ✅ Found: <b style="color:var(--green-dark)">${found}</b> IDs · 
+    ✅ Found: <b style="color:var(--green-dark)">${found}</b> IDs &nbsp;·&nbsp;
     ❌ Not Found: <b style="color:var(--red)">${notFound.length}</b> IDs
-    ${notFound.length ? ' · <span style="color:#888">'+notFound.map(esc).join(', ')+'</span>' : ''}
+    ${notFound.length ? ' &nbsp;· <span style="color:#888;font-family:JetBrains Mono,monospace;font-size:11px;">'+notFound.map(esc).join(', ')+'</span>' : ''}
   </div>`;
-  const sample = allResults[0]?.results[0]?.matches[0] || {};
-  const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
-  const thead = '<tr><th>Sr</th><th>Searched ID</th><th>File</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
-  let tbody = ''; let sr = 1;
-  allResults.forEach(({id, results}) => {
-    tbody += `<tr class="bulk-sep-row"><td colspan="${cols.length+4}">🔍 ID: ${esc(id)} — ${results.flatMap(r=>r.matches).length} record(s) found</td></tr>`;
-    results.forEach(sheet => {
-      sheet.matches.forEach(row => {
-        const cells = cols.map(k => {
-          const v = row[k] !== undefined ? row[k] : '';
-          const kl = k.toLowerCase();
-          if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
-          if (/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
-          if (/^amount/i.test(friendly(k))||(/amount/i.test(kl)&&!/due|diff/i.test(kl)))
-            return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
-          return `<td>${esc(String(v))}</td>`;
-        }).join('');
-        tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-appid">${esc(id)}</td><td class="td-sheet">${esc(sheet.fileName.replace('.xlsx',''))}</td><td class="td-sheet">${esc(sheet.sheetName)}</td>${cells}</tr>`;
+
+  if (bulkMode === 'appid') {
+    // 4th SS style: Section 1 = App ID Summary, Section 2 = Pay ID Details, Section 3 = Pay ID Total Count
+    // App ID Summary table
+    const appSummary = allResults.map(({id, results}) => {
+      const all = results.flatMap(r=>r.matches);
+      const s1 = results.filter(r=>/jan.?24|oct.?24|dec.?25/i.test(r.sheetName)).flatMap(r=>r.matches);
+      const s2 = results.filter(r=>/jan.?26/i.test(r.sheetName)).flatMap(r=>r.matches);
+      const totalAmt = all.reduce((s,r)=>{const k=findKey(r,'amt');return s+(k?cleanNum(r[k]):0);},0);
+      return {appId:id, totalCount:all.length, totalAmt, oct24Count:s1.length, jan26Count:s2.length};
+    });
+
+    // Pay ID Details table
+    const payDetails = [];
+    allResults.forEach(({id, results}) => {
+      results.forEach(sheet => {
+        sheet.matches.forEach(row => {
+          const payKey = findKey(row,'payid');
+          const amtKey = findKey(row,'amt');
+          const dateKey = Object.keys(row).find(k=>/^date$/i.test(friendly(k))||/settlement.?date/i.test(k));
+          const sheetType = /jan.?26/i.test(sheet.sheetName) ? 'JAN26' : 'OCT24';
+          payDetails.push({
+            appId: id,
+            payId: payKey ? row[payKey] : '',
+            totalAmt: amtKey ? cleanNum(row[amtKey]) : 0,
+            date: dateKey ? row[dateKey] : '',
+            oct24Amt: sheetType==='OCT24' ? (amtKey?cleanNum(row[amtKey]):0) : 0,
+            oct24Date: sheetType==='OCT24' ? (dateKey?row[dateKey]:'') : '',
+            jan26Amt: sheetType==='JAN26' ? (amtKey?cleanNum(row[amtKey]):0) : 0,
+            jan26Date: sheetType==='JAN26' ? (dateKey?row[dateKey]:'') : '',
+          });
+        });
       });
     });
-  });
-  html += `<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+
+    // Pay ID Total Count (unique pay IDs per app)
+    const payTotals = allResults.map(({id, results}) => {
+      const all = results.flatMap(r=>r.matches);
+      const s1 = results.filter(r=>/jan.?24|oct.?24|dec.?25/i.test(r.sheetName)).flatMap(r=>r.matches);
+      const s2 = results.filter(r=>/jan.?26/i.test(r.sheetName)).flatMap(r=>r.matches);
+      const totalAmt = all.reduce((s,r)=>{const k=findKey(r,'amt');return s+(k?cleanNum(r[k]):0);},0);
+      const payIds = [...new Set(all.map(r=>{const k=findKey(r,'payid');return k?r[k]:''}).filter(Boolean))];
+      return {payId: payIds.join(', '), totalCount:all.length, totalAmt, oct24Count:s1.length, jan26Count:s2.length};
+    });
+
+    html += `<div style="overflow-x:auto;border-top:1px solid var(--border)">
+    <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:0;min-width:1200px;">
+
+      <!-- Section 1: App ID Summary -->
+      <div style="border-right:2px solid var(--border);">
+        <div style="background:#1a237e;color:#fff;text-align:center;padding:8px;font-weight:700;font-size:12px;">1️⃣ APP ID SUMMARY</div>
+        <table class="dt" style="width:100%">
+          <thead><tr><th>App ID</th><th>Total Count</th><th>Total Amount (₹)</th><th>OCT24 Count</th><th>JAN26 Count</th></tr></thead>
+          <tbody>${appSummary.map(r=>`<tr>
+            <td class="td-appid">${esc(r.appId)}</td>
+            <td style="text-align:center;font-weight:700">${r.totalCount}</td>
+            <td class="td-amt">₹${r.totalAmt.toLocaleString('en-IN')}</td>
+            <td style="text-align:center;color:var(--blue)">${r.oct24Count}</td>
+            <td style="text-align:center;color:var(--pink)">${r.jan26Count}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+
+      <!-- Section 2: Pay ID Details -->
+      <div style="border-right:2px solid var(--border);">
+        <div style="background:#4a148c;color:#fff;text-align:center;padding:8px;font-weight:700;font-size:12px;">2️⃣ PAY ID DETAILS (Amount + Date)</div>
+        <table class="dt" style="width:100%">
+          <thead><tr><th>Pay ID</th><th>Total Amount (₹)</th><th>Date</th><th>OCT24 Amt</th><th>OCT24 Date</th><th>JAN26 Amt</th><th>JAN26 Date</th><th>Combined Total</th></tr></thead>
+          <tbody>${payDetails.map(r=>`<tr>
+            <td class="td-payid">${esc(String(r.payId))}</td>
+            <td class="td-amt">₹${r.totalAmt.toLocaleString('en-IN')}</td>
+            <td>${esc(String(r.date))}</td>
+            <td class="td-amt" style="color:var(--orange)">${r.oct24Amt?'₹'+r.oct24Amt.toLocaleString('en-IN'):''}</td>
+            <td>${esc(String(r.oct24Date))}</td>
+            <td class="td-amt" style="color:var(--pink)">${r.jan26Amt?'₹'+r.jan26Amt.toLocaleString('en-IN'):''}</td>
+            <td>${esc(String(r.jan26Date))}</td>
+            <td class="td-amt">₹${r.totalAmt.toLocaleString('en-IN')}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+
+      <!-- Section 3: Pay ID Total Count -->
+      <div>
+        <div style="background:#1b5e20;color:#fff;text-align:center;padding:8px;font-weight:700;font-size:12px;">3️⃣ PAY ID TOTAL COUNT</div>
+        <table class="dt" style="width:100%">
+          <thead><tr><th>Pay ID</th><th>Total Count</th><th>Total Amount (₹)</th><th>OCT24 Count</th><th>JAN26 Count</th></tr></thead>
+          <tbody>${payTotals.map(r=>`<tr>
+            <td class="td-payid" style="font-size:10px">${esc(r.payId).substring(0,20)+'...'}</td>
+            <td style="text-align:center;font-weight:700">${r.totalCount}</td>
+            <td class="td-amt">₹${r.totalAmt.toLocaleString('en-IN')}</td>
+            <td style="text-align:center;color:var(--blue)">${r.oct24Count}</td>
+            <td style="text-align:center;color:var(--pink)">${r.jan26Count}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div></div>`;
+
+  } else {
+    // Pay ID / UTR bulk — simple table
+    const sample = allResults[0]?.results[0]?.matches[0] || {};
+    const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
+    const thead = '<tr><th>Sr</th><th>Searched ID</th><th>File</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
+    let tbody = ''; let sr = 1;
+    allResults.forEach(({id, results}) => {
+      tbody += `<tr class="bulk-sep-row"><td colspan="${cols.length+4}">🔍 ID: ${esc(id)} — ${results.flatMap(r=>r.matches).length} record(s) found</td></tr>`;
+      results.forEach(sheet => {
+        sheet.matches.forEach(row => {
+          const cells = cols.map(k => {
+            const v = row[k] !== undefined ? row[k] : '';
+            const kl = k.toLowerCase();
+            if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
+            if (/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
+            if (/^amount/i.test(friendly(k))||(/amount/i.test(kl)&&!/due|diff/i.test(kl)))
+              return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
+            return `<td>${esc(String(v))}</td>`;
+          }).join('');
+          tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-appid">${esc(id)}</td><td class="td-sheet">${esc(sheet.fileName.replace('.xlsx',''))}</td><td class="td-sheet">${esc(sheet.sheetName)}</td>${cells}</tr>`;
+        });
+      });
+    });
+    html += `<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+  }
+
   resultEl.innerHTML = html;
   exportEl.classList.add('show');
 }
@@ -666,9 +819,13 @@ function exportCSV(type) {
     lastResults[type].forEach(sheet => sheet.matches.forEach(row => rows.push({File:sheet.fileName, Sheet:sheet.sheetName, ...row})));
   }
   if (!rows.length) return;
-  const cols = Object.keys(rows[0]);
-  const csv = [cols.join(','), ...rows.map(r => cols.map(c => '"'+(String(r[c]||'')).replace(/"/g,'""')+'"').join(','))].join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
+  const rawCols = Object.keys(rows[0]);
+  const friendlyCols = rawCols.map(c => friendly(c) || c);
+  const csv = [
+    friendlyCols.join(','),
+    ...rows.map(r => rawCols.map(c => '"'+(String(r[c]||'')).replace(/"/g,'""')+'"').join(','))
+  ].join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'dpm-export-'+type+'-'+Date.now()+'.csv';
@@ -678,6 +835,7 @@ function exportCSV(type) {
 // Enter key
 document.getElementById('appid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('appid'); });
 document.getElementById('payid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('payid'); });
+document.getElementById('utrid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('utrid'); });
 </script>
 </body>
 </html>
