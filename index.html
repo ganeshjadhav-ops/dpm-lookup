@@ -3,137 +3,151 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>APP ID LOOKUP — DPM Portal</title>
+<title>DPM — APP ID LOOKUP PORTAL</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  :root {
-    --green-dark: #1a5c1a;
-    --green-mid: #2d7a2d;
-    --green-light: #3a9a3a;
-    --gold: #f5c518;
-    --blue: #1565c0;
-    --pink: #c2185b;
-    --orange: #e65100;
-    --dark-header: #1a1a1a;
-    --white: #ffffff;
-    --light-yellow: #fffde7;
-    --border: #c8e6c9;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Inter', sans-serif; background: #f0f4f0; min-height: 100vh; }
+:root {
+  --green-dark: #1a5c1a; --green-mid: #2d7a2d; --green-light: #3a9a3a;
+  --gold: #f5c518; --blue: #1565c0; --pink: #c2185b; --orange: #e65100;
+  --dark-hdr: #1a1a1a; --ly: #fffde7; --border: #c8e6c9;
+  --red: #c62828; --white: #fff;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#f0f4f0;min-height:100vh;}
 
-  /* LOGIN */
-  #login-screen {
-    min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, #1a5c1a 0%, #2d7a2d 50%, #1565c0 100%);
-  }
-  .login-card {
-    background: white; border-radius: 12px; padding: 2.5rem;
-    width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  }
-  .login-header { text-align: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 2px solid var(--green-dark); }
-  .login-icon { font-size: 36px; margin-bottom: 8px; }
-  .login-title { font-size: 20px; font-weight: 700; color: var(--green-dark); }
-  .login-sub { font-size: 13px; color: #666; margin-top: 4px; }
-  .login-field { margin-bottom: 1rem; }
-  .login-field label { display: block; font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-  .login-field input { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 6px; font-size: 14px; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s; }
-  .login-field input:focus { border-color: var(--green-dark); }
-  .login-btn { width: 100%; padding: 12px; background: var(--green-dark); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.2s; margin-top: 0.5rem; }
-  .login-btn:hover { background: var(--green-mid); }
-  .login-error { background: #ffebee; border: 1px solid #ef9a9a; border-radius: 6px; padding: 8px 12px; font-size: 13px; color: #c62828; margin-bottom: 1rem; display: none; }
-  .login-hint { text-align: center; font-size: 12px; color: #999; margin-top: 1rem; }
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a5c1a,#2d7a2d 50%,#1565c0);}
+.login-card{background:#fff;border-radius:12px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.login-header{text-align:center;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:2px solid var(--green-dark);}
+.login-icon{font-size:36px;margin-bottom:8px;}
+.login-title{font-size:20px;font-weight:700;color:var(--green-dark);}
+.login-sub{font-size:13px;color:#666;margin-top:4px;}
+.lf{margin-bottom:1rem;}
+.lf label{display:block;font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.lf input{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:6px;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;}
+.lf input:focus{border-color:var(--green-dark);}
+.login-btn{width:100%;padding:12px;background:var(--green-dark);color:#fff;border:none;border-radius:6px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s;margin-top:.5rem;}
+.login-btn:hover{background:var(--green-mid);}
+.lerr{background:#ffebee;border:1px solid #ef9a9a;border-radius:6px;padding:8px 12px;font-size:13px;color:var(--red);margin-bottom:1rem;display:none;}
+.login-hint{text-align:center;font-size:12px;color:#999;margin-top:1rem;}
 
-  /* APP */
-  #app-screen { display: none; }
-  .topbar { background: var(--green-dark); color: white; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-  .topbar-title { font-size: 16px; font-weight: 700; }
-  .topbar-right { display: flex; align-items: center; gap: 12px; font-size: 13px; }
-  .logout-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; padding: 4px 12px; color: white; font-size: 12px; cursor: pointer; font-family: 'Inter', sans-serif; }
-  .logout-btn:hover { background: rgba(255,255,255,0.25); }
+/* APP */
+#app-screen{display:none;}
+.topbar{background:var(--green-dark);color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.topbar-title{font-size:16px;font-weight:700;}
+.topbar-right{display:flex;align-items:center;gap:12px;font-size:13px;}
+.logout-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:4px 12px;color:#fff;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;}
+.logout-btn:hover{background:rgba(255,255,255,.25);}
+.main{max-width:1500px;margin:0 auto;padding:16px;}
 
-  .main { max-width: 1400px; margin: 0 auto; padding: 16px; }
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:16px;background:#fff;border-radius:8px;padding:6px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,.06);}
+.tab-btn{flex:1;padding:10px;background:none;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;color:#666;transition:all .2s;}
+.tab-btn.active{background:var(--green-dark);color:#fff;}
 
-  /* UPLOAD */
-  .upload-card { background: white; border-radius: 8px; padding: 16px; border: 1px solid var(--border); margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-  .upload-card-title { font-size: 13px; font-weight: 600; color: var(--green-dark); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-  .upload-zone { border: 2px dashed #a5d6a7; border-radius: 6px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; background: #f9fbe7; }
-  .upload-zone:hover, .upload-zone.dragover { border-color: var(--green-dark); background: #f1f8e9; }
-  #file-input { display: none; }
-  .file-bar { display: none; align-items: center; gap: 10px; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 6px; padding: 8px 14px; margin-top: 10px; }
-  .file-bar.show { display: flex; }
-  .file-bar-name { font-size: 13px; font-weight: 600; color: var(--green-dark); flex: 1; }
-  .file-bar-meta { font-size: 11px; color: #666; font-family: 'JetBrains Mono', monospace; }
-  .change-btn { background: none; border: 1px solid #a5d6a7; border-radius: 4px; padding: 3px 10px; font-size: 11px; color: var(--green-dark); cursor: pointer; }
+/* PANEL */
+.panel{display:none;}
+.panel.active{display:block;}
 
-  /* LOOKUP CARD */
-  .lookup-card { background: white; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.08); overflow: hidden; }
-  .lookup-titlebar { background: var(--green-dark); color: white; text-align: center; padding: 10px; font-size: 15px; font-weight: 700; letter-spacing: 1px; }
-  .lookup-subbar { background: var(--green-mid); color: rgba(255,255,255,0.9); text-align: center; padding: 6px; font-size: 11px; font-style: italic; }
+/* UPLOAD CARD */
+.upload-card{background:#fff;border-radius:8px;padding:16px;border:1px solid var(--border);margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,.06);}
+.card-title{font-size:13px;font-weight:700;color:var(--green-dark);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.upload-zone{border:2px dashed #a5d6a7;border-radius:6px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:#f9fbe7;}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--green-dark);background:#f1f8e9;}
+.upload-zone-text{font-size:14px;font-weight:600;color:var(--green-dark);}
+.upload-zone-sub{font-size:12px;color:#888;margin-top:3px;}
+.file-list{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+.file-item{display:flex;align-items:center;gap:8px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px 12px;}
+.file-item-name{font-size:13px;font-weight:600;color:var(--green-dark);flex:1;}
+.file-item-meta{font-size:11px;color:#666;font-family:'JetBrains Mono',monospace;}
+.file-item-remove{background:none;border:1px solid #ef9a9a;border-radius:4px;padding:2px 8px;font-size:11px;color:var(--red);cursor:pointer;}
+.add-more-btn{display:flex;align-items:center;gap:6px;background:none;border:1px dashed #a5d6a7;border-radius:6px;padding:8px 14px;font-size:12px;color:var(--green-dark);cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;margin-top:6px;}
+.add-more-btn:hover{border-color:var(--green-dark);background:#f1f8e9;}
 
-  .input-row { display: flex; align-items: center; gap: 0; padding: 12px 16px; background: #f9fbe7; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 8px; }
-  .input-label { background: var(--green-dark); color: white; padding: 10px 16px; font-size: 13px; font-weight: 700; border-radius: 4px 0 0 4px; white-space: nowrap; }
-  .app-id-input { padding: 10px 14px; border: 2px solid var(--gold); background: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: #1a1a1a; outline: none; width: 160px; text-align: center; border-radius: 0; }
-  .app-id-input:focus { background: #fff9c4; }
-  .search-btn { padding: 10px 20px; background: var(--green-dark); color: white; border: none; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 0 4px 4px 0; font-family: 'Inter', sans-serif; }
-  .search-btn:hover { background: var(--green-light); }
-  .clear-btn { padding: 10px 14px; background: #ef5350; color: white; border: none; font-size: 12px; font-weight: 600; cursor: pointer; border-radius: 4px; font-family: 'Inter', sans-serif; }
-  .example-hint { font-size: 12px; color: #888; font-style: italic; }
+/* STORAGE INFO */
+.storage-bar{display:flex;align-items:center;gap:8px;background:#e3f2fd;border:1px solid #90caf9;border-radius:6px;padding:8px 12px;font-size:12px;color:var(--blue);margin-top:8px;}
 
-  /* STATS */
-  .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); }
-  .stat-box { border-right: 1px solid var(--border); }
-  .stat-box:last-child { border-right: none; }
-  .stat-head { font-size: 10px; font-weight: 700; color: white; padding: 6px; text-align: center; line-height: 1.3; }
-  .stat-val { font-size: 20px; font-weight: 700; padding: 10px 4px; text-align: center; font-family: 'JetBrains Mono', monospace; }
-  .bg-green { background: var(--green-dark); }
-  .bg-blue { background: var(--blue); }
-  .bg-pink { background: var(--pink); }
-  .bg-orange { background: var(--orange); }
-  .bg-dark { background: var(--dark-header); }
-  .val-green { background: #e8f5e9; color: var(--green-dark); }
-  .val-blue { background: #e3f2fd; color: var(--blue); }
-  .val-pink { background: #fce4ec; color: var(--pink); }
-  .val-orange { background: #fff3e0; color: var(--orange); }
-  .val-dark { background: #f5f5f5; color: var(--dark-header); }
+/* LOOKUP CARD */
+.lookup-card{background:#fff;border-radius:8px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,.06);overflow:hidden;margin-bottom:16px;}
+.lookup-titlebar{background:var(--green-dark);color:#fff;text-align:center;padding:10px;font-size:15px;font-weight:700;letter-spacing:1px;}
+.lookup-subbar{background:var(--green-mid);color:rgba(255,255,255,.9);text-align:center;padding:6px;font-size:11px;font-style:italic;}
 
-  /* TABLE */
-  .table-wrap { overflow-x: auto; border-top: 1px solid var(--border); }
-  table.dt { width: 100%; border-collapse: collapse; font-size: 12px; }
-  table.dt thead th { background: var(--green-dark); color: white; padding: 8px 10px; text-align: center; font-weight: 600; font-size: 11px; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.2); position: sticky; top: 0; }
-  table.dt thead th:last-child { border-right: none; }
-  table.dt tbody tr:nth-child(even) { background: var(--light-yellow); }
-  table.dt tbody tr:hover { background: #c8e6c9; cursor: pointer; }
-  table.dt tbody td { padding: 7px 10px; border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e8e8e8; font-family: 'JetBrains Mono', monospace; font-size: 11px; white-space: nowrap; color: #1a1a1a; }
-  table.dt tbody td:last-child { border-right: none; }
-  .td-sr { text-align: center; color: #888; }
-  .td-sheet { background: #e3f2fd; color: var(--blue); font-weight: 600; font-size: 10px; text-align: center; font-family: 'Inter', sans-serif; }
-  .td-appid { font-weight: 700; color: var(--green-dark); text-align: center; }
-  .td-amt { text-align: right; font-weight: 600; color: var(--green-dark); }
-  .sec-row td { background: var(--blue); color: white; font-weight: 700; text-align: center; font-size: 12px; padding: 8px; font-family: 'Inter', sans-serif; }
-  .sec-row2 td { background: var(--green-mid); color: white; font-weight: 700; text-align: center; font-size: 12px; padding: 8px; font-family: 'Inter', sans-serif; }
-  .total-row td { background: var(--green-dark); color: white; font-weight: 700; font-family: 'JetBrains Mono', monospace; padding: 9px 10px; }
+/* SEARCH MODE TOGGLE */
+.search-mode-row{display:flex;gap:8px;padding:10px 16px;background:#f9fbe7;border-bottom:1px solid var(--border);}
+.mode-btn{padding:6px 16px;border-radius:20px;border:1px solid #a5d6a7;background:#fff;color:var(--green-dark);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;}
+.mode-btn.active{background:var(--green-dark);color:#fff;border-color:var(--green-dark);}
 
-  /* States */
-  .placeholder { text-align: center; padding: 3rem; color: #aaa; }
-  .placeholder .ph { font-size: 36px; margin-bottom: 8px; opacity: 0.5; }
-  .no-result { text-align: center; padding: 3rem; background: #fff3f3; border-top: 1px solid #ffcdd2; }
-  .no-result .no-icon { font-size: 36px; margin-bottom: 8px; }
-  .no-result p { font-size: 14px; color: #888; }
-  .loading { text-align: center; padding: 1.5rem; color: var(--green-dark); font-size: 14px; font-weight: 500; display: none; }
-  .loading.show { display: block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner { display: inline-block; width: 18px; height: 18px; border: 3px solid #c8e6c9; border-top-color: var(--green-dark); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+/* SINGLE SEARCH */
+.single-search-row{display:flex;align-items:center;gap:0;padding:12px 16px;background:#f9fbe7;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
+.input-label{background:var(--green-dark);color:#fff;padding:10px 16px;font-size:13px;font-weight:700;border-radius:4px 0 0 4px;white-space:nowrap;}
+.app-id-input{padding:10px 14px;border:2px solid var(--gold);background:var(--gold);font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#1a1a1a;outline:none;width:180px;text-align:center;border-radius:0;}
+.app-id-input:focus{background:#fff9c4;}
+.search-type-sel{padding:10px 12px;border:2px solid #a5d6a7;background:#fff;font-family:'Inter',sans-serif;font-size:13px;outline:none;color:#333;}
+.search-btn{padding:10px 20px;background:var(--green-dark);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;border-radius:0 4px 4px 0;font-family:'Inter',sans-serif;}
+.search-btn:hover{background:var(--green-light);}
+.clear-btn{padding:10px 14px;background:#ef5350;color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;border-radius:4px;font-family:'Inter',sans-serif;}
 
-  @media (max-width: 768px) {
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .main { padding: 10px; }
-  }
+/* BULK SEARCH */
+.bulk-section{padding:12px 16px;background:#f9fbe7;border-bottom:1px solid var(--border);}
+.bulk-label{font-size:12px;font-weight:700;color:var(--green-dark);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.bulk-textarea{width:100%;padding:10px;border:1.5px solid #a5d6a7;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:13px;resize:vertical;min-height:90px;outline:none;background:#fff;}
+.bulk-textarea:focus{border-color:var(--green-dark);}
+.bulk-hint{font-size:11px;color:#888;margin-top:4px;}
+.bulk-search-btn{margin-top:8px;padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+.bulk-search-btn:hover{background:#1976d2;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--border);}
+.stat-box{border-right:1px solid var(--border);}
+.stat-box:last-child{border-right:none;}
+.stat-head{font-size:10px;font-weight:700;color:#fff;padding:6px;text-align:center;line-height:1.3;}
+.stat-val{font-size:20px;font-weight:700;padding:10px 4px;text-align:center;font-family:'JetBrains Mono',monospace;}
+.bg-g{background:var(--green-dark);} .bg-b{background:var(--blue);} .bg-p{background:var(--pink);} .bg-o{background:var(--orange);} .bg-d{background:var(--dark-hdr);}
+.vg{background:#e8f5e9;color:var(--green-dark);} .vb{background:#e3f2fd;color:var(--blue);} .vp{background:#fce4ec;color:var(--pink);} .vo{background:#fff3e0;color:var(--orange);} .vd{background:#f5f5f5;color:var(--dark-hdr);}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;border-top:1px solid var(--border);}
+table.dt{width:100%;border-collapse:collapse;font-size:12px;}
+table.dt thead th{background:var(--green-dark);color:#fff;padding:8px 10px;text-align:center;font-weight:600;font-size:11px;white-space:nowrap;border-right:1px solid rgba(255,255,255,.2);position:sticky;top:0;}
+table.dt thead th:last-child{border-right:none;}
+table.dt tbody tr:nth-child(even){background:var(--ly);}
+table.dt tbody tr:hover{background:#c8e6c9;}
+table.dt tbody td{padding:7px 10px;border-bottom:1px solid #e0e0e0;border-right:1px solid #e8e8e8;font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap;color:#1a1a1a;}
+table.dt tbody td:last-child{border-right:none;}
+.td-sr{text-align:center;color:#888;}
+.td-sheet{background:#e3f2fd;color:var(--blue);font-weight:600;font-size:10px;text-align:center;font-family:'Inter',sans-serif;}
+.td-appid{font-weight:700;color:var(--green-dark);text-align:center;}
+.td-payid{font-weight:600;color:var(--blue);text-align:center;}
+.td-amt{text-align:right;font-weight:600;color:var(--green-dark);}
+.sec-row td{background:var(--blue);color:#fff;font-weight:700;text-align:center;font-size:12px;padding:8px;font-family:'Inter',sans-serif;}
+.sec-row2 td{background:var(--green-mid);color:#fff;font-weight:700;text-align:center;font-size:12px;padding:8px;font-family:'Inter',sans-serif;}
+.total-row td{background:var(--green-dark);color:#fff;font-weight:700;font-family:'JetBrains Mono',monospace;padding:9px 10px;}
+.bulk-sep-row td{background:#fff3e0;color:var(--orange);font-weight:700;text-align:center;font-size:12px;padding:6px;font-family:'Inter',sans-serif;border-bottom:2px solid var(--orange);}
+
+/* STATES */
+.placeholder{text-align:center;padding:3rem;color:#aaa;}
+.placeholder .ph{font-size:36px;margin-bottom:8px;opacity:.5;}
+.no-result{text-align:center;padding:2rem;background:#fff3f3;border-top:1px solid #ffcdd2;}
+.no-result p{font-size:14px;color:#888;}
+.loading{text-align:center;padding:1.5rem;color:var(--green-dark);font-size:14px;font-weight:500;display:none;}
+.loading.show{display:block;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spinner{display:inline-block;width:18px;height:18px;border:3px solid #c8e6c9;border-top-color:var(--green-dark);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:8px;}
+
+/* EXPORT BTN */
+.export-row{padding:8px 16px;background:#f9fbe7;border-top:1px solid var(--border);display:none;}
+.export-row.show{display:flex;gap:8px;align-items:center;}
+.export-btn{padding:7px 16px;border-radius:4px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+.export-csv{background:#1565c0;color:#fff;}
+.export-label{font-size:12px;color:#666;}
+
+@media(max-width:768px){.stats-grid{grid-template-columns:repeat(2,1fr);}.main{padding:10px;}}
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
     <div class="login-header">
@@ -141,23 +155,18 @@
       <div class="login-title">DPM — APP ID LOOKUP</div>
       <div class="login-sub">Team Portal · Authorized Access Only</div>
     </div>
-    <div class="login-error" id="lerr">❌ Galat username ya password</div>
-    <div class="login-field">
-      <label>Username</label>
-      <input type="text" id="uname" placeholder="Enter username" autocomplete="username" />
-    </div>
-    <div class="login-field">
-      <label>Password</label>
-      <input type="password" id="upass" placeholder="Enter password" />
-    </div>
+    <div class="lerr" id="lerr">❌ Invalid username or password</div>
+    <div class="lf"><label>Username</label><input type="text" id="uname" placeholder="Enter username" autocomplete="username"/></div>
+    <div class="lf"><label>Password</label><input type="password" id="upass" placeholder="Enter password"/></div>
     <button class="login-btn" onclick="doLogin()">Sign In →</button>
     <div class="login-hint">Default: admin / admin123 · Change in config.js</div>
   </div>
 </div>
 
+<!-- APP -->
 <div id="app-screen">
   <div class="topbar">
-    <div class="topbar-title">🔍 DPM — APP ID LOOKUP PORTAL</div>
+    <div class="topbar-title">🔍 DPM — APP ID & PAY ID LOOKUP PORTAL</div>
     <div class="topbar-right">
       <span id="topbar-user">Welcome, Admin</span>
       <button class="logout-btn" onclick="doLogout()">Logout</button>
@@ -165,64 +174,122 @@
   </div>
 
   <div class="main">
-    <div class="upload-card">
-      <div class="upload-card-title">📂 Step 1 — DPM Excel File Upload Karo</div>
-      <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-        <div style="font-size:28px;margin-bottom:8px">📊</div>
-        <div style="font-size:14px;font-weight:600;color:var(--green-dark)">Excel file yahan drag & drop karo ya click karo</div>
-        <div style="font-size:12px;color:#888;margin-top:4px">.xlsx / .xls · DPM MAIN SHEET upload karo</div>
-        <input type="file" id="file-input" accept=".xlsx,.xls">
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('appid',this)">🔍 App ID Search</button>
+      <button class="tab-btn" onclick="switchTab('payid',this)">💳 Pay ID Search</button>
+      <button class="tab-btn" onclick="switchTab('bulk',this)">📋 Bulk Search</button>
+      <button class="tab-btn" onclick="switchTab('files',this)">📂 Manage Files</button>
+    </div>
+
+    <!-- FILES PANEL -->
+    <div class="panel active" id="panel-files">
+      <div class="upload-card">
+        <div class="card-title">📂 Upload & Manage Excel Files</div>
+        <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <div style="font-size:24px;margin-bottom:6px">📊</div>
+          <div class="upload-zone-text">Drag & drop Excel files here or click to browse</div>
+          <div class="upload-zone-sub">.xlsx / .xls supported · Multiple files allowed</div>
+          <input type="file" id="file-input" accept=".xlsx,.xls" multiple style="display:none">
+        </div>
+        <div class="file-list" id="file-list"></div>
+        <div class="storage-bar">
+          💾 Files are saved in your browser — no need to re-upload after refresh! · <span id="storage-info">0 files stored</span>
+        </div>
       </div>
-      <div class="file-bar" id="file-bar">
-        <span>✅</span>
-        <span class="file-bar-name" id="f-name">—</span>
-        <span class="file-bar-meta" id="f-meta">—</span>
-        <button class="change-btn" onclick="document.getElementById('file-input').click()">Change File</button>
+      <div class="upload-card">
+        <div class="card-title">📊 Loaded Data Summary</div>
+        <div id="data-summary" style="font-size:13px;color:#666;padding:8px 0;">No files loaded yet. Upload Excel files above.</div>
       </div>
     </div>
 
-    <div class="lookup-card">
-      <div class="lookup-titlebar">🔍 &nbsp; APP ID LOOKUP</div>
-      <div class="lookup-subbar">App ID type karo → Enter dabao ya Search click karo → Data turant dikhega</div>
-
-      <div class="input-row">
-        <div class="input-label">ENTER APP ID :</div>
-        <input type="text" class="app-id-input" id="aid-input" placeholder="e.g. 1000975" />
-        <button class="search-btn" onclick="doSearch()">🔍 Search</button>
-        <button class="clear-btn" onclick="clearAll()">✕ Clear</button>
-        <span class="example-hint">← e.g. 1000975</span>
+    <!-- APP ID PANEL -->
+    <div class="panel" id="panel-appid">
+      <div class="lookup-card">
+        <div class="lookup-titlebar">🔍 APP ID LOOKUP</div>
+        <div class="lookup-subbar">Enter App ID → Press Enter or click Search → Data loads instantly</div>
+        <div class="single-search-row">
+          <div class="input-label">ENTER APP ID :</div>
+          <input type="text" class="app-id-input" id="appid-input" placeholder="e.g. 1000975"/>
+          <select class="search-type-sel" id="appid-mode">
+            <option value="exact">Exact Match</option>
+            <option value="contains">Contains</option>
+            <option value="startswith">Starts With</option>
+          </select>
+          <button class="search-btn" onclick="doSingleSearch('appid')">🔍 Search</button>
+          <button class="clear-btn" onclick="clearResult('appid')">✕ Clear</button>
+        </div>
+        <div class="stats-grid" id="appid-stats" style="display:none;">
+          <div class="stat-box"><div class="stat-head bg-g">Total Transactions</div><div class="stat-val vg" id="as1">0</div></div>
+          <div class="stat-box"><div class="stat-head bg-g">Total Amount (₹)</div><div class="stat-val vg" id="as2">₹0</div></div>
+          <div class="stat-box"><div class="stat-head bg-b">OCT24-DEC25 Count</div><div class="stat-val vb" id="as3">0</div></div>
+          <div class="stat-box"><div class="stat-head bg-p">JAN26-Till Date Count</div><div class="stat-val vp" id="as4">0</div></div>
+          <div class="stat-box"><div class="stat-head bg-o">OCT24 Amount</div><div class="stat-val vo" id="as5">₹0</div></div>
+          <div class="stat-box"><div class="stat-head bg-d">JAN26 Amount</div><div class="stat-val vd" id="as6">₹0</div></div>
+        </div>
+        <div class="loading" id="appid-loading"><span class="spinner"></span>Searching...</div>
+        <div class="export-row" id="appid-export">
+          <span class="export-label">Export results:</span>
+          <button class="export-btn export-csv" onclick="exportCSV('appid')">⬇ Download CSV</button>
+        </div>
+        <div id="appid-result"><div class="placeholder"><div class="ph">🔍</div><p>Upload Excel files and enter App ID to search</p></div></div>
       </div>
+    </div>
 
-      <div id="stats-grid" class="stats-grid" style="display:none;border-bottom:1px solid var(--border)">
-        <div class="stat-box">
-          <div class="stat-head bg-green">Total<br>Transactions</div>
-          <div class="stat-val val-green" id="s1">0</div>
+    <!-- PAY ID PANEL -->
+    <div class="panel" id="panel-payid">
+      <div class="lookup-card">
+        <div class="lookup-titlebar">💳 PAY ID LOOKUP</div>
+        <div class="lookup-subbar">Enter Pay ID → Press Enter or click Search → Data loads instantly</div>
+        <div class="single-search-row">
+          <div class="input-label">ENTER PAY ID :</div>
+          <input type="text" class="app-id-input" id="payid-input" placeholder="e.g. pay_Sa7ru..."/>
+          <select class="search-type-sel" id="payid-mode">
+            <option value="exact">Exact Match</option>
+            <option value="contains" selected>Contains</option>
+            <option value="startswith">Starts With</option>
+          </select>
+          <button class="search-btn" onclick="doSingleSearch('payid')">🔍 Search</button>
+          <button class="clear-btn" onclick="clearResult('payid')">✕ Clear</button>
         </div>
-        <div class="stat-box">
-          <div class="stat-head bg-green">Total Amount (₹)</div>
-          <div class="stat-val val-green" id="s2">₹0</div>
+        <div class="stats-grid" id="payid-stats" style="display:none;">
+          <div class="stat-box"><div class="stat-head bg-g">Total Transactions</div><div class="stat-val vg" id="ps1">0</div></div>
+          <div class="stat-box"><div class="stat-head bg-g">Total Amount (₹)</div><div class="stat-val vg" id="ps2">₹0</div></div>
+          <div class="stat-box"><div class="stat-head bg-b">OCT24-DEC25 Count</div><div class="stat-val vb" id="ps3">0</div></div>
+          <div class="stat-box"><div class="stat-head bg-p">JAN26-Till Date Count</div><div class="stat-val vp" id="ps4">0</div></div>
+          <div class="stat-box"><div class="stat-head bg-o">OCT24 Amount</div><div class="stat-val vo" id="ps5">₹0</div></div>
+          <div class="stat-box"><div class="stat-head bg-d">JAN26 Amount</div><div class="stat-val vd" id="ps6">₹0</div></div>
         </div>
-        <div class="stat-box">
-          <div class="stat-head bg-blue">OCT24-DEC25<br>Count</div>
-          <div class="stat-val val-blue" id="s3">0</div>
+        <div class="loading" id="payid-loading"><span class="spinner"></span>Searching...</div>
+        <div class="export-row" id="payid-export">
+          <span class="export-label">Export results:</span>
+          <button class="export-btn export-csv" onclick="exportCSV('payid')">⬇ Download CSV</button>
         </div>
-        <div class="stat-box">
-          <div class="stat-head bg-pink">JAN26-Till<br>Date Count</div>
-          <div class="stat-val val-pink" id="s4">0</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-head bg-orange">OCT24<br>Amount</div>
-          <div class="stat-val val-orange" id="s5">₹0</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-head bg-dark">JAN26<br>Amount</div>
-          <div class="stat-val val-dark" id="s6">₹0</div>
-        </div>
+        <div id="payid-result"><div class="placeholder"><div class="ph">💳</div><p>Upload Excel files and enter Pay ID to search</p></div></div>
       </div>
+    </div>
 
-      <div class="loading" id="loading"><span class="spinner"></span>Data search ho raha hai...</div>
-      <div id="result-area">
-        <div class="placeholder"><div class="ph">📋</div><p>Excel upload karo aur App ID daalo — data yahan dikhega</p></div>
+    <!-- BULK PANEL -->
+    <div class="panel" id="panel-bulk">
+      <div class="lookup-card">
+        <div class="lookup-titlebar">📋 BULK SEARCH</div>
+        <div class="lookup-subbar">Enter multiple IDs (one per line) → Search all at once</div>
+        <div class="search-mode-row">
+          <button class="mode-btn active" id="bulk-mode-appid" onclick="setBulkMode('appid')">App ID Search</button>
+          <button class="mode-btn" id="bulk-mode-payid" onclick="setBulkMode('payid')">Pay ID Search</button>
+        </div>
+        <div class="bulk-section">
+          <div class="bulk-label" id="bulk-label">Enter App IDs (one per line):</div>
+          <textarea class="bulk-textarea" id="bulk-input" placeholder="1208596&#10;1629979&#10;1331126&#10;..."></textarea>
+          <div class="bulk-hint">💡 Enter one ID per line. Maximum 500 IDs at once.</div>
+          <button class="bulk-search-btn" onclick="doBulkSearch()">🔍 Search All IDs</button>
+        </div>
+        <div class="loading" id="bulk-loading"><span class="spinner"></span>Processing bulk search...</div>
+        <div class="export-row" id="bulk-export">
+          <span class="export-label">Export results:</span>
+          <button class="export-btn export-csv" onclick="exportCSV('bulk')">⬇ Download CSV</button>
+        </div>
+        <div id="bulk-result"><div class="placeholder"><div class="ph">📋</div><p>Enter multiple IDs above to search in bulk</p></div></div>
       </div>
     </div>
   </div>
@@ -230,7 +297,7 @@
 
 <script src="config.js"></script>
 <script>
-// AUTH
+// ── AUTH ──
 function doLogin() {
   const u = document.getElementById('uname').value.trim();
   const p = document.getElementById('upass').value;
@@ -243,6 +310,7 @@ function doLogin() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-screen').style.display = 'block';
     document.getElementById('topbar-user').textContent = 'Welcome, ' + match.name;
+    initApp();
   } else {
     err.style.display = 'block';
     document.getElementById('upass').value = '';
@@ -253,138 +321,363 @@ function doLogout() { sessionStorage.clear(); location.reload(); }
 if (sessionStorage.getItem('li')) {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
-  document.getElementById('topbar-user').textContent = 'Welcome, ' + (sessionStorage.getItem('un') || 'User');
+  document.getElementById('topbar-user').textContent = 'Welcome, ' + (sessionStorage.getItem('un')||'User');
+  initApp();
 }
 
-// FILE
-let wb = null, sd = {};
+// ── TABS ──
+function switchTab(name, el) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+// ── DATA STORE ──
+let allSheets = []; // [{fileName, sheetName, label, rows:[]}]
+const DB_NAME = 'DPMFiles', DB_VER = 1, STORE = 'files';
+let db = null;
+
+function initApp() {
+  openDB().then(() => loadStoredFiles()).then(() => updateUI());
+}
+
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(STORE, {keyPath:'id', autoIncrement:true});
+    req.onsuccess = e => { db = e.target.result; res(); };
+    req.onerror = () => rej();
+  });
+}
+
+function saveFileToDB(name, data) {
+  return new Promise((res) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).add({name, data, ts: Date.now()});
+    tx.oncomplete = res;
+  });
+}
+
+function getAllFromDB() {
+  return new Promise((res) => {
+    const tx = db.transaction(STORE, 'readonly');
+    const req = tx.objectStore(STORE).getAll();
+    req.onsuccess = () => res(req.result||[]);
+  });
+}
+
+function deleteFromDB(id) {
+  return new Promise((res) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).delete(id);
+    tx.oncomplete = res;
+  });
+}
+
+function loadStoredFiles() {
+  return getAllFromDB().then(files => {
+    allSheets = [];
+    files.forEach(f => parseFileData(f.name, f.data, f.id));
+    updateUI();
+  });
+}
+
+function parseFileData(name, data, dbId) {
+  try {
+    const wb = XLSX.read(data, {type:'binary', cellDates:true, raw:false});
+    wb.SheetNames.forEach(sn => {
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], {defval:'', raw:false});
+      if (rows.length > 0) allSheets.push({fileName:name, sheetName:sn, dbId, rows});
+    });
+  } catch(e) { console.error('Parse error:', e); }
+}
+
+function updateUI() {
+  updateFileList();
+  updateDataSummary();
+}
+
+// ── FILE UPLOAD ──
 const dz = document.getElementById('drop-zone');
 const fi = document.getElementById('file-input');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
-fi.addEventListener('change', e => { if(e.target.files[0]) loadFile(e.target.files[0]); });
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+fi.addEventListener('change', e => { if(e.target.files.length) handleFiles(e.target.files); fi.value=''; });
 
-function loadFile(file) {
-  document.getElementById('loading').classList.add('show');
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    wb = XLSX.read(e.target.result, {type:'binary', cellDates:true, raw:false});
-    sd = {};
-    wb.SheetNames.forEach(n => { sd[n] = XLSX.utils.sheet_to_json(wb.Sheets[n], {defval:'', raw:false}); });
-    const total = Object.values(sd).reduce((a,b) => a+b.length, 0);
-    document.getElementById('f-name').textContent = file.name;
-    document.getElementById('f-meta').textContent = total.toLocaleString() + ' total rows · ' + wb.SheetNames.length + ' sheets';
-    document.getElementById('file-bar').classList.add('show');
-    document.getElementById('loading').classList.remove('show');
-    document.getElementById('result-area').innerHTML = '<div class="placeholder"><div class="ph">✅</div><p>File loaded! Ab App ID daalo aur Search karo</p></div>';
-  };
-  reader.readAsBinaryString(file);
+function handleFiles(files) {
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      const data = e.target.result;
+      await saveFileToDB(file.name, data);
+      parseFileData(file.name, data, null);
+      // reload to get proper IDs
+      await loadStoredFiles();
+    };
+    reader.readAsBinaryString(file);
+  });
 }
 
-// SEARCH
-document.getElementById('aid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
-
-function findAppIdKey(row) {
-  return Object.keys(row).find(k => /app.?id/i.test(k.replace(/\n.*/,'')));
+function updateFileList() {
+  getAllFromDB().then(files => {
+    const list = document.getElementById('file-list');
+    const info = document.getElementById('storage-info');
+    info.textContent = files.length + ' file(s) stored in browser';
+    if (!files.length) { list.innerHTML = ''; return; }
+    list.innerHTML = files.map(f => {
+      const sheets = allSheets.filter(s => s.dbId === f.id);
+      const totalRows = sheets.reduce((a,s) => a+s.rows.length, 0);
+      return `<div class="file-item">
+        <span style="font-size:16px">📊</span>
+        <div style="flex:1">
+          <div class="file-item-name">${esc(f.name)}</div>
+          <div class="file-item-meta">${totalRows.toLocaleString()} rows · ${sheets.length} sheet(s)</div>
+        </div>
+        <button class="file-item-remove" onclick="removeFile(${f.id})">✕ Remove</button>
+      </div>`;
+    }).join('');
+  });
 }
-function findAmtKey(row) {
+
+function updateDataSummary() {
+  const el = document.getElementById('data-summary');
+  if (!allSheets.length) { el.textContent = 'No files loaded yet. Upload Excel files above.'; return; }
+  const totalRows = allSheets.reduce((a,s) => a+s.rows.length, 0);
+  el.innerHTML = allSheets.map(s =>
+    `<div style="padding:4px 0;border-bottom:1px solid #e8e8e8;font-size:12px;">
+      📊 <b>${esc(s.fileName)}</b> — Sheet: <b>${esc(s.sheetName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span>
+    </div>`
+  ).join('') + `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);">Total: ${totalRows.toLocaleString()} rows across ${allSheets.length} sheet(s)</div>`;
+}
+
+async function removeFile(id) {
+  await deleteFromDB(id);
+  await loadStoredFiles();
+}
+
+// ── SEARCH ──
+let lastResults = {appid:[], payid:[], bulk:[]};
+
+function findKey(row, type) {
   const keys = Object.keys(row);
-  // Prefer exact "Amount" column, avoid "EMI Due Amount", "Diff"
-  return keys.find(k => /^amount/i.test(k.replace(/\n.*/,'').trim())) ||
-         keys.find(k => /amount/i.test(k) && !/due|diff|emi due/i.test(k));
+  if (type === 'appid') return keys.find(k => /app.?id/i.test(k.replace(/\n.*/,'')));
+  if (type === 'payid') return keys.find(k => /pay.?id/i.test(k.replace(/\n.*/,'')));
+  if (type === 'amt') {
+    return keys.find(k => /^amount/i.test(k.replace(/\n.*/,'').trim())) ||
+           keys.find(k => /amount/i.test(k) && !/due|diff|emi due/i.test(k));
+  }
+  return null;
 }
-function cleanNum(v) { return parseFloat(String(v).replace(/[^0-9.-]/g,'')) || 0; }
+function cleanNum(v) { return parseFloat(String(v).replace(/[^0-9.-]/g,''))||0; }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function friendly(k) { return k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim(); }
 
-function doSearch() {
-  const query = document.getElementById('aid-input').value.trim();
-  if (!query) return;
-  if (!wb) { alert('Pehle Excel file upload karo!'); return; }
-  document.getElementById('loading').classList.add('show');
-  document.getElementById('result-area').innerHTML = '';
-  document.getElementById('stats-grid').style.display = 'none';
+function doSingleSearch(type) {
+  const input = document.getElementById(type+'-input').value.trim();
+  const mode = document.getElementById(type+'-mode').value;
+  if (!input) return;
+  if (!allSheets.length) { alert('Please upload Excel files first!'); return; }
+  document.getElementById(type+'-loading').classList.add('show');
+  document.getElementById(type+'-result').innerHTML = '';
+  document.getElementById(type+'-stats').style.display = 'none';
+  document.getElementById(type+'-export').classList.remove('show');
   setTimeout(() => {
-    const names = wb.SheetNames;
-    const sheet1 = names[0], sheet2 = names[1] || null;
-    const r1 = (sd[sheet1]||[]).filter(r => { const k=findAppIdKey(r); return k && String(r[k]).trim()===query; });
-    const r2 = sheet2 ? (sd[sheet2]||[]).filter(r => { const k=findAppIdKey(r); return k && String(r[k]).trim()===query; }) : [];
-    document.getElementById('loading').classList.remove('show');
-    const total = r1.length + r2.length;
-    if (!total) {
-      document.getElementById('result-area').innerHTML = `<div class="no-result"><div class="no-icon">🔍</div><p>Koi record nahi mila App ID <b>${esc(query)}</b> ke liye</p></div>`;
-      return;
-    }
-    // amounts
-    const amt1 = r1.reduce((s,r) => { const k=findAmtKey(r); return s + (k?cleanNum(r[k]):0); }, 0);
-    const amt2 = r2.reduce((s,r) => { const k=findAmtKey(r); return s + (k?cleanNum(r[k]):0); }, 0);
-    const totalAmt = amt1 + amt2;
-    // stats
-    document.getElementById('s1').textContent = total;
-    document.getElementById('s2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
-    document.getElementById('s3').textContent = r1.length;
-    document.getElementById('s4').textContent = r2.length;
-    document.getElementById('s5').textContent = '₹'+amt1.toLocaleString('en-IN');
-    document.getElementById('s6').textContent = '₹'+amt2.toLocaleString('en-IN');
-    document.getElementById('stats-grid').style.display = 'grid';
-    renderTable(r1, r2, sheet1, sheet2, totalAmt);
+    const matches = searchAllSheets(type, input, mode);
+    lastResults[type] = matches;
+    document.getElementById(type+'-loading').classList.remove('show');
+    renderStatsAndTable(type, matches);
   }, 100);
 }
 
-function renderTable(r1, r2, n1, n2, totalAmt) {
-  // Get headers from first available row (prefer sheet with more columns)
-  const sample = (r2[0] && Object.keys(r2[0]).length > (r1[0]?Object.keys(r1[0]).length:0)) ? r2[0] : (r1[0]||{});
-  const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
-
-  const thead = '<tr><th>Sr</th><th>Sheet</th>' + cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('') + '</tr>';
-
-  let tbody = ''; let sr = 1;
-
-  const makeRows = (rows, secLabel, secClass, sheetLabel) => {
-    if (!rows.length) return '';
-    let html = `<tr class="${secClass}"><td colspan="${cols.length+2}">${esc(secLabel)}</td></tr>`;
-    rows.forEach(row => {
-      const cells = cols.map(k => {
-        // Try to find matching key in this row
-        const val = row[k] !== undefined ? row[k] :
-          (Object.entries(row).find(([rk]) => friendly(rk).toLowerCase() === friendly(k).toLowerCase())||['',])[1] || '';
-        const kl = k.toLowerCase();
-        if (/^amount/i.test(friendly(k)) || (/amount/i.test(kl) && !/due|diff/i.test(kl))) {
-          const n = cleanNum(val);
-          return `<td class="td-amt">₹${n.toLocaleString('en-IN')}</td>`;
-        }
-        if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(val))}</td>`;
-        return `<td>${esc(String(val))}</td>`;
-      }).join('');
-      html += `<tr><td class="td-sr">${sr++}</td><td class="td-sheet">${esc(sheetLabel)}</td>${cells}</tr>`;
+function searchAllSheets(type, query, mode) {
+  const q = query.toLowerCase();
+  const results = [];
+  allSheets.forEach(sheet => {
+    const matches = sheet.rows.filter(row => {
+      const k = findKey(row, type);
+      if (!k) return false;
+      const v = String(row[k]).toLowerCase();
+      if (mode === 'exact') return v === q;
+      if (mode === 'startswith') return v.startsWith(q);
+      return v.includes(q);
     });
-    return html;
-  };
+    if (matches.length) results.push({...sheet, matches});
+  });
+  return results;
+}
 
-  tbody += makeRows(r1, n1, 'sec-row', n1.replace('DPM DATA ',''));
-  if (n2) tbody += makeRows(r2, n2, 'sec-row2', n2.replace('DPM DATA ',''));
+function renderStatsAndTable(type, results) {
+  const prefix = type === 'appid' ? 'as' : 'ps';
+  const statsEl = document.getElementById(type+'-stats');
+  const resultEl = document.getElementById(type+'-result');
+  const exportEl = document.getElementById(type+'-export');
 
-  // Grand total row
-  const totalCells = cols.map(k => {
-    if (/^amount/i.test(friendly(k)) || (/amount/i.test(k) && !/due|diff/i.test(k))) {
-      return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`;
-    }
+  const allMatches = results.flatMap(r => r.matches);
+  if (!allMatches.length) {
+    resultEl.innerHTML = '<div class="no-result"><p>No records found for this ID</p></div>';
+    statsEl.style.display = 'none';
+    return;
+  }
+
+  // Split by sheet type for stats
+  const sheet1Matches = results.filter(r => /jan.?24|oct.?24|dec.?25/i.test(r.sheetName)).flatMap(r=>r.matches);
+  const sheet2Matches = results.filter(r => /jan.?26/i.test(r.sheetName)).flatMap(r=>r.matches);
+  const amt1 = sheet1Matches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
+  const amt2 = sheet2Matches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
+  const totalAmt = allMatches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
+
+  if (type === 'appid') {
+    document.getElementById('as1').textContent = allMatches.length;
+    document.getElementById('as2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+    document.getElementById('as3').textContent = sheet1Matches.length;
+    document.getElementById('as4').textContent = sheet2Matches.length;
+    document.getElementById('as5').textContent = '₹'+amt1.toLocaleString('en-IN');
+    document.getElementById('as6').textContent = '₹'+amt2.toLocaleString('en-IN');
+  } else {
+    document.getElementById('ps1').textContent = allMatches.length;
+    document.getElementById('ps2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+    document.getElementById('ps3').textContent = sheet1Matches.length;
+    document.getElementById('ps4').textContent = sheet2Matches.length;
+    document.getElementById('ps5').textContent = '₹'+amt1.toLocaleString('en-IN');
+    document.getElementById('ps6').textContent = '₹'+amt2.toLocaleString('en-IN');
+  }
+  statsEl.style.display = 'grid';
+  exportEl.classList.add('show');
+  resultEl.innerHTML = buildTable(results, totalAmt);
+}
+
+function buildTable(results, totalAmt) {
+  const sample = results[0]?.matches[0] || {};
+  const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
+  const thead = '<tr><th>Sr</th><th>File</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
+  let tbody = ''; let sr = 1;
+  results.forEach(sheet => {
+    tbody += `<tr class="sec-row"><td colspan="${cols.length+3}">${esc(sheet.fileName)} — ${esc(sheet.sheetName)}</td></tr>`;
+    sheet.matches.forEach(row => {
+      const cells = cols.map(k => {
+        const v = row[k] !== undefined ? row[k] : '';
+        const kl = k.toLowerCase();
+        if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
+        if (/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
+        if (/^amount/i.test(friendly(k)) || (/amount/i.test(kl) && !/due|diff/i.test(kl)))
+          return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
+        return `<td>${esc(String(v))}</td>`;
+      }).join('');
+      tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-sheet">${esc(sheet.fileName.replace('.xlsx','').replace('.xls',''))}</td><td class="td-sheet">${esc(sheet.sheetName)}</td>${cells}</tr>`;
+    });
+  });
+  tbody += `<tr class="total-row"><td colspan="3" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{
+    if (/^amount/i.test(friendly(k))||(/amount/i.test(k)&&!/due|diff/i.test(k))) return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`;
     return '<td></td>';
-  }).join('');
-  tbody += `<tr class="total-row"><td colspan="2" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${totalCells}</tr>`;
-
-  document.getElementById('result-area').innerHTML = `
-    <div class="table-wrap">
-      <table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table>
-    </div>`;
+  }).join('')}</tr>`;
+  return `<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
 }
 
-function clearAll() {
-  document.getElementById('aid-input').value = '';
-  document.getElementById('stats-grid').style.display = 'none';
-  document.getElementById('result-area').innerHTML = '<div class="placeholder"><div class="ph">📋</div><p>App ID daalo aur Search karo</p></div>';
+// ── BULK ──
+let bulkMode = 'appid';
+function setBulkMode(mode) {
+  bulkMode = mode;
+  document.getElementById('bulk-mode-appid').classList.toggle('active', mode==='appid');
+  document.getElementById('bulk-mode-payid').classList.toggle('active', mode==='payid');
+  document.getElementById('bulk-label').textContent = mode==='appid' ? 'Enter App IDs (one per line):' : 'Enter Pay IDs (one per line):';
+  document.getElementById('bulk-input').placeholder = mode==='appid' ? '1208596\n1629979\n1331126\n...' : 'pay_Sa7ru...\npay_Sadj...\n...';
 }
+
+function doBulkSearch() {
+  const raw = document.getElementById('bulk-input').value.trim();
+  if (!raw) return;
+  if (!allSheets.length) { alert('Please upload Excel files first!'); return; }
+  const ids = raw.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,500);
+  if (!ids.length) return;
+  document.getElementById('bulk-loading').classList.add('show');
+  document.getElementById('bulk-result').innerHTML = '';
+  document.getElementById('bulk-export').classList.remove('show');
+  setTimeout(() => {
+    const allResults = [];
+    ids.forEach(id => {
+      const results = searchAllSheets(bulkMode, id, 'exact');
+      if (results.length) allResults.push({id, results});
+    });
+    lastResults.bulk = allResults;
+    document.getElementById('bulk-loading').classList.remove('show');
+    renderBulkResults(allResults, ids);
+  }, 150);
+}
+
+function renderBulkResults(allResults, ids) {
+  const resultEl = document.getElementById('bulk-result');
+  const exportEl = document.getElementById('bulk-export');
+  if (!allResults.length) {
+    resultEl.innerHTML = '<div class="no-result"><p>No records found for any of the entered IDs</p></div>';
+    return;
+  }
+  const found = allResults.length;
+  const notFound = ids.filter(id => !allResults.find(r => r.id === id));
+  let html = `<div style="padding:10px 16px;background:#e8f5e9;border-bottom:1px solid var(--border);font-size:13px;">
+    ✅ Found: <b style="color:var(--green-dark)">${found}</b> IDs · 
+    ❌ Not Found: <b style="color:var(--red)">${notFound.length}</b> IDs
+    ${notFound.length ? ' · <span style="color:#888">'+notFound.map(esc).join(', ')+'</span>' : ''}
+  </div>`;
+  const sample = allResults[0]?.results[0]?.matches[0] || {};
+  const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
+  const thead = '<tr><th>Sr</th><th>Searched ID</th><th>File</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
+  let tbody = ''; let sr = 1;
+  allResults.forEach(({id, results}) => {
+    tbody += `<tr class="bulk-sep-row"><td colspan="${cols.length+4}">🔍 ID: ${esc(id)} — ${results.flatMap(r=>r.matches).length} record(s) found</td></tr>`;
+    results.forEach(sheet => {
+      sheet.matches.forEach(row => {
+        const cells = cols.map(k => {
+          const v = row[k] !== undefined ? row[k] : '';
+          const kl = k.toLowerCase();
+          if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
+          if (/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
+          if (/^amount/i.test(friendly(k))||(/amount/i.test(kl)&&!/due|diff/i.test(kl)))
+            return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
+          return `<td>${esc(String(v))}</td>`;
+        }).join('');
+        tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-appid">${esc(id)}</td><td class="td-sheet">${esc(sheet.fileName.replace('.xlsx',''))}</td><td class="td-sheet">${esc(sheet.sheetName)}</td>${cells}</tr>`;
+      });
+    });
+  });
+  html += `<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+  resultEl.innerHTML = html;
+  exportEl.classList.add('show');
+}
+
+// ── CLEAR ──
+function clearResult(type) {
+  document.getElementById(type+'-input').value = '';
+  document.getElementById(type+'-stats').style.display = 'none';
+  document.getElementById(type+'-export').classList.remove('show');
+  document.getElementById(type+'-result').innerHTML = `<div class="placeholder"><div class="ph">🔍</div><p>Enter an ID to search</p></div>`;
+  lastResults[type] = [];
+}
+
+// ── EXPORT CSV ──
+function exportCSV(type) {
+  let rows = [];
+  if (type === 'bulk') {
+    lastResults.bulk.forEach(({id, results}) => {
+      results.forEach(sheet => sheet.matches.forEach(row => rows.push({SearchedID:id, File:sheet.fileName, Sheet:sheet.sheetName, ...row})));
+    });
+  } else {
+    lastResults[type].forEach(sheet => sheet.matches.forEach(row => rows.push({File:sheet.fileName, Sheet:sheet.sheetName, ...row})));
+  }
+  if (!rows.length) return;
+  const cols = Object.keys(rows[0]);
+  const csv = [cols.join(','), ...rows.map(r => cols.map(c => '"'+(String(r[c]||'')).replace(/"/g,'""')+'"').join(','))].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dpm-export-'+type+'-'+Date.now()+'.csv';
+  a.click();
+}
+
+// Enter key
+document.getElementById('appid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('appid'); });
+document.getElementById('payid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('payid'); });
 </script>
 </body>
 </html>
