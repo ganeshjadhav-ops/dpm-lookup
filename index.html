@@ -190,8 +190,8 @@ table.dt tbody td:last-child{border-right:none;}
         <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
           <div style="font-size:24px;margin-bottom:6px">📊</div>
           <div class="upload-zone-text">Drag & drop Excel files here or click to browse</div>
-          <div class="upload-zone-sub">.xlsx / .xls supported · Multiple files allowed</div>
-          <input type="file" id="file-input" accept=".xlsx,.xls" multiple style="display:none">
+          <div class="upload-zone-sub">.xlsx / .xls / .xlsb / .csv supported · Multiple files allowed</div>
+          <input type="file" id="file-input" accept=".xlsx,.xls,.xlsb,.csv" multiple style="display:none">
         </div>
         <div class="file-list" id="file-list"></div>
         <div class="storage-bar">
@@ -420,12 +420,19 @@ function loadStoredFiles() {
 
 function parseFileData(name, data, dbId) {
   try {
-    const wb = XLSX.read(data, {type:'binary', cellDates:true, raw:false});
+    const ext = name.split('.').pop().toLowerCase();
+    let wb;
+    if (ext === 'csv') {
+      wb = XLSX.read(data, {type:'binary', raw:false});
+    } else {
+      // xlsx, xls, xlsb all use same read
+      wb = XLSX.read(data, {type:'binary', cellDates:true, raw:false});
+    }
     wb.SheetNames.forEach(sn => {
       const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], {defval:'', raw:false});
       if (rows.length > 0) allSheets.push({fileName:name, sheetName:sn, dbId, rows});
     });
-  } catch(e) { console.error('Parse error:', e); }
+  } catch(e) { console.error('Parse error:', e); alert('File parse error: ' + name + '\n' + e.message); }
 }
 
 function updateUI() {
