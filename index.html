@@ -374,7 +374,9 @@ const DB_NAME = 'DPMFiles', DB_VER = 1, STORE = 'files';
 let db = null;
 
 function initApp() {
-  openDB().then(() => loadStoredFiles()).then(() => updateUI());
+  openDB()
+    .then(() => loadStoredFiles())
+    .catch(e => { console.error('DB init error:', e); updateUI(); });
 }
 
 function openDB() {
@@ -459,26 +461,23 @@ fi.addEventListener('change', e => { if(e.target.files.length) handleFiles(e.tar
 
 function handleFiles(files) {
   Array.from(files).forEach(file => {
-    // Show loading message
     document.getElementById('file-list').innerHTML = `
       <div style="padding:12px;background:#e3f2fd;border-radius:6px;font-size:13px;color:var(--blue);">
         <span class="spinner"></span> Loading <b>${esc(file.name)}</b> (${(file.size/1024/1024).toFixed(1)} MB) — Please wait...
       </div>`;
-    
     const reader = new FileReader();
     reader.onload = async function(e) {
       try {
         const data = e.target.result;
-        // Save to DB first
+        // Make sure DB is open before saving
+        if (!db) await openDB();
         await saveFileToDB(file.name, data);
-        // Then parse
-        parseFileData(file.name, data, null);
-        // Reload to get proper IDs
         await loadStoredFiles();
       } catch(err) {
+        console.error(err);
         document.getElementById('file-list').innerHTML = `
           <div style="padding:12px;background:#ffebee;border-radius:6px;font-size:13px;color:var(--red);">
-            ❌ Error loading file: ${err.message}. Try a smaller file.
+            ❌ Error: ${esc(err.message)}
           </div>`;
       }
     };
