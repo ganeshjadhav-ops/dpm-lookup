@@ -413,7 +413,16 @@ function deleteFromDB(id) {
 function loadStoredFiles() {
   return getAllFromDB().then(files => {
     allSheets = [];
-    files.forEach(f => parseFileData(f.name, f.data, f.id));
+    files.forEach(f => {
+      try {
+        parseFileData(f.name, f.data, f.id);
+      } catch(e) {
+        console.error('Error loading file from DB:', f.name, e);
+      }
+    });
+    updateUI();
+  }).catch(e => {
+    console.error('DB load error:', e);
     updateUI();
   });
 }
@@ -450,13 +459,34 @@ fi.addEventListener('change', e => { if(e.target.files.length) handleFiles(e.tar
 
 function handleFiles(files) {
   Array.from(files).forEach(file => {
+    // Show loading message
+    document.getElementById('file-list').innerHTML = `
+      <div style="padding:12px;background:#e3f2fd;border-radius:6px;font-size:13px;color:var(--blue);">
+        <span class="spinner"></span> Loading <b>${esc(file.name)}</b> (${(file.size/1024/1024).toFixed(1)} MB) — Please wait...
+      </div>`;
+    
     const reader = new FileReader();
     reader.onload = async function(e) {
-      const data = e.target.result;
-      await saveFileToDB(file.name, data);
-      parseFileData(file.name, data, null);
-      // reload to get proper IDs
-      await loadStoredFiles();
+      try {
+        const data = e.target.result;
+        // Save to DB first
+        await saveFileToDB(file.name, data);
+        // Then parse
+        parseFileData(file.name, data, null);
+        // Reload to get proper IDs
+        await loadStoredFiles();
+      } catch(err) {
+        document.getElementById('file-list').innerHTML = `
+          <div style="padding:12px;background:#ffebee;border-radius:6px;font-size:13px;color:var(--red);">
+            ❌ Error loading file: ${err.message}. Try a smaller file.
+          </div>`;
+      }
+    };
+    reader.onerror = () => {
+      document.getElementById('file-list').innerHTML = `
+        <div style="padding:12px;background:#ffebee;border-radius:6px;font-size:13px;color:var(--red);">
+          ❌ Could not read file. Please try again.
+        </div>`;
     };
     reader.readAsBinaryString(file);
   });
