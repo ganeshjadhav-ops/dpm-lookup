@@ -345,13 +345,18 @@ table.dt tbody td:last-child{border-right:none;}
 
 <script src="config.js"></script>
 <script>
-// GS vars declared first to avoid initialization errors
+// ALL VARIABLES FIRST - prevents initialization errors
 var GS_DEFAULTS=[
   {id:'gs1',name:'DPM DATA JAN 24 TO DEC 25',url:'https://docs.google.com/spreadsheets/d/1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E',sheetName:'DPM DATA JAN 24 TO DEC 25'},
   {id:'gs2',name:'DPM DATA JAN 26 TO TILL DATE',url:'https://docs.google.com/spreadsheets/d/1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE',sheetName:'DPM DATA JAN 26 TO TILL DATE'},
   {id:'gs3',name:'New Sheet Data',url:'https://docs.google.com/spreadsheets/d/16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY',sheetName:'Sheet1'}
 ];
 var gSheets=[];
+var allSheets=[];
+var DB_NAME='DPMFiles', DB_VER=1, STORE='files';
+var db=null;
+var lastResults={appid:[],payid:[],utrid:[],bulk:[]};
+var bulkMode='appid';
 // ── AUTH ──
 function doLogin() {
   const u = document.getElementById('uname').value.trim();
@@ -389,9 +394,6 @@ function switchTab(name, el) {
 }
 
 // ── DATA STORE ──
-let allSheets = []; // [{fileName, sheetName, label, rows:[]}]
-const DB_NAME = 'DPMFiles', DB_VER = 1, STORE = 'files';
-let db = null;
 
 function initApp() {
   // Init Google Sheets
@@ -569,7 +571,6 @@ async function removeFile(id) {
 }
 
 // ── SEARCH ──
-let lastResults = {appid:[], payid:[], utrid:[], bulk:[]};
 
 function findKey(row, type) {
   const keys = Object.keys(row);
@@ -693,7 +694,6 @@ function buildTable(results, totalAmt) {
 }
 
 // ── BULK ──
-let bulkMode = 'appid';
 function setBulkMode(mode) {
   bulkMode = mode;
   document.getElementById('bulk-mode-appid').classList.toggle('active', mode==='appid');
