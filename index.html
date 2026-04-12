@@ -185,23 +185,23 @@ table.dt tbody td:last-child{border-right:none;}
 
     <!-- FILES PANEL -->
     <div class="panel active" id="panel-files">
-      <!-- GOOGLE SHEETS -->
+      <!-- GOOGLE SHEETS AUTO FETCH -->
       <div class="upload-card">
         <div class="card-title">🔗 Google Sheets — Auto Data Fetch</div>
-        <p style="font-size:13px;color:#666;margin-bottom:12px;">Data auto-fetches from Google Sheets on load. No manual upload needed!</p>
-        <div id="gs-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+        <p style="font-size:13px;color:#666;margin-bottom:12px;">Data auto-fetches from Google Sheets on page load. Add new links anytime.</p>
+        <div id="gs-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--border);">
-          <input type="text" id="gs-url" placeholder="Paste Google Sheet URL..." style="flex:1;min-width:200px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;"/>
-          <input type="text" id="gs-name" placeholder="Sheet tab name (e.g. DPM DATA JAN 26 TO TILL DATE)" style="width:300px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;"/>
-          <button onclick="addGSheet()" style="padding:9px 16px;background:var(--green-dark);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">+ Add</button>
+          <input type="text" id="gs-url" placeholder="Paste Google Sheet URL..." style="flex:1;min-width:200px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;font-family:'Inter',sans-serif;"/>
+          <input type="text" id="gs-name" placeholder="Sheet tab name (e.g. DPM DATA JAN 26 TO TILL DATE)" style="width:300px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;font-family:'Inter',sans-serif;"/>
+          <button onclick="addGSheet()" style="padding:9px 16px;background:var(--green-dark);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">+ Add</button>
         </div>
-        <button onclick="fetchAllGSheets()" id="gs-btn" style="width:100%;margin-top:10px;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">🔄 Fetch / Refresh All Google Sheet Data</button>
-        <div id="gs-status" style="display:none;margin-top:8px;padding:10px;border-radius:6px;font-size:13px;"></div>
+        <button id="gs-btn" onclick="fetchAllGSheets()" style="width:100%;margin-top:10px;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">🔄 Fetch / Refresh All Google Sheet Data</button>
+        <div id="gs-status" style="display:none;margin-top:8px;padding:10px 14px;border-radius:6px;font-size:13px;"></div>
       </div>
 
       <!-- MANUAL UPLOAD -->
       <div class="upload-card">
-        <div class="card-title">📂 Upload & Manage Excel Files</div>
+        <div class="card-title">📂 Manual Excel Upload (Optional)</div>
         <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
           <div style="font-size:24px;margin-bottom:6px">📊</div>
           <div class="upload-zone-text">Drag & drop Excel files here or click to browse</div>
@@ -347,6 +347,13 @@ table.dt tbody td:last-child{border-right:none;}
 
 <script src="config.js"></script>
 <script>
+// ── GOOGLE SHEETS CONFIG ──
+var GS_DEFAULTS = [
+  {id:'gs1',name:'DPM DATA JAN 24 TO DEC 25',url:'https://docs.google.com/spreadsheets/d/1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E',sheetName:'DPM DATA JAN 24 TO DEC 25'},
+  {id:'gs2',name:'DPM DATA JAN 26 TO TILL DATE',url:'https://docs.google.com/spreadsheets/d/1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE',sheetName:'DPM DATA JAN 26 TO TILL DATE'},
+  {id:'gs3',name:'New Sheet Data',url:'https://docs.google.com/spreadsheets/d/16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY',sheetName:'Sheet1'}
+];
+var gSheets = [];
 // ── AUTH ──
 function doLogin() {
   const u = document.getElementById('uname').value.trim();
@@ -389,10 +396,14 @@ const DB_NAME = 'DPMFiles', DB_VER = 1, STORE = 'files';
 let db = null;
 
 function initApp() {
+  // Declare gSheets before openDB
+  var saved = localStorage.getItem('dpm_gs');
+  gSheets = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(GS_DEFAULTS));
+  renderGSList();
   openDB()
     .then(() => loadStoredFiles())
     .catch(e => { console.error('DB init error:', e); updateUI(); });
-  setTimeout(function(){ initGSheets(); }, 100);
+  fetchAllGSheets();
 }
 
 function openDB() {
@@ -547,10 +558,10 @@ function updateDataSummary() {
   const totalRows = allSheets.reduce((a,s) => a+s.rows.length, 0);
   el.innerHTML = allSheets.map(s =>
     `<div style="padding:4px 0;border-bottom:1px solid #e8e8e8;font-size:12px;">
-      ${s.gsId?'🔗':'📊'} <b>${esc(s.fileName)}</b> — Sheet: <b>${esc(s.sheetName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span>
-      <span style="color:#999;font-size:10px;margin-left:6px;">${s.gsId?'(Google Sheet)':'(Excel Upload)'}</span>
+      ${s.gsId?'🔗':'📊'} <b>${esc(s.fileName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span>
+      <span style="color:#999;font-size:10px;margin-left:4px;">${s.gsId?'(Google Sheet)':'(Excel Upload)'}</span>
     </div>`
-  ).join('') + `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);">Total: ${totalRows.toLocaleString()} rows across ${allSheets.length} sheet(s)</div>`;
+  ).join('') + `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);">Total: ${totalRows.toLocaleString()} rows</div>`;
 }
 
 async function removeFile(id) {
@@ -567,15 +578,12 @@ function findKey(row, type) {
   if (type === 'appid') return keys.find(k => /app.?id/i.test(ck(k)));
   if (type === 'payid') return keys.find(k => /^pay.?id/i.test(ck(k)));
   if (type === 'utrid') return keys.find(k => /^utr/i.test(ck(k)));
-  if (type === 'amt') {
-    return keys.find(k => ck(k) === 'amount') ||
-           keys.find(k => /^amount/i.test(ck(k)) && !/due|diff|emi/i.test(ck(k)));
-  }
+  if (type === 'amt') return keys.find(k => ck(k)==='amount') || keys.find(k => /^amount/i.test(ck(k)) && !/due|diff|emi/i.test(ck(k)));
   return null;
 }
-function cleanNum(v) { return parseFloat(String(v).replace(/[^0-9.-]/g,''))||0; }
+function cleanNum(v) { return parseFloat(String(v).replace(/,/g,'').replace(/[^0-9.-]/g,''))||0; }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function friendly(k) { return k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim(); }
+function friendly(k) { return k.replace(/\n[\s\S]*/,'').replace(/\([\s\S]*?\)/g,'').trim(); }
 
 function doSingleSearch(type) {
   const input = document.getElementById(type+'-input').value.trim();
@@ -624,18 +632,35 @@ function renderStatsAndTable(type, results) {
     return;
   }
 
-  const sheet1Matches = results.filter(r => /jan.?24|oct.?24|dec.?25/i.test(r.sheetName+r.fileName)).flatMap(r=>r.matches);
-  const sheet2Matches = results.filter(r => /jan.?26/i.test(r.sheetName+r.fileName)).flatMap(r=>r.matches);
+  // Split by sheet type for stats
+  const sheet1Matches = results.filter(r => /jan.?24|oct.?24|dec.?25/i.test(r.sheetName)).flatMap(r=>r.matches);
+  const sheet2Matches = results.filter(r => /jan.?26/i.test(r.sheetName)).flatMap(r=>r.matches);
   const amt1 = sheet1Matches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
   const amt2 = sheet2Matches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
   const totalAmt = allMatches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
-  const pfx = type==='appid'?'as':type==='payid'?'ps':'us';
-  document.getElementById(pfx+'1').textContent = allMatches.length;
-  document.getElementById(pfx+'2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
-  document.getElementById(pfx+'3').textContent = sheet1Matches.length;
-  document.getElementById(pfx+'4').textContent = sheet2Matches.length;
-  document.getElementById(pfx+'5').textContent = '₹'+amt1.toLocaleString('en-IN');
-  document.getElementById(pfx+'6').textContent = '₹'+amt2.toLocaleString('en-IN');
+
+  if (type === 'appid') {
+    document.getElementById('as1').textContent = allMatches.length;
+    document.getElementById('as2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+    document.getElementById('as3').textContent = sheet1Matches.length;
+    document.getElementById('as4').textContent = sheet2Matches.length;
+    document.getElementById('as5').textContent = '₹'+amt1.toLocaleString('en-IN');
+    document.getElementById('as6').textContent = '₹'+amt2.toLocaleString('en-IN');
+  } else if (type === 'payid') {
+    document.getElementById('ps1').textContent = allMatches.length;
+    document.getElementById('ps2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+    document.getElementById('ps3').textContent = sheet1Matches.length;
+    document.getElementById('ps4').textContent = sheet2Matches.length;
+    document.getElementById('ps5').textContent = '₹'+amt1.toLocaleString('en-IN');
+    document.getElementById('ps6').textContent = '₹'+amt2.toLocaleString('en-IN');
+  } else if (type === 'utrid') {
+    document.getElementById('us1').textContent = allMatches.length;
+    document.getElementById('us2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+    document.getElementById('us3').textContent = sheet1Matches.length;
+    document.getElementById('us4').textContent = sheet2Matches.length;
+    document.getElementById('us5').textContent = '₹'+amt1.toLocaleString('en-IN');
+    document.getElementById('us6').textContent = '₹'+amt2.toLocaleString('en-IN');
+  }
   statsEl.style.display = 'grid';
   exportEl.classList.add('show');
   resultEl.innerHTML = buildTable(results, totalAmt);
@@ -644,8 +669,8 @@ function renderStatsAndTable(type, results) {
 function buildTable(results, totalAmt) {
   const sample = results[0]?.matches[0] || {};
   const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
-  const ck = k => k.replace(/\n[\s\S]*/,'').replace(/\([\s\S]*?\)/g,'').trim().toLowerCase();
   const fk = k => k.replace(/\n[\s\S]*/,'').replace(/\([\s\S]*?\)/g,'').trim();
+  const ck = k => fk(k).toLowerCase();
   const thead = '<tr><th>Sr</th><th>Source</th>'+cols.map(k=>`<th>${esc(fk(k))}</th>`).join('')+'</tr>';
   let tbody = ''; let sr = 1;
   results.forEach(sheet => {
@@ -886,110 +911,92 @@ document.getElementById('appid-input').addEventListener('keydown', e => { if(e.k
 document.getElementById('payid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('payid'); });
 document.getElementById('utrid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('utrid'); });
 
-// ── GOOGLE SHEETS ──
-var GS_DEFAULTS = [
-  {id:'gs1',name:'DPM DATA JAN 24 TO DEC 25',url:'https://docs.google.com/spreadsheets/d/1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E',sheetName:'DPM DATA JAN 24 TO DEC 25',status:'pending'},
-  {id:'gs2',name:'DPM DATA JAN 26 TO TILL DATE',url:'https://docs.google.com/spreadsheets/d/1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE',sheetName:'DPM DATA JAN 26 TO TILL DATE',status:'pending'},
-  {id:'gs3',name:'New Sheet Data',url:'https://docs.google.com/spreadsheets/d/16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY',sheetName:'Sheet1',status:'pending'}
-];
-var gsList = [];
-
-function initGSheets() {
-  var saved = localStorage.getItem('dpm_gs');
-  gsList = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(GS_DEFAULTS));
-  renderGSList();
-  fetchAllGSheets();
-}
-
-function saveGS() { localStorage.setItem('dpm_gs', JSON.stringify(gsList)); }
-
+// ── GOOGLE SHEETS FUNCTIONS ──
 function getSheetId(url) {
   var m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
   return m ? m[1] : null;
 }
+function saveGS() { localStorage.setItem('dpm_gs', JSON.stringify(gSheets)); }
 
 function addGSheet() {
   var url = document.getElementById('gs-url').value.trim();
   var name = document.getElementById('gs-name').value.trim();
-  if (!url || !name) { alert('URL aur Sheet tab name dono daalo!'); return; }
+  if (!url||!name) { alert('URL aur Sheet tab name dono daalo!'); return; }
   if (!getSheetId(url)) { alert('Invalid Google Sheet URL!'); return; }
-  gsList.push({id:'gs'+Date.now(),name:name,url:url,sheetName:name,status:'pending'});
+  gSheets.push({id:'gs'+Date.now(),name:name,url:url,sheetName:name});
   saveGS(); renderGSList();
-  document.getElementById('gs-url').value = '';
-  document.getElementById('gs-name').value = '';
+  document.getElementById('gs-url').value='';
+  document.getElementById('gs-name').value='';
 }
 
 function removeGSheet(id) {
-  gsList = gsList.filter(function(s){return s.id!==id;});
+  gSheets = gSheets.filter(function(s){return s.id!==id;});
   allSheets = allSheets.filter(function(s){return s.gsId!==id;});
   saveGS(); renderGSList(); updateDataSummary();
 }
 
 function renderGSList() {
   var el = document.getElementById('gs-list');
-  if (!gsList.length) { el.innerHTML = '<p style="font-size:13px;color:#888;">No sheets added.</p>'; return; }
-  el.innerHTML = gsList.map(function(s) {
+  if (!el) return;
+  if (!gSheets.length) { el.innerHTML='<p style="font-size:13px;color:#888;">No sheets added.</p>'; return; }
+  el.innerHTML = gSheets.map(function(s) {
     var icon = s.status==='loaded'?'✅':s.status==='loading'?'⏳':s.status==='error'?'❌':'📊';
-    var info = s.status==='loaded'?(s.rowCount||0).toLocaleString()+' rows loaded':s.status==='loading'?'Fetching...':s.status==='error'?'Error: '+(s.error||'Failed'):'Click Fetch to load';
+    var info = s.status==='loaded'?(s.rowCount||0).toLocaleString()+' rows loaded'
+              :s.status==='loading'?'Fetching...'
+              :s.status==='error'?'Error: '+esc(s.error||'Failed')
+              :'Click Fetch to load';
     return '<div style="display:flex;align-items:center;gap:10px;background:#f9fbe7;border:1px solid var(--border);border-radius:8px;padding:10px 14px;">'
-      +'<span style="font-size:18px">'+icon+'</span>'
+      +'<span>'+icon+'</span>'
       +'<div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--green-dark);">'+esc(s.name)+'</div>'
-      +'<div style="font-size:11px;color:#666;font-family:monospace;">'+esc(info)+'</div></div>'
-      +'<button onclick="removeGSheet(\''+s.id+'\')" style="background:none;border:1px solid #ef9a9a;border-radius:4px;padding:3px 10px;font-size:11px;color:var(--red);cursor:pointer;">✕ Remove</button>'
+      +'<div style="font-size:11px;color:#666;font-family:monospace;">'+info+'</div></div>'
+      +'<button onclick="removeGSheet(\''+s.id+'\')" style="background:none;border:1px solid #ef9a9a;border-radius:4px;padding:3px 10px;font-size:11px;color:var(--red);cursor:pointer;">✕</button>'
       +'</div>';
   }).join('');
 }
 
 async function fetchAllGSheets() {
   var btn = document.getElementById('gs-btn');
-  var status = document.getElementById('gs-status');
-  btn.disabled = true; btn.textContent = '⏳ Fetching...';
-  status.style.display = 'block';
-  status.style.cssText = 'display:block;margin-top:8px;padding:10px;border-radius:6px;font-size:13px;background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;';
-  status.textContent = 'Connecting to Google Sheets...';
+  var statusEl = document.getElementById('gs-status');
+  if (btn) { btn.disabled=true; btn.textContent='⏳ Fetching...'; }
+  if (statusEl) { statusEl.style.cssText='display:block;margin-top:8px;padding:10px;border-radius:6px;font-size:13px;background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;'; statusEl.textContent='Connecting...'; }
   allSheets = allSheets.filter(function(s){return !s.gsId;});
   var loaded=0, errors=0, totalRows=0;
-  for (var i=0; i<gsList.length; i++) {
-    var s = gsList[i];
-    s.status = 'loading'; renderGSList();
-    status.textContent = 'Fetching '+(i+1)+'/'+gsList.length+': '+s.name+'...';
+  for (var i=0; i<gSheets.length; i++) {
+    var s = gSheets[i];
+    s.status='loading'; renderGSList();
+    if (statusEl) statusEl.textContent='Fetching '+(i+1)+'/'+gSheets.length+': '+s.name+'...';
     try {
       var sid = getSheetId(s.url);
       if (!sid) throw new Error('Invalid URL');
       var csvUrl = 'https://docs.google.com/spreadsheets/d/'+sid+'/gviz/tq?tqx=out:csv&sheet='+encodeURIComponent(s.sheetName);
       var resp = await fetch(csvUrl);
-      if (!resp.ok) throw new Error('HTTP '+resp.status+' — Make sure sheet is publicly shared');
+      if (!resp.ok) throw new Error('HTTP '+resp.status);
       var text = await resp.text();
-      var rows = parseCSV(text);
+      var rows = parseGSCSV(text);
       if (!rows.length) throw new Error('No data found');
       allSheets.push({fileName:s.name, sheetName:s.sheetName, gsId:s.id, rows:rows});
-      s.status = 'loaded'; s.rowCount = rows.length;
-      loaded++; totalRows += rows.length;
-    } catch(e) {
-      s.status = 'error'; s.error = e.message; errors++;
-    }
+      s.status='loaded'; s.rowCount=rows.length;
+      loaded++; totalRows+=rows.length;
+    } catch(e) { s.status='error'; s.error=e.message; errors++; }
     renderGSList();
   }
   saveGS();
-  btn.disabled = false; btn.textContent = '🔄 Fetch / Refresh All Google Sheet Data';
-  if (errors === 0) {
-    status.style.cssText = 'display:block;margin-top:8px;padding:10px;border-radius:6px;font-size:13px;background:#e8f5e9;color:#1a5c1a;border:1px solid #a5d6a7;';
-    status.textContent = '✅ All '+loaded+' sheets loaded! '+totalRows.toLocaleString()+' rows ready.';
-  } else {
-    status.style.cssText = 'display:block;margin-top:8px;padding:10px;border-radius:6px;font-size:13px;background:#fff3e0;color:#e65100;border:1px solid #ffb74d;';
-    status.textContent = '⚠️ '+loaded+' loaded, '+errors+' failed. '+totalRows.toLocaleString()+' rows available.';
+  if (btn) { btn.disabled=false; btn.textContent='🔄 Fetch / Refresh All Google Sheet Data'; }
+  if (statusEl) {
+    if (errors===0) { statusEl.style.cssText='display:block;margin-top:8px;padding:10px;border-radius:6px;font-size:13px;background:#e8f5e9;color:#1a5c1a;border:1px solid #a5d6a7;'; statusEl.textContent='✅ '+loaded+' sheets loaded! '+totalRows.toLocaleString()+' rows ready.'; }
+    else { statusEl.style.cssText='display:block;margin-top:8px;padding:10px;border-radius:6px;font-size:13px;background:#fff3e0;color:#e65100;border:1px solid #ffb74d;'; statusEl.textContent='⚠️ '+loaded+' loaded, '+errors+' failed. '+totalRows.toLocaleString()+' rows.'; }
   }
   updateDataSummary();
 }
 
-function parseCSV(text) {
+function parseGSCSV(text) {
   var lines = text.split('\n');
-  if (lines.length < 2) return [];
-  var headers = parseCSVLine(lines[0]);
+  if (lines.length<2) return [];
+  var headers = parseGSLine(lines[0]);
   var rows = [];
   for (var i=1; i<lines.length; i++) {
     if (!lines[i].trim()) continue;
-    var vals = parseCSVLine(lines[i]);
+    var vals = parseGSLine(lines[i]);
     var obj = {};
     for (var j=0; j<headers.length; j++) obj[headers[j]] = vals[j]||'';
     rows.push(obj);
@@ -997,12 +1004,12 @@ function parseCSV(text) {
   return rows;
 }
 
-function parseCSVLine(line) {
+function parseGSLine(line) {
   var result=[], cur='', inQ=false;
   for (var i=0; i<line.length; i++) {
-    var c = line[i];
-    if (c==='"') { if (inQ && line[i+1]==='"') {cur+='"'; i++;} else inQ=!inQ; }
-    else if (c===',' && !inQ) { result.push(cur.trim()); cur=''; }
+    var c=line[i];
+    if (c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(c===','&&!inQ){result.push(cur.trim());cur='';}
     else cur+=c;
   }
   result.push(cur.trim());
