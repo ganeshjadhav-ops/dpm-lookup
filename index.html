@@ -565,35 +565,30 @@ let lastResults = {appid:[], payid:[], utrid:[], bulk:[]};
 
 function findKey(row, type) {
   const keys = Object.keys(row);
-  const clean = k => k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim().toLowerCase();
+  // Clean key — remove newlines, brackets, extra spaces
+  const clean = k => k.replace(/\n[\s\S]*/,'').replace(/\([\s\S]*?\)/g,'').trim().toLowerCase();
 
   if (type === 'appid') {
     return keys.find(k => {
       const c = clean(k);
-      return c === 'app id' || c === 'appid' || c === 'app_id' || /^app.?id$/i.test(c);
+      return c === 'app id' || c === 'appid' || c === 'app_id' || c === 'app id ' || /app.?id/i.test(c);
     });
   }
-
   if (type === 'payid') {
     return keys.find(k => {
       const c = clean(k);
-      return c === 'pay id' || c === 'payid' || c === 'pay_id' || /^pay.?id$/i.test(c);
+      return c === 'pay id' || c === 'payid' || c === 'pay_id' || /^pay.?id/i.test(c);
     });
   }
-
   if (type === 'utrid') {
     return keys.find(k => {
       const c = clean(k);
-      return c === 'utr' || c === 'utr no' || c === 'utr number' || /^utr$/i.test(c);
+      return c === 'utr' || c === 'utr no' || c === 'utr number' || /^utr/i.test(c);
     });
   }
-
   if (type === 'amt') {
-    // Match "Amount" exactly first, then fallback
     return keys.find(k => clean(k) === 'amount') ||
-           keys.find(k => /^amount$/i.test(clean(k))) ||
-           keys.find(k => /^amount/i.test(clean(k)) && !/due|diff|emi/i.test(k)) ||
-           keys.find(k => /amount/i.test(k) && !/due|diff|emi due/i.test(k));
+           keys.find(k => /^amount/i.test(clean(k)) && !/due|diff|emi/i.test(clean(k)));
   }
   return null;
 }
@@ -668,20 +663,19 @@ function renderStatsAndTable(type, results) {
 function buildTable(results, totalAmt) {
   const sample = results[0]?.matches[0] || {};
   const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
-  const thead = '<tr><th>Sr</th><th>Source</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
+  const ck = k => k.replace(/\n[\s\S]*/,'').replace(/\([\s\S]*?\)/g,'').trim().toLowerCase();
+  const fk = k => k.replace(/\n[\s\S]*/,'').replace(/\([\s\S]*?\)/g,'').trim();
+  const thead = '<tr><th>Sr</th><th>Source</th>'+cols.map(k=>`<th>${esc(fk(k))}</th>`).join('')+'</tr>';
   let tbody = ''; let sr = 1;
   results.forEach(sheet => {
     tbody += `<tr class="sec-row"><td colspan="${cols.length+2}">${esc(sheet.fileName)} — ${esc(sheet.sheetName)}</td></tr>`;
     sheet.matches.forEach(row => {
       const cells = cols.map(k => {
         const v = row[k] !== undefined ? row[k] : '';
-        const c = k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim().toLowerCase();
-        if (c === 'app id' || c === 'appid' || /^app.?id$/i.test(c))
-          return `<td class="td-appid">${esc(String(v))}</td>`;
-        if (c === 'pay id' || c === 'payid' || /^pay.?id$/i.test(c))
-          return `<td class="td-payid">${esc(String(v))}</td>`;
-        if (c === 'utr' || c === 'utr no' || c === 'utr number')
-          return `<td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);">${esc(String(v))}</td>`;
+        const c = ck(k);
+        if (/app.?id/i.test(c)) return `<td class="td-appid">${esc(String(v))}</td>`;
+        if (/^pay.?id/i.test(c)) return `<td class="td-payid">${esc(String(v))}</td>`;
+        if (/^utr/i.test(c)) return `<td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);">${esc(String(v))}</td>`;
         if (c === 'amount' || (/^amount/i.test(c) && !/due|diff|emi/i.test(c)))
           return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
         return `<td>${esc(String(v))}</td>`;
@@ -690,7 +684,7 @@ function buildTable(results, totalAmt) {
     });
   });
   tbody += `<tr class="total-row"><td colspan="2" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{
-    const c = k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim().toLowerCase();
+    const c = ck(k);
     if (c === 'amount' || (/^amount/i.test(c) && !/due|diff|emi/i.test(c)))
       return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`;
     return '<td></td>';
