@@ -5,14 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DPM — APP ID LOOKUP PORTAL</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root {
-  --green-dark:#1a5c1a;--green-mid:#2d7a2d;--green-light:#3a9a3a;
-  --gold:#f5c518;--blue:#1565c0;--pink:#c2185b;--orange:#e65100;
-  --dark-hdr:#1a1a1a;--ly:#fffde7;--border:#c8e6c9;--red:#c62828;
+  --green-dark: #1a5c1a; --green-mid: #2d7a2d; --green-light: #3a9a3a;
+  --gold: #f5c518; --blue: #1565c0; --pink: #c2185b; --orange: #e65100;
+  --dark-hdr: #1a1a1a; --ly: #fffde7; --border: #c8e6c9;
+  --red: #c62828; --white: #fff;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Inter',sans-serif;background:#f0f4f0;min-height:100vh;}
+
+/* LOGIN */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a5c1a,#2d7a2d 50%,#1565c0);}
 .login-card{background:#fff;border-radius:12px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
 .login-header{text-align:center;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:2px solid var(--green-dark);}
@@ -21,78 +25,88 @@ body{font-family:'Inter',sans-serif;background:#f0f4f0;min-height:100vh;}
 .login-sub{font-size:13px;color:#666;margin-top:4px;}
 .lf{margin-bottom:1rem;}
 .lf label{display:block;font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
-.lf input{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:6px;font-size:14px;outline:none;transition:border-color .2s;}
+.lf input{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:6px;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;}
 .lf input:focus{border-color:var(--green-dark);}
-.login-btn{width:100%;padding:12px;background:var(--green-dark);color:#fff;border:none;border-radius:6px;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s;margin-top:.5rem;}
+.login-btn{width:100%;padding:12px;background:var(--green-dark);color:#fff;border:none;border-radius:6px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s;margin-top:.5rem;}
 .login-btn:hover{background:var(--green-mid);}
 .lerr{background:#ffebee;border:1px solid #ef9a9a;border-radius:6px;padding:8px 12px;font-size:13px;color:var(--red);margin-bottom:1rem;display:none;}
 .login-hint{text-align:center;font-size:12px;color:#999;margin-top:1rem;}
+
+/* APP */
 #app-screen{display:none;}
 .topbar{background:var(--green-dark);color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.2);}
 .topbar-title{font-size:16px;font-weight:700;}
 .topbar-right{display:flex;align-items:center;gap:12px;font-size:13px;}
-.logout-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:4px 12px;color:#fff;font-size:12px;cursor:pointer;}
+.logout-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:4px 12px;color:#fff;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;}
 .logout-btn:hover{background:rgba(255,255,255,.25);}
 .main{max-width:1500px;margin:0 auto;padding:16px;}
+
+/* TABS */
 .tabs{display:flex;gap:4px;margin-bottom:16px;background:#fff;border-radius:8px;padding:6px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,.06);}
-.tab-btn{flex:1;padding:10px;background:none;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;color:#666;transition:all .2s;}
+.tab-btn{flex:1;padding:10px;background:none;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;color:#666;transition:all .2s;}
 .tab-btn.active{background:var(--green-dark);color:#fff;}
+
+/* PANEL */
 .panel{display:none;}
 .panel.active{display:block;}
-.card{background:#fff;border-radius:8px;padding:16px;border:1px solid var(--border);margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,.06);}
+
+/* UPLOAD CARD */
+.upload-card{background:#fff;border-radius:8px;padding:16px;border:1px solid var(--border);margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,.06);}
 .card-title{font-size:13px;font-weight:700;color:var(--green-dark);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.upload-zone{border:2px dashed #a5d6a7;border-radius:6px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:#f9fbe7;}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--green-dark);background:#f1f8e9;}
+.upload-zone-text{font-size:14px;font-weight:600;color:var(--green-dark);}
+.upload-zone-sub{font-size:12px;color:#888;margin-top:3px;}
+.file-list{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+.file-item{display:flex;align-items:center;gap:8px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:8px 12px;}
+.file-item-name{font-size:13px;font-weight:600;color:var(--green-dark);flex:1;}
+.file-item-meta{font-size:11px;color:#666;font-family:'JetBrains Mono',monospace;}
+.file-item-remove{background:none;border:1px solid #ef9a9a;border-radius:4px;padding:2px 8px;font-size:11px;color:var(--red);cursor:pointer;}
+.add-more-btn{display:flex;align-items:center;gap:6px;background:none;border:1px dashed #a5d6a7;border-radius:6px;padding:8px 14px;font-size:12px;color:var(--green-dark);cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;margin-top:6px;}
+.add-more-btn:hover{border-color:var(--green-dark);background:#f1f8e9;}
 
-/* GOOGLE SHEETS SECTION */
-.sheets-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
-.sheet-item{display:flex;align-items:center;gap:10px;background:#f9fbe7;border:1px solid var(--border);border-radius:8px;padding:12px;}
-.sheet-item-info{flex:1;}
-.sheet-item-name{font-size:13px;font-weight:600;color:var(--green-dark);}
-.sheet-item-status{font-size:11px;color:#666;margin-top:3px;font-family:'JetBrains Mono',monospace;}
-.sheet-item-status.loaded{color:var(--green-dark);}
-.sheet-item-status.loading{color:var(--blue);}
-.sheet-item-status.error{color:var(--red);}
-.sheet-remove-btn{background:none;border:1px solid #ef9a9a;border-radius:4px;padding:3px 10px;font-size:11px;color:var(--red);cursor:pointer;}
-.add-sheet-form{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
-.add-sheet-input{flex:1;min-width:200px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;}
-.add-sheet-input:focus{border-color:var(--green-dark);}
-.add-sheet-name{width:180px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;}
-.add-sheet-btn{padding:9px 18px;background:var(--green-dark);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
-.fetch-all-btn{width:100%;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;}
-.fetch-all-btn:hover{background:#1976d2;}
-.fetch-all-btn:disabled{background:#90caf9;cursor:not-allowed;}
-.status-bar{display:flex;align-items:center;gap:8px;background:#e3f2fd;border:1px solid #90caf9;border-radius:6px;padding:10px 14px;font-size:13px;color:var(--blue);margin-top:10px;display:none;}
-.status-bar.show{display:flex;}
-.status-bar.success{background:#e8f5e9;border-color:#a5d6a7;color:var(--green-dark);}
-.status-bar.error{background:#ffebee;border-color:#ef9a9a;color:var(--red);}
+/* STORAGE INFO */
+.storage-bar{display:flex;align-items:center;gap:8px;background:#e3f2fd;border:1px solid #90caf9;border-radius:6px;padding:8px 12px;font-size:12px;color:var(--blue);margin-top:8px;}
 
-/* LOOKUP */
+/* LOOKUP CARD */
 .lookup-card{background:#fff;border-radius:8px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,.06);overflow:hidden;margin-bottom:16px;}
 .lookup-titlebar{background:var(--green-dark);color:#fff;text-align:center;padding:10px;font-size:15px;font-weight:700;letter-spacing:1px;}
 .lookup-subbar{background:var(--green-mid);color:rgba(255,255,255,.9);text-align:center;padding:6px;font-size:11px;font-style:italic;}
+
+/* SEARCH MODE TOGGLE */
 .search-mode-row{display:flex;gap:8px;padding:10px 16px;background:#f9fbe7;border-bottom:1px solid var(--border);}
-.mode-btn{padding:6px 16px;border-radius:20px;border:1px solid #a5d6a7;background:#fff;color:var(--green-dark);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.mode-btn{padding:6px 16px;border-radius:20px;border:1px solid #a5d6a7;background:#fff;color:var(--green-dark);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;}
 .mode-btn.active{background:var(--green-dark);color:#fff;border-color:var(--green-dark);}
-.single-search-row{display:flex;align-items:center;padding:12px 16px;background:#f9fbe7;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
+
+/* SINGLE SEARCH */
+.single-search-row{display:flex;align-items:center;gap:0;padding:12px 16px;background:#f9fbe7;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
 .input-label{background:var(--green-dark);color:#fff;padding:10px 16px;font-size:13px;font-weight:700;border-radius:4px 0 0 4px;white-space:nowrap;}
 .app-id-input{padding:10px 14px;border:2px solid var(--gold);background:var(--gold);font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#1a1a1a;outline:none;width:180px;text-align:center;border-radius:0;}
 .app-id-input:focus{background:#fff9c4;}
-.search-type-sel{padding:10px 12px;border:2px solid #a5d6a7;background:#fff;font-size:13px;outline:none;color:#333;}
-.search-btn{padding:10px 20px;background:var(--green-dark);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;border-radius:0 4px 4px 0;}
+.search-type-sel{padding:10px 12px;border:2px solid #a5d6a7;background:#fff;font-family:'Inter',sans-serif;font-size:13px;outline:none;color:#333;}
+.search-btn{padding:10px 20px;background:var(--green-dark);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;border-radius:0 4px 4px 0;font-family:'Inter',sans-serif;}
 .search-btn:hover{background:var(--green-light);}
-.clear-btn{padding:10px 14px;background:#ef5350;color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;border-radius:4px;}
+.clear-btn{padding:10px 14px;background:#ef5350;color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;border-radius:4px;font-family:'Inter',sans-serif;}
+
+/* BULK SEARCH */
 .bulk-section{padding:12px 16px;background:#f9fbe7;border-bottom:1px solid var(--border);}
 .bulk-label{font-size:12px;font-weight:700;color:var(--green-dark);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
 .bulk-textarea{width:100%;padding:10px;border:1.5px solid #a5d6a7;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:13px;resize:vertical;min-height:90px;outline:none;background:#fff;}
 .bulk-textarea:focus{border-color:var(--green-dark);}
 .bulk-hint{font-size:11px;color:#888;margin-top:4px;}
-.bulk-search-btn{margin-top:8px;padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;}
+.bulk-search-btn{margin-top:8px;padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+.bulk-search-btn:hover{background:#1976d2;}
+
+/* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--border);}
 .stat-box{border-right:1px solid var(--border);}
 .stat-box:last-child{border-right:none;}
 .stat-head{font-size:10px;font-weight:700;color:#fff;padding:6px;text-align:center;line-height:1.3;}
 .stat-val{font-size:20px;font-weight:700;padding:10px 4px;text-align:center;font-family:'JetBrains Mono',monospace;}
-.bg-g{background:var(--green-dark);}.bg-b{background:var(--blue);}.bg-p{background:var(--pink);}.bg-o{background:var(--orange);}.bg-d{background:var(--dark-hdr);}
-.vg{background:#e8f5e9;color:var(--green-dark);}.vb{background:#e3f2fd;color:var(--blue);}.vp{background:#fce4ec;color:var(--pink);}.vo{background:#fff3e0;color:var(--orange);}.vd{background:#f5f5f5;color:var(--dark-hdr);}
+.bg-g{background:var(--green-dark);} .bg-b{background:var(--blue);} .bg-p{background:var(--pink);} .bg-o{background:var(--orange);} .bg-d{background:var(--dark-hdr);}
+.vg{background:#e8f5e9;color:var(--green-dark);} .vb{background:#e3f2fd;color:var(--blue);} .vp{background:#fce4ec;color:var(--pink);} .vo{background:#fff3e0;color:var(--orange);} .vd{background:#f5f5f5;color:var(--dark-hdr);}
+
+/* TABLE */
 .table-wrap{overflow-x:auto;border-top:1px solid var(--border);}
 table.dt{width:100%;border-collapse:collapse;font-size:12px;}
 table.dt thead th{background:var(--green-dark);color:#fff;padding:8px 10px;text-align:center;font-weight:600;font-size:11px;white-space:nowrap;border-right:1px solid rgba(255,255,255,.2);position:sticky;top:0;}
@@ -102,14 +116,16 @@ table.dt tbody tr:hover{background:#c8e6c9;}
 table.dt tbody td{padding:7px 10px;border-bottom:1px solid #e0e0e0;border-right:1px solid #e8e8e8;font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap;color:#1a1a1a;}
 table.dt tbody td:last-child{border-right:none;}
 .td-sr{text-align:center;color:#888;}
-.td-sheet{background:#e3f2fd;color:var(--blue);font-weight:600;font-size:10px;text-align:center;}
+.td-sheet{background:#e3f2fd;color:var(--blue);font-weight:600;font-size:10px;text-align:center;font-family:'Inter',sans-serif;}
 .td-appid{font-weight:700;color:var(--green-dark);text-align:center;}
 .td-payid{font-weight:600;color:var(--blue);text-align:center;}
 .td-amt{text-align:right;font-weight:600;color:var(--green-dark);}
-.sec-row td{background:var(--blue);color:#fff;font-weight:700;text-align:center;font-size:12px;padding:8px;}
-.sec-row2 td{background:var(--green-mid);color:#fff;font-weight:700;text-align:center;font-size:12px;padding:8px;}
+.sec-row td{background:var(--blue);color:#fff;font-weight:700;text-align:center;font-size:12px;padding:8px;font-family:'Inter',sans-serif;}
+.sec-row2 td{background:var(--green-mid);color:#fff;font-weight:700;text-align:center;font-size:12px;padding:8px;font-family:'Inter',sans-serif;}
 .total-row td{background:var(--green-dark);color:#fff;font-weight:700;font-family:'JetBrains Mono',monospace;padding:9px 10px;}
-.bulk-sep-row td{background:#fff3e0;color:var(--orange);font-weight:700;text-align:center;font-size:12px;padding:6px;}
+.bulk-sep-row td{background:#fff3e0;color:var(--orange);font-weight:700;text-align:center;font-size:12px;padding:6px;font-family:'Inter',sans-serif;border-bottom:2px solid var(--orange);}
+
+/* STATES */
 .placeholder{text-align:center;padding:3rem;color:#aaa;}
 .placeholder .ph{font-size:36px;margin-bottom:8px;opacity:.5;}
 .no-result{text-align:center;padding:2rem;background:#fff3f3;border-top:1px solid #ffcdd2;}
@@ -118,18 +134,20 @@ table.dt tbody td:last-child{border-right:none;}
 .loading.show{display:block;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .spinner{display:inline-block;width:18px;height:18px;border:3px solid #c8e6c9;border-top-color:var(--green-dark);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:8px;}
+
+/* EXPORT BTN */
 .export-row{padding:8px 16px;background:#f9fbe7;border-top:1px solid var(--border);display:none;}
 .export-row.show{display:flex;gap:8px;align-items:center;}
-.export-btn{padding:7px 16px;border-radius:4px;border:none;font-size:12px;font-weight:600;cursor:pointer;}
+.export-btn{padding:7px 16px;border-radius:4px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
 .export-csv{background:#1565c0;color:#fff;}
 .export-label{font-size:12px;color:#666;}
-.data-ready-banner{background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:10px 14px;font-size:13px;color:var(--green-dark);margin-bottom:12px;display:none;}
-.data-ready-banner.show{display:flex;align-items:center;gap:8px;}
+
 @media(max-width:768px){.stats-grid{grid-template-columns:repeat(2,1fr);}.main{padding:10px;}}
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
     <div class="login-header">
@@ -145,6 +163,7 @@ table.dt tbody td:last-child{border-right:none;}
   </div>
 </div>
 
+<!-- APP -->
 <div id="app-screen">
   <div class="topbar">
     <div class="topbar-title">🔍 DPM — APP ID & PAY ID LOOKUP PORTAL</div>
@@ -153,34 +172,52 @@ table.dt tbody td:last-child{border-right:none;}
       <button class="logout-btn" onclick="doLogout()">Logout</button>
     </div>
   </div>
-  <div class="main">
-    <div class="data-ready-banner" id="data-banner">✅ <span id="data-banner-text">Data loaded!</span></div>
 
+  <div class="main">
+    <!-- TABS -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('appid',this)">🔍 App ID</button>
-      <button class="tab-btn" onclick="switchTab('payid',this)">💳 Pay ID</button>
-      <button class="tab-btn" onclick="switchTab('utrid',this)">🏦 UTR</button>
-      <button class="tab-btn" onclick="switchTab('bulk',this)">📋 Bulk</button>
-      <button class="tab-btn" onclick="switchTab('sources',this)">🔗 Data Sources</button>
+      <button class="tab-btn active" onclick="switchTab('appid',this)">🔍 App ID Search</button>
+      <button class="tab-btn" onclick="switchTab('payid',this)">💳 Pay ID Search</button>
+      <button class="tab-btn" onclick="switchTab('utrid',this)">🏦 UTR Search</button>
+      <button class="tab-btn" onclick="switchTab('bulk',this)">📋 Bulk Search</button>
+      <button class="tab-btn" onclick="switchTab('files',this)">📂 Manage Files</button>
     </div>
 
-    <!-- DATA SOURCES PANEL -->
-    <div class="panel active" id="panel-sources">
-      <div class="card">
-        <div class="card-title">🔗 Google Sheets — Auto Data Sources</div>
-        <p style="font-size:13px;color:#666;margin-bottom:12px;">Add Google Sheet links below. Data will be fetched automatically — no manual upload needed!</p>
-        <div class="sheets-list" id="sheets-list"></div>
-        <div class="add-sheet-form">
-          <input type="text" class="add-sheet-input" id="new-sheet-url" placeholder="Paste Google Sheet URL here..."/>
-          <input type="text" class="add-sheet-name" id="new-sheet-name" placeholder="Sheet name (e.g. JAN26 Data)"/>
-          <button class="add-sheet-btn" onclick="addSheetSource()">+ Add</button>
+    <!-- FILES PANEL -->
+    <div class="panel active" id="panel-files">
+
+      <!-- GOOGLE SHEETS AUTO FETCH -->
+      <div class="upload-card">
+        <div class="card-title">🔗 Google Sheets — Auto Data Source</div>
+        <p style="font-size:13px;color:#666;margin-bottom:12px;">Add Google Sheet links — data auto-fetches on page load. No manual upload needed!</p>
+        <div id="gsheet-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--border);">
+          <input type="text" id="gs-url" placeholder="Paste Google Sheet URL..." style="flex:1;min-width:200px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;"/>
+          <input type="text" id="gs-name" placeholder="Sheet tab name (e.g. DPM DATA JAN 26 TO TILL DATE)" style="width:280px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;"/>
+          <button onclick="addGSheet()" style="padding:9px 16px;background:var(--green-dark);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">+ Add</button>
         </div>
-        <button class="fetch-all-btn" id="fetch-all-btn" onclick="fetchAllSheets()">🔄 Fetch / Refresh All Data from Google Sheets</button>
-        <div class="status-bar" id="fetch-status"></div>
+        <button id="gs-fetch-btn" onclick="fetchAllGSheets()" style="width:100%;margin-top:10px;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">🔄 Fetch / Refresh All Google Sheet Data</button>
+        <div id="gs-status" style="display:none;margin-top:8px;padding:10px 14px;border-radius:6px;font-size:13px;"></div>
       </div>
-      <div class="card">
+
+      <!-- MANUAL EXCEL UPLOAD -->
+      <div class="upload-card">
+        <div class="card-title">📂 Manual Excel Upload (Optional)</div>
+        <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <div style="font-size:24px;margin-bottom:6px">📊</div>
+          <div class="upload-zone-text">Drag & drop Excel files here or click to browse</div>
+          <div class="upload-zone-sub">.xlsx / .xls / .xlsb / .csv supported · Multiple files allowed</div>
+          <input type="file" id="file-input" accept=".xlsx,.xls,.xlsb,.csv" multiple style="display:none">
+        </div>
+        <div class="file-list" id="file-list"></div>
+        <div class="storage-bar">
+          💾 Files are saved in your browser — no need to re-upload after refresh! · <span id="storage-info">0 files stored</span>
+        </div>
+      </div>
+
+      <div class="upload-card">
         <div class="card-title">📊 Loaded Data Summary</div>
-        <div id="data-summary" style="font-size:13px;color:#666;padding:8px 0;">No data loaded yet. Add Google Sheet links above and click Fetch.</div>
+        <div id="data-summary" style="font-size:13px;color:#666;padding:8px 0;">No data loaded yet.</div>
       </div>
     </div>
 
@@ -209,8 +246,11 @@ table.dt tbody td:last-child{border-right:none;}
           <div class="stat-box"><div class="stat-head bg-d">JAN26 Amount</div><div class="stat-val vd" id="as6">₹0</div></div>
         </div>
         <div class="loading" id="appid-loading"><span class="spinner"></span>Searching...</div>
-        <div class="export-row" id="appid-export"><span class="export-label">Export:</span><button class="export-btn export-csv" onclick="exportCSV('appid')">⬇ CSV</button></div>
-        <div id="appid-result"><div class="placeholder"><div class="ph">🔍</div><p>Add data sources and enter App ID to search</p></div></div>
+        <div class="export-row" id="appid-export">
+          <span class="export-label">Export results:</span>
+          <button class="export-btn export-csv" onclick="exportCSV('appid')">⬇ Download CSV</button>
+        </div>
+        <div id="appid-result"><div class="placeholder"><div class="ph">🔍</div><p>Upload Excel files and enter App ID to search</p></div></div>
       </div>
     </div>
 
@@ -221,7 +261,7 @@ table.dt tbody td:last-child{border-right:none;}
         <div class="lookup-subbar">Enter Pay ID → Press Enter or click Search → Data loads instantly</div>
         <div class="single-search-row">
           <div class="input-label">ENTER PAY ID :</div>
-          <input type="text" class="app-id-input" id="payid-input" placeholder="e.g. pay_Sa7ru..." style="width:220px"/>
+          <input type="text" class="app-id-input" id="payid-input" placeholder="e.g. pay_Sa7ru..."/>
           <select class="search-type-sel" id="payid-mode">
             <option value="exact">Exact Match</option>
             <option value="contains" selected>Contains</option>
@@ -239,8 +279,11 @@ table.dt tbody td:last-child{border-right:none;}
           <div class="stat-box"><div class="stat-head bg-d">JAN26 Amount</div><div class="stat-val vd" id="ps6">₹0</div></div>
         </div>
         <div class="loading" id="payid-loading"><span class="spinner"></span>Searching...</div>
-        <div class="export-row" id="payid-export"><span class="export-label">Export:</span><button class="export-btn export-csv" onclick="exportCSV('payid')">⬇ CSV</button></div>
-        <div id="payid-result"><div class="placeholder"><div class="ph">💳</div><p>Add data sources and enter Pay ID to search</p></div></div>
+        <div class="export-row" id="payid-export">
+          <span class="export-label">Export results:</span>
+          <button class="export-btn export-csv" onclick="exportCSV('payid')">⬇ Download CSV</button>
+        </div>
+        <div id="payid-result"><div class="placeholder"><div class="ph">💳</div><p>Upload Excel files and enter Pay ID to search</p></div></div>
       </div>
     </div>
 
@@ -251,7 +294,7 @@ table.dt tbody td:last-child{border-right:none;}
         <div class="lookup-subbar">Enter UTR Number → Press Enter or click Search → Data loads instantly</div>
         <div class="single-search-row">
           <div class="input-label">ENTER UTR :</div>
-          <input type="text" class="app-id-input" id="utrid-input" placeholder="e.g. UTIBR720..." style="width:230px"/>
+          <input type="text" class="app-id-input" id="utrid-input" placeholder="e.g. UTIBR720..." style="width:220px"/>
           <select class="search-type-sel" id="utrid-mode">
             <option value="exact">Exact Match</option>
             <option value="contains" selected>Contains</option>
@@ -269,8 +312,11 @@ table.dt tbody td:last-child{border-right:none;}
           <div class="stat-box"><div class="stat-head bg-d">JAN26 Amount</div><div class="stat-val vd" id="us6">₹0</div></div>
         </div>
         <div class="loading" id="utrid-loading"><span class="spinner"></span>Searching...</div>
-        <div class="export-row" id="utrid-export"><span class="export-label">Export:</span><button class="export-btn export-csv" onclick="exportCSV('utrid')">⬇ CSV</button></div>
-        <div id="utrid-result"><div class="placeholder"><div class="ph">🏦</div><p>Add data sources and enter UTR to search</p></div></div>
+        <div class="export-row" id="utrid-export">
+          <span class="export-label">Export results:</span>
+          <button class="export-btn export-csv" onclick="exportCSV('utrid')">⬇ Download CSV</button>
+        </div>
+        <div id="utrid-result"><div class="placeholder"><div class="ph">🏦</div><p>Upload Excel files and enter UTR number to search</p></div></div>
       </div>
     </div>
 
@@ -280,18 +326,21 @@ table.dt tbody td:last-child{border-right:none;}
         <div class="lookup-titlebar">📋 BULK SEARCH</div>
         <div class="lookup-subbar">Enter multiple IDs (one per line) → Search all at once</div>
         <div class="search-mode-row">
-          <button class="mode-btn active" id="bulk-mode-appid" onclick="setBulkMode('appid')">App ID</button>
-          <button class="mode-btn" id="bulk-mode-payid" onclick="setBulkMode('payid')">Pay ID</button>
-          <button class="mode-btn" id="bulk-mode-utrid" onclick="setBulkMode('utrid')">UTR</button>
+          <button class="mode-btn active" id="bulk-mode-appid" onclick="setBulkMode('appid')">App ID Search</button>
+          <button class="mode-btn" id="bulk-mode-payid" onclick="setBulkMode('payid')">Pay ID Search</button>
+          <button class="mode-btn" id="bulk-mode-utrid" onclick="setBulkMode('utrid')">UTR Search</button>
         </div>
         <div class="bulk-section">
           <div class="bulk-label" id="bulk-label">Enter App IDs (one per line):</div>
           <textarea class="bulk-textarea" id="bulk-input" placeholder="1208596&#10;1629979&#10;1331126&#10;..."></textarea>
-          <div class="bulk-hint">💡 One ID per line. Max 500 IDs.</div>
-          <button class="bulk-search-btn" onclick="doBulkSearch()">🔍 Search All</button>
+          <div class="bulk-hint">💡 Enter one ID per line. Maximum 500 IDs at once.</div>
+          <button class="bulk-search-btn" onclick="doBulkSearch()">🔍 Search All IDs</button>
         </div>
-        <div class="loading" id="bulk-loading"><span class="spinner"></span>Processing...</div>
-        <div class="export-row" id="bulk-export"><span class="export-label">Export:</span><button class="export-btn export-csv" onclick="exportCSV('bulk')">⬇ CSV</button></div>
+        <div class="loading" id="bulk-loading"><span class="spinner"></span>Processing bulk search...</div>
+        <div class="export-row" id="bulk-export">
+          <span class="export-label">Export results:</span>
+          <button class="export-btn export-csv" onclick="exportCSV('bulk')">⬇ Download CSV</button>
+        </div>
         <div id="bulk-result"><div class="placeholder"><div class="ph">📋</div><p>Enter multiple IDs above to search in bulk</p></div></div>
       </div>
     </div>
@@ -302,458 +351,681 @@ table.dt tbody td:last-child{border-right:none;}
 <script>
 // ── AUTH ──
 function doLogin() {
-  const u=document.getElementById('uname').value.trim();
-  const p=document.getElementById('upass').value;
-  const err=document.getElementById('lerr');
-  const match=TEAM_USERS.find(x=>x.username===u&&x.password===p);
-  if(match){
-    err.style.display='none';
+  const u = document.getElementById('uname').value.trim();
+  const p = document.getElementById('upass').value;
+  const err = document.getElementById('lerr');
+  const match = TEAM_USERS.find(x => x.username === u && x.password === p);
+  if (match) {
+    err.style.display = 'none';
     sessionStorage.setItem('li','1');
-    sessionStorage.setItem('un',match.name);
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app-screen').style.display='block';
-    document.getElementById('topbar-user').textContent='Welcome, '+match.name;
+    sessionStorage.setItem('un', match.name);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    document.getElementById('topbar-user').textContent = 'Welcome, ' + match.name;
     initApp();
   } else {
-    err.style.display='block';
-    document.getElementById('upass').value='';
+    err.style.display = 'block';
+    document.getElementById('upass').value = '';
   }
 }
-function doLogout(){sessionStorage.clear();location.reload();}
-['uname','upass'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
-if(sessionStorage.getItem('li')){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app-screen').style.display='block';
-  document.getElementById('topbar-user').textContent='Welcome,'+(sessionStorage.getItem('un')||'User');
+function doLogout() { sessionStorage.clear(); location.reload(); }
+['uname','upass'].forEach(id => document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); }));
+if (sessionStorage.getItem('li')) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('topbar-user').textContent = 'Welcome, ' + (sessionStorage.getItem('un')||'User');
   initApp();
 }
 
 // ── TABS ──
-function switchTab(name,el){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+function switchTab(name, el) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('panel-'+name).classList.add('active');
 }
 
-// ── DATA ──
-let allSheets=[];
-let lastResults={appid:[],payid:[],utrid:[],bulk:[]};
+// ── DATA STORE ──
+let allSheets = []; // [{fileName, sheetName, label, rows:[]}]
+const DB_NAME = 'DPMFiles', DB_VER = 1, STORE = 'files';
+let db = null;
 
-// Default Google Sheet sources
-const DEFAULT_SOURCES = [
-  {id:'s1', name:'DPM DATA JAN 24 TO DEC 25', url:'https://docs.google.com/spreadsheets/d/1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E', sheetName:'DPM DATA JAN 24 TO DEC 25', status:'pending'},
-  {id:'s2', name:'DPM DATA JAN 26 TO TILL DATE', url:'https://docs.google.com/spreadsheets/d/1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE', sheetName:'DPM DATA JAN 26 TO TILL DATE', status:'pending'},
-  {id:'s3', name:'Sheet1 (New Data)', url:'https://docs.google.com/spreadsheets/d/16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY', sheetName:'Sheet1', status:'pending'}
-];
-
-let sources = [];
-
-function initApp(){
-  // Load sources from localStorage
-  const saved = localStorage.getItem('dpm_sources');
-  sources = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_SOURCES));
-  renderSourcesList();
-  // Auto-fetch on load
-  fetchAllSheets();
+function initApp() {
+  openDB()
+    .then(() => loadStoredFiles())
+    .catch(e => { console.error('DB init error:', e); updateUI(); });
+  initGSheets();
 }
 
-function saveSources(){
-  localStorage.setItem('dpm_sources', JSON.stringify(sources));
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(STORE, {keyPath:'id', autoIncrement:true});
+    req.onsuccess = e => { db = e.target.result; res(); };
+    req.onerror = () => rej();
+  });
 }
 
-function extractSheetId(url){
-  const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-  return m ? m[1] : null;
+function saveFileToDB(name, data) {
+  return new Promise((res) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).add({name, data, ts: Date.now()});
+    tx.oncomplete = res;
+  });
 }
 
-function getCSVUrl(sheetId, sheetName){
-  const encoded = encodeURIComponent(sheetName);
-  return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encoded}`;
+function getAllFromDB() {
+  return new Promise((res) => {
+    const tx = db.transaction(STORE, 'readonly');
+    const req = tx.objectStore(STORE).getAll();
+    req.onsuccess = () => res(req.result||[]);
+  });
 }
 
-function addSheetSource(){
-  const url = document.getElementById('new-sheet-url').value.trim();
-  const name = document.getElementById('new-sheet-name').value.trim();
-  if(!url || !name){ alert('Please enter both URL and sheet name!'); return; }
-  const id = extractSheetId(url);
-  if(!id){ alert('Invalid Google Sheet URL!'); return; }
-  sources.push({id:'s'+Date.now(), name, url, sheetName:name, status:'pending'});
-  saveSources();
-  renderSourcesList();
-  document.getElementById('new-sheet-url').value='';
-  document.getElementById('new-sheet-name').value='';
+function deleteFromDB(id) {
+  return new Promise((res) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).delete(id);
+    tx.oncomplete = res;
+  });
 }
 
-function removeSource(id){
-  sources = sources.filter(s=>s.id!==id);
-  allSheets = allSheets.filter(s=>s.sourceId!==id);
-  saveSources();
-  renderSourcesList();
-  updateDataSummary();
+function loadStoredFiles() {
+  return getAllFromDB().then(files => {
+    // First update UI with file names immediately (before parsing)
+    updateFileListFromDB(files);
+    // Then parse in background
+    allSheets = [];
+    files.forEach(f => {
+      try { parseFileData(f.name, f.data, f.id); } 
+      catch(e) { console.error('Parse error:', f.name, e); }
+    });
+    updateUI();
+  }).catch(e => { console.error('DB error:', e); updateUI(); });
 }
 
-function renderSourcesList(){
-  const list = document.getElementById('sheets-list');
-  if(!sources.length){ list.innerHTML='<p style="color:#888;font-size:13px;">No sources added yet.</p>'; return; }
-  list.innerHTML = sources.map(s=>`
-    <div class="sheet-item">
-      <div style="font-size:20px">${s.status==='loaded'?'✅':s.status==='loading'?'⏳':s.status==='error'?'❌':'📊'}</div>
-      <div class="sheet-item-info">
-        <div class="sheet-item-name">${esc(s.name)}</div>
-        <div class="sheet-item-status ${s.status}">${s.status==='loaded'?s.rows+' rows loaded':s.status==='loading'?'Fetching data...':s.status==='error'?'Error: '+esc(s.error||'Failed'):'Click Fetch to load'}</div>
+function updateFileListFromDB(files) {
+  const info = document.getElementById('storage-info');
+  const list = document.getElementById('file-list');
+  info.textContent = files.length + ' file(s) stored in browser';
+  if (!files.length) { list.innerHTML = ''; return; }
+  list.innerHTML = files.map(f => `
+    <div class="file-item">
+      <span style="font-size:16px">📊</span>
+      <div style="flex:1">
+        <div class="file-item-name">${esc(f.name)}</div>
+        <div class="file-item-meta">Stored · Loading rows...</div>
       </div>
-      <button class="sheet-remove-btn" onclick="removeSource('${s.id}')">✕ Remove</button>
+      <button class="file-item-remove" onclick="removeFile(${f.id})">✕ Remove</button>
     </div>`).join('');
 }
 
-async function fetchAllSheets(){
-  const btn = document.getElementById('fetch-all-btn');
-  const status = document.getElementById('fetch-status');
-  btn.disabled = true;
-  btn.textContent = '⏳ Fetching data...';
-  status.className='status-bar show';
-  status.textContent = 'Connecting to Google Sheets...';
-  allSheets = [];
-  let totalRows = 0;
-  let errors = 0;
-
-  for(let i=0; i<sources.length; i++){
-    const s = sources[i];
-    s.status='loading';
-    renderSourcesList();
-    status.textContent = `Fetching ${i+1}/${sources.length}: ${s.name}...`;
-    try {
-      const sheetId = extractSheetId(s.url);
-      if(!sheetId) throw new Error('Invalid URL');
-      const csvUrl = getCSVUrl(sheetId, s.sheetName);
-      const resp = await fetch(csvUrl);
-      if(!resp.ok) throw new Error('HTTP '+resp.status);
-      const text = await resp.text();
-      const rows = parseCSVText(text);
-      if(rows.length===0) throw new Error('No data found');
-      allSheets.push({fileName:s.name, sheetName:s.sheetName, sourceId:s.id, rows});
-      s.status='loaded';
-      s.rows=rows.length;
-      totalRows+=rows.length;
-    } catch(e){
-      s.status='error';
-      s.error=e.message;
-      errors++;
+function parseFileData(name, data, dbId) {
+  try {
+    const ext = name.split('.').pop().toLowerCase();
+    let wb;
+    if (ext === 'csv') {
+      wb = XLSX.read(data, {type:'binary', raw:false});
+    } else {
+      // xlsx, xls, xlsb all use same read
+      wb = XLSX.read(data, {type:'binary', cellDates:true, raw:false});
     }
-    renderSourcesList();
-  }
+    wb.SheetNames.forEach(sn => {
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], {defval:'', raw:false});
+      if (rows.length > 0) allSheets.push({fileName:name, sheetName:sn, dbId, rows});
+    });
+  } catch(e) { console.error('Parse error:', e); alert('File parse error: ' + name + '\n' + e.message); }
+}
 
-  saveSources();
-  btn.disabled=false;
-  btn.textContent='🔄 Fetch / Refresh All Data from Google Sheets';
-
-  if(errors===0){
-    status.className='status-bar show success';
-    status.textContent=`✅ All data loaded! ${totalRows.toLocaleString()} total rows ready to search.`;
-  } else {
-    status.className='status-bar show error';
-    status.textContent=`⚠️ ${sources.length-errors} sheets loaded (${errors} failed). ${totalRows.toLocaleString()} rows available.`;
-  }
-
-  // Show banner
-  const banner = document.getElementById('data-banner');
-  banner.className='data-ready-banner show';
-  document.getElementById('data-banner-text').textContent=`${totalRows.toLocaleString()} rows loaded from ${sources.length-errors} sheet(s) — Ready to search!`;
+function updateUI() {
+  updateFileList();
   updateDataSummary();
 }
 
-function parseCSVText(text){
-  const lines = text.split('\n');
-  if(lines.length<2) return [];
-  // Parse headers
-  const headers = parseCSVLine(lines[0]);
-  const rows = [];
-  for(let i=1;i<lines.length;i++){
-    if(!lines[i].trim()) continue;
-    const vals = parseCSVLine(lines[i]);
-    const obj={};
-    headers.forEach((h,idx)=>{ obj[h]=vals[idx]||''; });
-    rows.push(obj);
-  }
-  return rows;
+// ── FILE UPLOAD ──
+const dz = document.getElementById('drop-zone');
+const fi = document.getElementById('file-input');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+fi.addEventListener('change', e => { if(e.target.files.length) handleFiles(e.target.files); fi.value=''; });
+
+function handleFiles(files) {
+  Array.from(files).forEach(file => {
+    document.getElementById('file-list').innerHTML = `
+      <div style="padding:12px;background:#e3f2fd;border-radius:6px;font-size:13px;color:var(--blue);">
+        <span class="spinner"></span> Loading <b>${esc(file.name)}</b> (${(file.size/1024/1024).toFixed(1)} MB) — Please wait...
+      </div>`;
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      try {
+        const data = e.target.result;
+        // Make sure DB is open before saving
+        if (!db) await openDB();
+        await saveFileToDB(file.name, data);
+        await loadStoredFiles();
+      } catch(err) {
+        console.error(err);
+        document.getElementById('file-list').innerHTML = `
+          <div style="padding:12px;background:#ffebee;border-radius:6px;font-size:13px;color:var(--red);">
+            ❌ Error: ${esc(err.message)}
+          </div>`;
+      }
+    };
+    reader.onerror = () => {
+      document.getElementById('file-list').innerHTML = `
+        <div style="padding:12px;background:#ffebee;border-radius:6px;font-size:13px;color:var(--red);">
+          ❌ Could not read file. Please try again.
+        </div>`;
+    };
+    reader.readAsBinaryString(file);
+  });
 }
 
-function parseCSVLine(line){
-  const result=[];
-  let cur='', inQ=false;
-  for(let i=0;i<line.length;i++){
-    const c=line[i];
-    if(c==='"'){
-      if(inQ && line[i+1]==='"'){cur+='"';i++;}
-      else inQ=!inQ;
-    } else if(c===',' && !inQ){
-      result.push(cur.trim());cur='';
-    } else cur+=c;
-  }
-  result.push(cur.trim());
-  return result;
+function updateFileList() {
+  getAllFromDB().then(files => {
+    const list = document.getElementById('file-list');
+    const info = document.getElementById('storage-info');
+    info.textContent = files.length + ' file(s) stored in browser';
+    if (!files.length) { list.innerHTML = ''; return; }
+    list.innerHTML = files.map(f => {
+      const sheets = allSheets.filter(s => s.dbId === f.id);
+      const totalRows = sheets.reduce((a,s) => a+s.rows.length, 0);
+      return `<div class="file-item">
+        <span style="font-size:16px">📊</span>
+        <div style="flex:1">
+          <div class="file-item-name">${esc(f.name)}</div>
+          <div class="file-item-meta">${totalRows.toLocaleString()} rows · ${sheets.length} sheet(s)</div>
+        </div>
+        <button class="file-item-remove" onclick="removeFile(${f.id})">✕ Remove</button>
+      </div>`;
+    }).join('');
+  });
 }
 
-function updateDataSummary(){
-  const el=document.getElementById('data-summary');
-  if(!allSheets.length){el.textContent='No data loaded yet. Add Google Sheet links above and click Fetch.';return;}
-  const total=allSheets.reduce((a,s)=>a+s.rows.length,0);
-  el.innerHTML=allSheets.map(s=>`
-    <div style="padding:4px 0;border-bottom:1px solid #e8e8e8;font-size:12px;">
-      📊 <b>${esc(s.fileName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span>
-    </div>`).join('')+
-    `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);">Total: ${total.toLocaleString()} rows</div>`;
+function updateDataSummary() {
+  const el = document.getElementById('data-summary');
+  if (!allSheets.length) { el.textContent = 'No data loaded yet. Fetch Google Sheets or upload Excel files.'; return; }
+  const totalRows = allSheets.reduce((a,s) => a+s.rows.length, 0);
+  el.innerHTML = allSheets.map(s =>
+    `<div style="padding:4px 0;border-bottom:1px solid #e8e8e8;font-size:12px;">
+      ${s.gsId ? '🔗' : '📊'} <b>${esc(s.fileName)}</b> — Sheet: <b>${esc(s.sheetName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span>
+      <span style="color:#999;font-size:10px;margin-left:4px;">${s.gsId ? '(Google Sheet)' : '(Excel Upload)'}</span>
+    </div>`
+  ).join('') + `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);">Total: ${totalRows.toLocaleString()} rows across ${allSheets.length} sheet(s)</div>`;
+}
+
+async function removeFile(id) {
+  await deleteFromDB(id);
+  await loadStoredFiles();
 }
 
 // ── SEARCH ──
-function findKey(row,type){
-  const keys=Object.keys(row);
-  const clean=k=>k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim().toLowerCase();
-  if(type==='appid') return keys.find(k=>/app.?id/i.test(k.replace(/\n.*/,'')));
-  if(type==='payid') return keys.find(k=>{const c=clean(k);return c==='pay id'||c==='payid'||c==='pay_id'||/^pay.?id$/i.test(c);});
-  if(type==='utrid') return keys.find(k=>/^utr$/i.test(clean(k))||/^utr\b/i.test(clean(k)));
-  if(type==='amt') return keys.find(k=>/^amount/i.test(k.replace(/\n.*/,'').trim()))||keys.find(k=>/amount/i.test(k)&&!/due|diff|emi due/i.test(k));
+let lastResults = {appid:[], payid:[], utrid:[], bulk:[]};
+
+function findKey(row, type) {
+  const keys = Object.keys(row);
+  const clean = k => k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim().toLowerCase();
+  if (type === 'appid') return keys.find(k => /app.?id/i.test(k.replace(/\n.*/,'')));
+  if (type === 'payid') return keys.find(k => {
+    const c = clean(k);
+    return c === 'pay id' || c === 'payid' || c === 'pay_id' || /^pay.?id$/i.test(c);
+  });
+  if (type === 'utrid') return keys.find(k => /^utr$/i.test(clean(k)) || /^utr\b/i.test(clean(k)));
+  if (type === 'amt') {
+    return keys.find(k => /^amount/i.test(k.replace(/\n.*/,'').trim())) ||
+           keys.find(k => /amount/i.test(k) && !/due|diff|emi due/i.test(k));
+  }
   return null;
 }
-function cleanNum(v){return parseFloat(String(v).replace(/[^0-9.-]/g,''))||0;}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function friendly(k){return k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim();}
+function cleanNum(v) { return parseFloat(String(v).replace(/[^0-9.-]/g,''))||0; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function friendly(k) { return k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim(); }
 
-function doSingleSearch(type){
-  const input=document.getElementById(type+'-input').value.trim();
-  const mode=document.getElementById(type+'-mode').value;
-  if(!input) return;
-  if(!allSheets.length){alert('Please fetch data first! Go to Data Sources tab.');return;}
+function doSingleSearch(type) {
+  const input = document.getElementById(type+'-input').value.trim();
+  const mode = document.getElementById(type+'-mode').value;
+  if (!input) return;
+  if (!allSheets.length) { alert('Please upload Excel files first!'); return; }
   document.getElementById(type+'-loading').classList.add('show');
-  document.getElementById(type+'-result').innerHTML='';
-  document.getElementById(type+'-stats').style.display='none';
+  document.getElementById(type+'-result').innerHTML = '';
+  document.getElementById(type+'-stats').style.display = 'none';
   document.getElementById(type+'-export').classList.remove('show');
-  setTimeout(()=>{
-    const matches=searchAllSheets(type,input,mode);
-    lastResults[type]=matches;
+  setTimeout(() => {
+    const matches = searchAllSheets(type, input, mode);
+    lastResults[type] = matches;
     document.getElementById(type+'-loading').classList.remove('show');
-    renderStatsAndTable(type,matches);
-  },100);
+    renderStatsAndTable(type, matches);
+  }, 100);
 }
 
-function searchAllSheets(type,query,mode){
-  const q=query.toLowerCase();
-  const results=[];
-  allSheets.forEach(sheet=>{
-    const matches=sheet.rows.filter(row=>{
-      const k=findKey(row,type);
-      if(!k) return false;
-      const v=String(row[k]).toLowerCase();
-      if(mode==='exact') return v===q;
-      if(mode==='startswith') return v.startsWith(q);
+function searchAllSheets(type, query, mode) {
+  const q = query.toLowerCase();
+  const results = [];
+  allSheets.forEach(sheet => {
+    const matches = sheet.rows.filter(row => {
+      const k = findKey(row, type);
+      if (!k) return false;
+      const v = String(row[k]).toLowerCase();
+      if (mode === 'exact') return v === q;
+      if (mode === 'startswith') return v.startsWith(q);
       return v.includes(q);
     });
-    if(matches.length) results.push({...sheet,matches});
+    if (matches.length) results.push({...sheet, matches});
   });
   return results;
 }
 
-function renderStatsAndTable(type,results){
-  const statsEl=document.getElementById(type+'-stats');
-  const resultEl=document.getElementById(type+'-result');
-  const exportEl=document.getElementById(type+'-export');
-  const allMatches=results.flatMap(r=>r.matches);
-  if(!allMatches.length){
-    resultEl.innerHTML='<div class="no-result"><p>No records found for this ID</p></div>';
-    statsEl.style.display='none';
+function renderStatsAndTable(type, results) {
+  const prefix = type === 'appid' ? 'as' : 'ps';
+  const statsEl = document.getElementById(type+'-stats');
+  const resultEl = document.getElementById(type+'-result');
+  const exportEl = document.getElementById(type+'-export');
+
+  const allMatches = results.flatMap(r => r.matches);
+  if (!allMatches.length) {
+    resultEl.innerHTML = '<div class="no-result"><p>No records found for this ID</p></div>';
+    statsEl.style.display = 'none';
     return;
   }
-  const s1=results.filter(r=>/jan.?24|oct.?24|dec.?25/i.test(r.sheetName)).flatMap(r=>r.matches);
-  const s2=results.filter(r=>/jan.?26/i.test(r.sheetName)).flatMap(r=>r.matches);
-  const getAmt=rows=>rows.reduce((s,r)=>{const k=findKey(r,'amt');return s+(k?cleanNum(r[k]):0);},0);
-  const amt1=getAmt(s1), amt2=getAmt(s2), totalAmt=getAmt(allMatches);
-  const pfx={appid:'as',payid:'ps',utrid:'us'}[type];
-  document.getElementById(pfx+'1').textContent=allMatches.length;
-  document.getElementById(pfx+'2').textContent='₹'+totalAmt.toLocaleString('en-IN');
-  document.getElementById(pfx+'3').textContent=s1.length;
-  document.getElementById(pfx+'4').textContent=s2.length;
-  document.getElementById(pfx+'5').textContent='₹'+amt1.toLocaleString('en-IN');
-  document.getElementById(pfx+'6').textContent='₹'+amt2.toLocaleString('en-IN');
-  statsEl.style.display='grid';
+
+  // Split by sheet type for stats
+  const sheet1Matches = results.filter(r => /jan.?24|oct.?24|dec.?25/i.test(r.sheetName)).flatMap(r=>r.matches);
+  const sheet2Matches = results.filter(r => /jan.?26/i.test(r.sheetName)).flatMap(r=>r.matches);
+  const amt1 = sheet1Matches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
+  const amt2 = sheet2Matches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
+  const totalAmt = allMatches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
+
+  if (type === 'appid') {
+    document.getElementById('as1').textContent = allMatches.length;
+    document.getElementById('as2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+    document.getElementById('as3').textContent = sheet1Matches.length;
+    document.getElementById('as4').textContent = sheet2Matches.length;
+    document.getElementById('as5').textContent = '₹'+amt1.toLocaleString('en-IN');
+    document.getElementById('as6').textContent = '₹'+amt2.toLocaleString('en-IN');
+  } else if (type === 'payid') {
+    document.getElementById('ps1').textContent = allMatches.length;
+    document.getElementById('ps2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+    document.getElementById('ps3').textContent = sheet1Matches.length;
+    document.getElementById('ps4').textContent = sheet2Matches.length;
+    document.getElementById('ps5').textContent = '₹'+amt1.toLocaleString('en-IN');
+    document.getElementById('ps6').textContent = '₹'+amt2.toLocaleString('en-IN');
+  } else if (type === 'utrid') {
+    document.getElementById('us1').textContent = allMatches.length;
+    document.getElementById('us2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+    document.getElementById('us3').textContent = sheet1Matches.length;
+    document.getElementById('us4').textContent = sheet2Matches.length;
+    document.getElementById('us5').textContent = '₹'+amt1.toLocaleString('en-IN');
+    document.getElementById('us6').textContent = '₹'+amt2.toLocaleString('en-IN');
+  }
+  statsEl.style.display = 'grid';
   exportEl.classList.add('show');
-  resultEl.innerHTML=buildTable(results,totalAmt);
+  resultEl.innerHTML = buildTable(results, totalAmt);
 }
 
-function buildTable(results,totalAmt){
-  const sample=results[0]?.matches[0]||{};
-  const cols=Object.keys(sample).filter(k=>!/do not edit/i.test(k));
-  const thead='<tr><th>Sr</th><th>Source</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
-  let tbody='',sr=1;
-  results.forEach(sheet=>{
-    tbody+=`<tr class="sec-row"><td colspan="${cols.length+2}">${esc(sheet.fileName)}</td></tr>`;
-    sheet.matches.forEach(row=>{
-      const cells=cols.map(k=>{
-        const v=row[k]!==undefined?row[k]:'';
-        const kl=k.toLowerCase();
-        if(/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
-        if(/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
-        if(/^amount/i.test(friendly(k))||(/amount/i.test(kl)&&!/due|diff/i.test(kl)))
+function buildTable(results, totalAmt) {
+  const sample = results[0]?.matches[0] || {};
+  const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
+  const thead = '<tr><th>Sr</th><th>File</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
+  let tbody = ''; let sr = 1;
+  results.forEach(sheet => {
+    tbody += `<tr class="sec-row"><td colspan="${cols.length+3}">${esc(sheet.fileName)} — ${esc(sheet.sheetName)}</td></tr>`;
+    sheet.matches.forEach(row => {
+      const cells = cols.map(k => {
+        const v = row[k] !== undefined ? row[k] : '';
+        const kl = k.toLowerCase();
+        if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
+        if (/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
+        if (/^amount/i.test(friendly(k)) || (/amount/i.test(kl) && !/due|diff/i.test(kl)))
           return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
         return `<td>${esc(String(v))}</td>`;
       }).join('');
-      tbody+=`<tr><td class="td-sr">${sr++}</td><td class="td-sheet">${esc(sheet.fileName)}</td>${cells}</tr>`;
+      tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-sheet">${esc(sheet.fileName.replace('.xlsx','').replace('.xls',''))}</td><td class="td-sheet">${esc(sheet.sheetName)}</td>${cells}</tr>`;
     });
   });
-  tbody+=`<tr class="total-row"><td colspan="2" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{
-    if(/^amount/i.test(friendly(k))||(/amount/i.test(k)&&!/due|diff/i.test(k)))
-      return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`;
+  tbody += `<tr class="total-row"><td colspan="3" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{
+    if (/^amount/i.test(friendly(k))||(/amount/i.test(k)&&!/due|diff/i.test(k))) return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`;
     return '<td></td>';
   }).join('')}</tr>`;
   return `<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
 }
 
 // ── BULK ──
-let bulkMode='appid';
-function setBulkMode(mode){
-  bulkMode=mode;
-  ['appid','payid','utrid'].forEach(m=>document.getElementById('bulk-mode-'+m).classList.toggle('active',m===mode));
-  const labels={appid:'Enter App IDs (one per line):',payid:'Enter Pay IDs (one per line):',utrid:'Enter UTR Numbers (one per line):'};
-  document.getElementById('bulk-label').textContent=labels[mode];
+let bulkMode = 'appid';
+function setBulkMode(mode) {
+  bulkMode = mode;
+  document.getElementById('bulk-mode-appid').classList.toggle('active', mode==='appid');
+  document.getElementById('bulk-mode-payid').classList.toggle('active', mode==='payid');
+  document.getElementById('bulk-mode-utrid').classList.toggle('active', mode==='utrid');
+  const labels = {appid:'Enter App IDs (one per line):', payid:'Enter Pay IDs (one per line):', utrid:'Enter UTR Numbers (one per line):'};
+  const placeholders = {appid:'1208596\n1629979\n1331126\n...', payid:'pay_Sa7ru...\npay_Sadj...\n...', utrid:'UTIBR720...\nYESOB400...\n...'};
+  document.getElementById('bulk-label').textContent = labels[mode];
+  document.getElementById('bulk-input').placeholder = placeholders[mode];
 }
 
-function doBulkSearch(){
-  const raw=document.getElementById('bulk-input').value.trim();
-  if(!raw) return;
-  if(!allSheets.length){alert('Please fetch data first!');return;}
-  const ids=raw.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,500);
+function doBulkSearch() {
+  const raw = document.getElementById('bulk-input').value.trim();
+  if (!raw) return;
+  if (!allSheets.length) { alert('Please upload Excel files first!'); return; }
+  const ids = raw.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,500);
+  if (!ids.length) return;
   document.getElementById('bulk-loading').classList.add('show');
-  document.getElementById('bulk-result').innerHTML='';
+  document.getElementById('bulk-result').innerHTML = '';
   document.getElementById('bulk-export').classList.remove('show');
-  setTimeout(()=>{
-    const allResults=[];
-    ids.forEach(id=>{
-      const results=searchAllSheets(bulkMode,id,'exact');
-      if(results.length) allResults.push({id,results});
+  setTimeout(() => {
+    const allResults = [];
+    ids.forEach(id => {
+      const results = searchAllSheets(bulkMode, id, 'exact');
+      if (results.length) allResults.push({id, results});
     });
-    lastResults.bulk=allResults;
+    lastResults.bulk = allResults;
     document.getElementById('bulk-loading').classList.remove('show');
-    renderBulkResults(allResults,ids);
-  },150);
+    renderBulkResults(allResults, ids);
+  }, 150);
 }
 
-function renderBulkResults(allResults,ids){
-  const resultEl=document.getElementById('bulk-result');
-  const exportEl=document.getElementById('bulk-export');
-  if(!allResults.length){resultEl.innerHTML='<div class="no-result"><p>No records found</p></div>';return;}
-  const notFound=ids.filter(id=>!allResults.find(r=>r.id===id));
-  let html=`<div style="padding:10px 16px;background:#e8f5e9;border-bottom:1px solid var(--border);font-size:13px;">
-    ✅ Found: <b style="color:var(--green-dark)">${allResults.length}</b> &nbsp;·&nbsp;
-    ❌ Not Found: <b style="color:var(--red)">${notFound.length}</b>
-    ${notFound.length?' &nbsp;· <span style="color:#888;font-size:11px;">'+notFound.map(esc).join(', ')+'</span>':''}
+function renderBulkResults(allResults, ids) {
+  const resultEl = document.getElementById('bulk-result');
+  const exportEl = document.getElementById('bulk-export');
+  if (!allResults.length) {
+    resultEl.innerHTML = '<div class="no-result"><p>No records found for any of the entered IDs</p></div>';
+    return;
+  }
+  const found = allResults.length;
+  const notFound = ids.filter(id => !allResults.find(r => r.id === id));
+
+  // Build summary header
+  let html = `<div style="padding:10px 16px;background:#e8f5e9;border-bottom:1px solid var(--border);font-size:13px;">
+    ✅ Found: <b style="color:var(--green-dark)">${found}</b> IDs &nbsp;·&nbsp;
+    ❌ Not Found: <b style="color:var(--red)">${notFound.length}</b> IDs
+    ${notFound.length ? ' &nbsp;· <span style="color:#888;font-family:JetBrains Mono,monospace;font-size:11px;">'+notFound.map(esc).join(', ')+'</span>' : ''}
   </div>`;
-  if(bulkMode==='appid'){
-    const appSummary=allResults.map(({id,results})=>{
-      const all=results.flatMap(r=>r.matches);
-      const s1=results.filter(r=>/jan.?24|oct.?24|dec.?25/i.test(r.sheetName)).flatMap(r=>r.matches);
-      const s2=results.filter(r=>/jan.?26/i.test(r.sheetName)).flatMap(r=>r.matches);
-      const getAmt=rows=>rows.reduce((s,r)=>{const k=findKey(r,'amt');return s+(k?cleanNum(r[k]):0);},0);
-      return {appId:id,total:all.length,amt:getAmt(all),oct24:s1.length,jan26:s2.length,amt1:getAmt(s1),amt2:getAmt(s2)};
+
+  if (bulkMode === 'appid') {
+    // 4th SS style: Section 1 = App ID Summary, Section 2 = Pay ID Details, Section 3 = Pay ID Total Count
+    // App ID Summary table
+    const appSummary = allResults.map(({id, results}) => {
+      const all = results.flatMap(r=>r.matches);
+      const s1 = results.filter(r=>/jan.?24|oct.?24|dec.?25/i.test(r.sheetName)).flatMap(r=>r.matches);
+      const s2 = results.filter(r=>/jan.?26/i.test(r.sheetName)).flatMap(r=>r.matches);
+      const totalAmt = all.reduce((s,r)=>{const k=findKey(r,'amt');return s+(k?cleanNum(r[k]):0);},0);
+      return {appId:id, totalCount:all.length, totalAmt, oct24Count:s1.length, jan26Count:s2.length};
     });
-    const payDetails=[];
-    allResults.forEach(({id,results})=>{
-      results.forEach(sheet=>{
-        sheet.matches.forEach(row=>{
-          const payKey=findKey(row,'payid');
-          const amtKey=findKey(row,'amt');
-          const dateKey=Object.keys(row).find(k=>/^date$/i.test(friendly(k))||/settlement.?date/i.test(k));
-          const isJan26=/jan.?26/i.test(sheet.sheetName);
+
+    // Pay ID Details table
+    const payDetails = [];
+    allResults.forEach(({id, results}) => {
+      results.forEach(sheet => {
+        sheet.matches.forEach(row => {
+          const payKey = findKey(row,'payid');
+          const amtKey = findKey(row,'amt');
+          const dateKey = Object.keys(row).find(k=>/^date$/i.test(friendly(k))||/settlement.?date/i.test(k));
+          const sheetType = /jan.?26/i.test(sheet.sheetName) ? 'JAN26' : 'OCT24';
           payDetails.push({
-            appId:id,
-            payId:payKey?row[payKey]:'',
-            amt:amtKey?cleanNum(row[amtKey]):0,
-            date:dateKey?row[dateKey]:'',
-            oct24Amt:!isJan26?(amtKey?cleanNum(row[amtKey]):0):0,
-            jan26Amt:isJan26?(amtKey?cleanNum(row[amtKey]):0):0,
+            appId: id,
+            payId: payKey ? row[payKey] : '',
+            totalAmt: amtKey ? cleanNum(row[amtKey]) : 0,
+            date: dateKey ? row[dateKey] : '',
+            oct24Amt: sheetType==='OCT24' ? (amtKey?cleanNum(row[amtKey]):0) : 0,
+            oct24Date: sheetType==='OCT24' ? (dateKey?row[dateKey]:'') : '',
+            jan26Amt: sheetType==='JAN26' ? (amtKey?cleanNum(row[amtKey]):0) : 0,
+            jan26Date: sheetType==='JAN26' ? (dateKey?row[dateKey]:'') : '',
           });
         });
       });
     });
-    html+=`<div style="overflow-x:auto;border-top:1px solid var(--border)">
+
+    // Pay ID Total Count (unique pay IDs per app)
+    const payTotals = allResults.map(({id, results}) => {
+      const all = results.flatMap(r=>r.matches);
+      const s1 = results.filter(r=>/jan.?24|oct.?24|dec.?25/i.test(r.sheetName)).flatMap(r=>r.matches);
+      const s2 = results.filter(r=>/jan.?26/i.test(r.sheetName)).flatMap(r=>r.matches);
+      const totalAmt = all.reduce((s,r)=>{const k=findKey(r,'amt');return s+(k?cleanNum(r[k]):0);},0);
+      const payIds = [...new Set(all.map(r=>{const k=findKey(r,'payid');return k?r[k]:''}).filter(Boolean))];
+      return {payId: payIds.join(', '), totalCount:all.length, totalAmt, oct24Count:s1.length, jan26Count:s2.length};
+    });
+
+    html += `<div style="overflow-x:auto;border-top:1px solid var(--border)">
     <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:0;min-width:1200px;">
+
+      <!-- Section 1: App ID Summary -->
       <div style="border-right:2px solid var(--border);">
         <div style="background:#1a237e;color:#fff;text-align:center;padding:8px;font-weight:700;font-size:12px;">1️⃣ APP ID SUMMARY</div>
-        <table class="dt"><thead><tr><th>App ID</th><th>Total</th><th>Amount (₹)</th><th>OCT24</th><th>JAN26</th></tr></thead>
-        <tbody>${appSummary.map(r=>`<tr><td class="td-appid">${esc(r.appId)}</td><td style="text-align:center;font-weight:700">${r.total}</td><td class="td-amt">₹${r.amt.toLocaleString('en-IN')}</td><td style="text-align:center;color:var(--blue)">${r.oct24}</td><td style="text-align:center;color:var(--pink)">${r.jan26}</td></tr>`).join('')}</tbody></table>
+        <table class="dt" style="width:100%">
+          <thead><tr><th>App ID</th><th>Total Count</th><th>Total Amount (₹)</th><th>OCT24 Count</th><th>JAN26 Count</th></tr></thead>
+          <tbody>${appSummary.map(r=>`<tr>
+            <td class="td-appid">${esc(r.appId)}</td>
+            <td style="text-align:center;font-weight:700">${r.totalCount}</td>
+            <td class="td-amt">₹${r.totalAmt.toLocaleString('en-IN')}</td>
+            <td style="text-align:center;color:var(--blue)">${r.oct24Count}</td>
+            <td style="text-align:center;color:var(--pink)">${r.jan26Count}</td>
+          </tr>`).join('')}</tbody>
+        </table>
       </div>
+
+      <!-- Section 2: Pay ID Details -->
       <div style="border-right:2px solid var(--border);">
-        <div style="background:#4a148c;color:#fff;text-align:center;padding:8px;font-weight:700;font-size:12px;">2️⃣ PAY ID DETAILS</div>
-        <table class="dt"><thead><tr><th>Pay ID</th><th>Total Amt</th><th>Date</th><th>OCT24 Amt</th><th>JAN26 Amt</th><th>Combined</th></tr></thead>
-        <tbody>${payDetails.map(r=>`<tr><td class="td-payid">${esc(String(r.payId))}</td><td class="td-amt">₹${r.amt.toLocaleString('en-IN')}</td><td>${esc(String(r.date))}</td><td class="td-amt" style="color:var(--orange)">${r.oct24Amt?'₹'+r.oct24Amt.toLocaleString('en-IN'):''}</td><td class="td-amt" style="color:var(--pink)">${r.jan26Amt?'₹'+r.jan26Amt.toLocaleString('en-IN'):''}</td><td class="td-amt">₹${r.amt.toLocaleString('en-IN')}</td></tr>`).join('')}</tbody></table>
+        <div style="background:#4a148c;color:#fff;text-align:center;padding:8px;font-weight:700;font-size:12px;">2️⃣ PAY ID DETAILS (Amount + Date)</div>
+        <table class="dt" style="width:100%">
+          <thead><tr><th>Pay ID</th><th>Total Amount (₹)</th><th>Date</th><th>OCT24 Amt</th><th>OCT24 Date</th><th>JAN26 Amt</th><th>JAN26 Date</th><th>Combined Total</th></tr></thead>
+          <tbody>${payDetails.map(r=>`<tr>
+            <td class="td-payid">${esc(String(r.payId))}</td>
+            <td class="td-amt">₹${r.totalAmt.toLocaleString('en-IN')}</td>
+            <td>${esc(String(r.date))}</td>
+            <td class="td-amt" style="color:var(--orange)">${r.oct24Amt?'₹'+r.oct24Amt.toLocaleString('en-IN'):''}</td>
+            <td>${esc(String(r.oct24Date))}</td>
+            <td class="td-amt" style="color:var(--pink)">${r.jan26Amt?'₹'+r.jan26Amt.toLocaleString('en-IN'):''}</td>
+            <td>${esc(String(r.jan26Date))}</td>
+            <td class="td-amt">₹${r.totalAmt.toLocaleString('en-IN')}</td>
+          </tr>`).join('')}</tbody>
+        </table>
       </div>
+
+      <!-- Section 3: Pay ID Total Count -->
       <div>
-        <div style="background:#1b5e20;color:#fff;text-align:center;padding:8px;font-weight:700;font-size:12px;">3️⃣ SUMMARY COUNT</div>
-        <table class="dt"><thead><tr><th>App ID</th><th>Total</th><th>Amount (₹)</th><th>OCT24</th><th>JAN26</th></tr></thead>
-        <tbody>${appSummary.map(r=>`<tr><td class="td-appid">${esc(r.appId)}</td><td style="text-align:center;font-weight:700">${r.total}</td><td class="td-amt">₹${r.amt.toLocaleString('en-IN')}</td><td style="text-align:center;color:var(--blue)">${r.oct24}</td><td style="text-align:center;color:var(--pink)">${r.jan26}</td></tr>`).join('')}</tbody></table>
+        <div style="background:#1b5e20;color:#fff;text-align:center;padding:8px;font-weight:700;font-size:12px;">3️⃣ PAY ID TOTAL COUNT</div>
+        <table class="dt" style="width:100%">
+          <thead><tr><th>Pay ID</th><th>Total Count</th><th>Total Amount (₹)</th><th>OCT24 Count</th><th>JAN26 Count</th></tr></thead>
+          <tbody>${payTotals.map(r=>`<tr>
+            <td class="td-payid" style="font-size:10px">${esc(r.payId).substring(0,20)+'...'}</td>
+            <td style="text-align:center;font-weight:700">${r.totalCount}</td>
+            <td class="td-amt">₹${r.totalAmt.toLocaleString('en-IN')}</td>
+            <td style="text-align:center;color:var(--blue)">${r.oct24Count}</td>
+            <td style="text-align:center;color:var(--pink)">${r.jan26Count}</td>
+          </tr>`).join('')}</tbody>
+        </table>
       </div>
     </div></div>`;
+
   } else {
-    const sample=allResults[0]?.results[0]?.matches[0]||{};
-    const cols=Object.keys(sample).filter(k=>!/do not edit/i.test(k));
-    const thead='<tr><th>Sr</th><th>ID</th><th>Source</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
-    let tbody='',sr=1;
-    allResults.forEach(({id,results})=>{
-      tbody+=`<tr class="bulk-sep-row"><td colspan="${cols.length+3}">🔍 ${esc(id)} — ${results.flatMap(r=>r.matches).length} records</td></tr>`;
-      results.forEach(sheet=>{
-        sheet.matches.forEach(row=>{
-          const cells=cols.map(k=>{
-            const v=row[k]!==undefined?row[k]:'';
-            const kl=k.toLowerCase();
-            if(/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
-            if(/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
-            if(/^amount/i.test(friendly(k))||(/amount/i.test(kl)&&!/due|diff/i.test(kl)))
+    // Pay ID / UTR bulk — simple table
+    const sample = allResults[0]?.results[0]?.matches[0] || {};
+    const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
+    const thead = '<tr><th>Sr</th><th>Searched ID</th><th>File</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
+    let tbody = ''; let sr = 1;
+    allResults.forEach(({id, results}) => {
+      tbody += `<tr class="bulk-sep-row"><td colspan="${cols.length+4}">🔍 ID: ${esc(id)} — ${results.flatMap(r=>r.matches).length} record(s) found</td></tr>`;
+      results.forEach(sheet => {
+        sheet.matches.forEach(row => {
+          const cells = cols.map(k => {
+            const v = row[k] !== undefined ? row[k] : '';
+            const kl = k.toLowerCase();
+            if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
+            if (/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
+            if (/^amount/i.test(friendly(k))||(/amount/i.test(kl)&&!/due|diff/i.test(kl)))
               return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
             return `<td>${esc(String(v))}</td>`;
           }).join('');
-          tbody+=`<tr><td class="td-sr">${sr++}</td><td class="td-appid">${esc(id)}</td><td class="td-sheet">${esc(sheet.fileName)}</td>${cells}</tr>`;
+          tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-appid">${esc(id)}</td><td class="td-sheet">${esc(sheet.fileName.replace('.xlsx',''))}</td><td class="td-sheet">${esc(sheet.sheetName)}</td>${cells}</tr>`;
         });
       });
     });
-    html+=`<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+    html += `<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
   }
-  resultEl.innerHTML=html;
+
+  resultEl.innerHTML = html;
   exportEl.classList.add('show');
 }
 
 // ── CLEAR ──
-function clearResult(type){
-  document.getElementById(type+'-input').value='';
-  document.getElementById(type+'-stats').style.display='none';
+function clearResult(type) {
+  document.getElementById(type+'-input').value = '';
+  document.getElementById(type+'-stats').style.display = 'none';
   document.getElementById(type+'-export').classList.remove('show');
-  document.getElementById(type+'-result').innerHTML=`<div class="placeholder"><div class="ph">🔍</div><p>Enter an ID to search</p></div>`;
-  lastResults[type]=[];
+  document.getElementById(type+'-result').innerHTML = `<div class="placeholder"><div class="ph">🔍</div><p>Enter an ID to search</p></div>`;
+  lastResults[type] = [];
 }
 
 // ── EXPORT CSV ──
-function exportCSV(type){
-  let rows=[];
-  if(type==='bulk'){
-    lastResults.bulk.forEach(({id,results})=>{
-      results.forEach(sheet=>sheet.matches.forEach(row=>rows.push({SearchedID:id,Source:sheet.fileName,...row})));
+function exportCSV(type) {
+  let rows = [];
+  if (type === 'bulk') {
+    lastResults.bulk.forEach(({id, results}) => {
+      results.forEach(sheet => sheet.matches.forEach(row => rows.push({SearchedID:id, File:sheet.fileName, Sheet:sheet.sheetName, ...row})));
     });
   } else {
-    lastResults[type].forEach(sheet=>sheet.matches.forEach(row=>rows.push({Source:sheet.fileName,...row})));
+    lastResults[type].forEach(sheet => sheet.matches.forEach(row => rows.push({File:sheet.fileName, Sheet:sheet.sheetName, ...row})));
   }
-  if(!rows.length) return;
-  const rawCols=Object.keys(rows[0]);
-  const friendlyCols=rawCols.map(c=>friendly(c)||c);
-  const csv=[friendlyCols.join(','),...rows.map(r=>rawCols.map(c=>'"'+(String(r[c]||'')).replace(/"/g,'""')+'"').join(','))].join('\n');
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='dpm-export-'+type+'-'+Date.now()+'.csv';
+  if (!rows.length) return;
+  const rawCols = Object.keys(rows[0]);
+  const friendlyCols = rawCols.map(c => friendly(c) || c);
+  const csv = [
+    friendlyCols.join(','),
+    ...rows.map(r => rawCols.map(c => '"'+(String(r[c]||'')).replace(/"/g,'""')+'"').join(','))
+  ].join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dpm-export-'+type+'-'+Date.now()+'.csv';
   a.click();
 }
 
-// Enter keys
-document.getElementById('appid-input').addEventListener('keydown',e=>{if(e.key==='Enter')doSingleSearch('appid');});
-document.getElementById('payid-input').addEventListener('keydown',e=>{if(e.key==='Enter')doSingleSearch('payid');});
-document.getElementById('utrid-input').addEventListener('keydown',e=>{if(e.key==='Enter')doSingleSearch('utrid');});
+// ── GOOGLE SHEETS ──
+const DEFAULT_GSHEETS = [
+  {id:'gs1', name:'DPM DATA JAN 24 TO DEC 25', url:'https://docs.google.com/spreadsheets/d/1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E', sheetName:'DPM DATA JAN 24 TO DEC 25'},
+  {id:'gs2', name:'DPM DATA JAN 26 TO TILL DATE', url:'https://docs.google.com/spreadsheets/d/1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE', sheetName:'DPM DATA JAN 26 TO TILL DATE'},
+  {id:'gs3', name:'New Data Sheet', url:'https://docs.google.com/spreadsheets/d/16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY', sheetName:'Sheet1'}
+];
+let gSheets = [];
+
+function initGSheets() {
+  const saved = localStorage.getItem('dpm_gsheets');
+  gSheets = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_GSHEETS));
+  renderGSheetList();
+  fetchAllGSheets();
+}
+
+function saveGSheets() { localStorage.setItem('dpm_gsheets', JSON.stringify(gSheets)); }
+
+function extractSheetId(url) {
+  const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return m ? m[1] : null;
+}
+
+function addGSheet() {
+  const url = document.getElementById('gs-url').value.trim();
+  const name = document.getElementById('gs-name').value.trim();
+  if (!url || !name) { alert('Please enter both URL and sheet tab name!'); return; }
+  if (!extractSheetId(url)) { alert('Invalid Google Sheet URL!'); return; }
+  gSheets.push({id:'gs'+Date.now(), name, url, sheetName:name});
+  saveGSheets(); renderGSheetList();
+  document.getElementById('gs-url').value = '';
+  document.getElementById('gs-name').value = '';
+}
+
+function removeGSheet(id) {
+  gSheets = gSheets.filter(s => s.id !== id);
+  allSheets = allSheets.filter(s => s.gsId !== id);
+  saveGSheets(); renderGSheetList(); updateDataSummary();
+}
+
+function renderGSheetList() {
+  const el = document.getElementById('gsheet-list');
+  if (!gSheets.length) { el.innerHTML = '<p style="font-size:13px;color:#888;">No Google Sheets added yet.</p>'; return; }
+  el.innerHTML = gSheets.map(s => `
+    <div style="display:flex;align-items:center;gap:8px;background:#f9fbe7;border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+      <span style="font-size:18px">${s.status==='loaded'?'✅':s.status==='loading'?'⏳':s.status==='error'?'❌':'📊'}</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:var(--green-dark);">${esc(s.name)}</div>
+        <div style="font-size:11px;color:#666;font-family:'JetBrains Mono',monospace;">${s.status==='loaded'?s.rowCount+' rows loaded':s.status==='loading'?'Fetching...':s.status==='error'?'❌ '+esc(s.error||'Failed'):'Pending fetch'}</div>
+      </div>
+      <button onclick="removeGSheet('${s.id}')" style="background:none;border:1px solid #ef9a9a;border-radius:4px;padding:3px 10px;font-size:11px;color:var(--red);cursor:pointer;">✕ Remove</button>
+    </div>`).join('');
+}
+
+async function fetchAllGSheets() {
+  const btn = document.getElementById('gs-fetch-btn');
+  const status = document.getElementById('gs-status');
+  btn.disabled = true; btn.textContent = '⏳ Fetching...';
+  status.style.display = 'block';
+  status.style.background = '#e3f2fd'; status.style.color = '#1565c0'; status.style.border = '1px solid #90caf9';
+  // Remove old gsheet rows
+  allSheets = allSheets.filter(s => !s.gsId);
+  let loaded = 0, errors = 0, totalRows = 0;
+  for (let i = 0; i < gSheets.length; i++) {
+    const s = gSheets[i];
+    s.status = 'loading'; renderGSheetList();
+    status.textContent = `Fetching ${i+1}/${gSheets.length}: ${s.name}...`;
+    try {
+      const sid = extractSheetId(s.url);
+      if (!sid) throw new Error('Invalid URL');
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${sid}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(s.sheetName)}`;
+      const resp = await fetch(csvUrl);
+      if (!resp.ok) throw new Error('HTTP '+resp.status);
+      const text = await resp.text();
+      const rows = parseCSVToRows(text);
+      if (!rows.length) throw new Error('No data found');
+      allSheets.push({fileName:s.name, sheetName:s.sheetName, gsId:s.id, rows});
+      s.status = 'loaded'; s.rowCount = rows.length;
+      loaded++; totalRows += rows.length;
+    } catch(e) {
+      s.status = 'error'; s.error = e.message; errors++;
+    }
+    renderGSheetList();
+  }
+  saveGSheets();
+  btn.disabled = false; btn.textContent = '🔄 Fetch / Refresh All Google Sheet Data';
+  if (errors === 0) {
+    status.style.background = '#e8f5e9'; status.style.color = '#1a5c1a'; status.style.border = '1px solid #a5d6a7';
+    status.textContent = `✅ All loaded! ${totalRows.toLocaleString()} rows ready.`;
+  } else {
+    status.style.background = '#fff3e0'; status.style.color = '#e65100'; status.style.border = '1px solid #ffb74d';
+    status.textContent = `⚠️ ${loaded} loaded, ${errors} failed. ${totalRows.toLocaleString()} rows available.`;
+  }
+  updateDataSummary();
+}
+
+function parseCSVToRows(text) {
+  const lines = text.split('\n');
+  if (lines.length < 2) return [];
+  const headers = parseCSVLine(lines[0]);
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const vals = parseCSVLine(lines[i]);
+    const obj = {};
+    headers.forEach((h, idx) => { obj[h] = vals[idx] || ''; });
+    rows.push(obj);
+  }
+  return rows;
+}
+
+function parseCSVLine(line) {
+  const result = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+    else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+    else cur += c;
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+// Enter key
+document.getElementById('appid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('appid'); });
+document.getElementById('payid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('payid'); });
+document.getElementById('utrid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('utrid'); });
 </script>
 </body>
 </html>
