@@ -548,21 +548,27 @@ function updateDataSummary() {
   const totalRows = allSheets.reduce((a,s) => a+s.rows.length, 0);
   el.innerHTML = allSheets.map(s => {
     const sampleRow = s.rows[0] || {};
+    const allKeys = Object.keys(sampleRow);
     const appK = findKey(sampleRow, 'appid');
     const payK = findKey(sampleRow, 'payid');
     const amtK = findKey(sampleRow, 'amt');
     const utrK = findKey(sampleRow, 'utrid');
-    const detected = [
-      appK ? `<span style="color:var(--green-dark)">✅ App ID: <b>${esc(friendly(appK))}</b></span>` : `<span style="color:var(--red)">❌ App ID not found</span>`,
-      amtK ? `<span style="color:var(--green-dark)">✅ Amount: <b>${esc(friendly(amtK))}</b></span>` : `<span style="color:var(--red)">❌ Amount not found</span>`,
-      payK ? `<span style="color:var(--blue)">✅ Pay ID: <b>${esc(friendly(payK))}</b></span>` : `<span style="color:#aaa">— Pay ID</span>`,
-      utrK ? `<span style="color:var(--blue)">✅ UTR: <b>${esc(friendly(utrK))}</b></span>` : `<span style="color:#aaa">— UTR</span>`,
-    ].join(' &nbsp;·&nbsp; ');
-    return `<div style="padding:6px 0;border-bottom:1px solid #e8e8e8;font-size:12px;">
-      📊 <b>${esc(s.sheetName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span><br>
-      <span style="font-size:11px;color:#666;">Columns detected: ${detected}</span>
+    const statusBadge = (key, label) => key
+      ? `<span style="background:#e8f5e9;color:var(--green-dark);border:1px solid #a5d6a7;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600;">✅ ${label}: ${esc(friendly(key))}</span>`
+      : `<span style="background:#ffebee;color:var(--red);border:1px solid #ef9a9a;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600;">❌ ${label} NOT FOUND</span>`;
+    return `<div style="padding:8px 0;border-bottom:1px solid #e8e8e8;">
+      <div style="font-size:12px;font-weight:700;margin-bottom:4px;">📊 ${esc(s.sheetName)} — <span style="color:var(--green-dark)">${s.rows.length.toLocaleString()} rows</span></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+        ${statusBadge(appK,'App ID')} ${statusBadge(amtK,'Amount')} ${statusBadge(payK,'Pay ID')} ${statusBadge(utrK,'UTR')}
+      </div>
+      <details style="font-size:10px;color:#666;">
+        <summary style="cursor:pointer;color:var(--blue);font-weight:600;">🔍 View all ${allKeys.length} raw column names (click to expand)</summary>
+        <div style="margin-top:4px;padding:6px;background:#f5f5f5;border-radius:4px;font-family:'JetBrains Mono',monospace;line-height:1.8;">
+          ${allKeys.map((k,i) => `<span style="display:inline-block;background:#fff;border:1px solid #ddd;border-radius:3px;padding:1px 5px;margin:2px;">${i+1}. ${esc(k)}</span>`).join('')}
+        </div>
+      </details>
     </div>`;
-  }).join('') + `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);">Total: ${totalRows.toLocaleString()} rows across ${allSheets.length} sheet(s)</div>`;
+  }).join('') + `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);font-size:12px;">Total: ${totalRows.toLocaleString()} rows across ${allSheets.length} sheet(s)</div>`;
 }
 
 async function removeFile(id) {
@@ -639,15 +645,29 @@ function friendly(k) {
 
 // Preferred display order — matches both sheets
 const COL_ORDER = ['LAN','App id','Payment Type','Amount','Date','EMI Date','Settlement Date','Pay ID','UTR','NBFC','SPOC','Source','Sent to Lender','Remarks'];
+
 function sortCols(cols) {
+  // NEVER skip any column — just order them nicely
+  // Only hide truly internal columns
+  const hide = c => {
+    const raw = c.toLowerCase();
+    return raw.includes('do not edit') || raw.includes('ctrl+shift') ||
+           normalizeKey(c) === 'diff' || normalizeKey(c) === 'customer name' ||
+           normalizeKey(c) === 'emi due amount';
+  };
   const ordered = [];
-  // Skip "Do Not edit" and "Diff" columns from display
-  const skip = c => /do not edit/i.test(c) || /^diff$/i.test(normalizeKey(c)) || /customer name/i.test(c) || /emi due amount/i.test(c);
   COL_ORDER.forEach(preferred => {
-    const found = cols.find(c => !skip(c) && friendly(c).trim().toLowerCase() === preferred.trim().toLowerCase());
+    const found = cols.find(c => !hide(c) && normalizeKey(c) === preferred.toLowerCase());
     if (found && !ordered.includes(found)) ordered.push(found);
   });
-  cols.forEach(c => { if (!ordered.includes(c) && !skip(c)) ordered.push(c); });
+  // Fallback: also match via friendly()
+  COL_ORDER.forEach(preferred => {
+    const found = cols.find(c => !hide(c) && !ordered.includes(c) &&
+      friendly(c).toLowerCase() === preferred.toLowerCase());
+    if (found) ordered.push(found);
+  });
+  // Add any remaining visible columns not yet ordered
+  cols.forEach(c => { if (!ordered.includes(c) && !hide(c)) ordered.push(c); });
   return ordered;
 }
 
@@ -734,7 +754,7 @@ function renderStatsAndTable(type, results) {
 
 function buildTable(results, totalAmt) {
   const sample = results[0]?.matches[0] || {};
-  const rawCols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
+  const rawCols = Object.keys(sample); // pass ALL cols — sortCols will hide internal ones
   const cols = sortCols(rawCols);
   const thead = '<tr><th>Sr</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
   let tbody = ''; let sr = 1;
@@ -915,7 +935,7 @@ function renderBulkResults(allResults, ids) {
   } else {
     // Pay ID / UTR bulk — simple table
     const sample = allResults[0]?.results[0]?.matches[0] || {};
-    const rawCols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
+    const rawCols = Object.keys(sample); // pass ALL — sortCols handles hiding
     const cols = sortCols(rawCols);
     const thead = '<tr><th>Sr</th><th>Searched ID</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
     let tbody = ''; let sr = 1;
