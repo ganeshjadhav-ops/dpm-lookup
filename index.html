@@ -386,9 +386,17 @@ function switchTab(name, el) {
 }
 
 // ── DATA STORE ──
-let allSheets = []; // [{fileName, sheetName, label, rows:[]}]
+let allSheets = [];
 const DB_NAME = 'DPMFiles', DB_VER = 1, STORE = 'files';
 let db = null;
+
+// ── GOOGLE SHEETS DATA ──
+const DEFAULT_GSHEETS = [
+  {id:'gs1', name:'DPM DATA JAN 24 TO DEC 25',    url:'https://docs.google.com/spreadsheets/d/1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E', sheetName:'DPM DATA JAN 24 TO DEC 25'},
+  {id:'gs2', name:'DPM DATA JAN 26 TO TILL DATE', url:'https://docs.google.com/spreadsheets/d/1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE', sheetName:'DPM DATA JAN 26 TO TILL DATE'},
+  {id:'gs3', name:'New Sheet Data',               url:'https://docs.google.com/spreadsheets/d/16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY', sheetName:'Sheet1'}
+];
+let gSheets = [];
 
 function initApp() {
   openDB()
@@ -903,13 +911,6 @@ function exportCSV(type) {
 }
 
 // ── GOOGLE SHEETS AUTO FETCH ──
-const DEFAULT_GSHEETS = [
-  {id:'gs1', name:'DPM DATA JAN 24 TO DEC 25',    url:'https://docs.google.com/spreadsheets/d/1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E', sheetName:'DPM DATA JAN 24 TO DEC 25'},
-  {id:'gs2', name:'DPM DATA JAN 26 TO TILL DATE', url:'https://docs.google.com/spreadsheets/d/1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE', sheetName:'DPM DATA JAN 26 TO TILL DATE'},
-  {id:'gs3', name:'New Sheet Data',               url:'https://docs.google.com/spreadsheets/d/16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY', sheetName:'Sheet1'}
-];
-let gSheets = [];
-
 function initGSheets() {
   const saved = localStorage.getItem('dpm_gsheets');
   gSheets = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_GSHEETS));
