@@ -185,6 +185,20 @@ table.dt tbody td:last-child{border-right:none;}
 
     <!-- FILES PANEL -->
     <div class="panel active" id="panel-files">
+
+      <!-- GOOGLE SHEETS SYNC CARD -->
+      <div class="upload-card" style="border:2px solid #1565c0;">
+        <div class="card-title" style="color:#1565c0;">🔗 Google Sheets — Auto Sync</div>
+        <div style="font-size:13px;color:#444;margin-bottom:10px;">Niche configured Google Sheets se data automatically fetch hoga. Koi file upload karne ki zaroorat nahi!</div>
+        <div id="gs-status-list" style="margin-bottom:10px;display:flex;flex-direction:column;gap:6px;"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <button onclick="syncAllGoogleSheets()" style="padding:9px 20px;background:#1565c0;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">🔄 Sync Google Sheets Now</button>
+          <div id="gs-sync-status" style="font-size:12px;color:#666;"></div>
+        </div>
+        <div style="margin-top:8px;background:#e3f2fd;border:1px solid #90caf9;border-radius:6px;padding:8px 12px;font-size:11px;color:#1565c0;">
+          ⚠️ <b>Note:</b> Google Sheet publicly shared honi chahiye (Anyone with link → Viewer). Page load par auto-sync hoga.
+        </div>
+      </div>
       <div class="upload-card">
         <div class="card-title">📂 Upload & Manage Excel Files</div>
         <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
@@ -376,6 +390,7 @@ let db = null;
 function initApp() {
   openDB()
     .then(() => loadStoredFiles())
+    .then(() => syncAllGoogleSheets())
     .catch(e => { console.error('DB init error:', e); updateUI(); });
 }
 
@@ -529,11 +544,23 @@ function updateDataSummary() {
   const el = document.getElementById('data-summary');
   if (!allSheets.length) { el.textContent = 'No files loaded yet. Upload Excel files above.'; return; }
   const totalRows = allSheets.reduce((a,s) => a+s.rows.length, 0);
-  el.innerHTML = allSheets.map(s =>
-    `<div style="padding:4px 0;border-bottom:1px solid #e8e8e8;font-size:12px;">
-      📊 <b>${esc(s.fileName)}</b> — Sheet: <b>${esc(s.sheetName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span>
-    </div>`
-  ).join('') + `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);">Total: ${totalRows.toLocaleString()} rows across ${allSheets.length} sheet(s)</div>`;
+  el.innerHTML = allSheets.map(s => {
+    const sampleRow = s.rows[0] || {};
+    const appK = findKey(sampleRow, 'appid');
+    const payK = findKey(sampleRow, 'payid');
+    const amtK = findKey(sampleRow, 'amt');
+    const utrK = findKey(sampleRow, 'utrid');
+    const detected = [
+      appK ? `<span style="color:var(--green-dark)">✅ App ID: <b>${esc(friendly(appK))}</b></span>` : `<span style="color:var(--red)">❌ App ID not found</span>`,
+      amtK ? `<span style="color:var(--green-dark)">✅ Amount: <b>${esc(friendly(amtK))}</b></span>` : `<span style="color:var(--red)">❌ Amount not found</span>`,
+      payK ? `<span style="color:var(--blue)">✅ Pay ID: <b>${esc(friendly(payK))}</b></span>` : `<span style="color:#aaa">— Pay ID</span>`,
+      utrK ? `<span style="color:var(--blue)">✅ UTR: <b>${esc(friendly(utrK))}</b></span>` : `<span style="color:#aaa">— UTR</span>`,
+    ].join(' &nbsp;·&nbsp; ');
+    return `<div style="padding:6px 0;border-bottom:1px solid #e8e8e8;font-size:12px;">
+      📊 <b>${esc(s.sheetName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span><br>
+      <span style="font-size:11px;color:#666;">Columns detected: ${detected}</span>
+    </div>`;
+  }).join('') + `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);">Total: ${totalRows.toLocaleString()} rows across ${allSheets.length} sheet(s)</div>`;
 }
 
 async function removeFile(id) {
@@ -544,44 +571,82 @@ async function removeFile(id) {
 // ── SEARCH ──
 let lastResults = {appid:[], payid:[], utrid:[], bulk:[]};
 
+// ── COLUMN KEY FINDER ──
+// Sheet 1 (JAN 24 TO DEC 25) exact columns from Google Sheet:
+//   Date | Source | Payment Type | App id (Ctrl+Shift+V) | EMI Date(Value Date)
+//   Pay ID (Ctrl+Shift+V) | UTR | Amount (Ctrl+Shift+V) | NBFC (Do Not edit in this column)
+//   SPOC | Sent to Lender | Date (Do Not edit in this column) | Source (Do Not edit in this column) | Remarks
+//
+// Sheet 2 (JAN 26 TO TILL DATE) exact columns from Google Sheet:
+//   LAN | App id (Ctrl+Shift+V) | Customer Name (Do Not edit in this column)
+//   Payment Type | EMI Due Amount (Do Not edit in this column) | Amount (Ctrl+Shift+V)
+//   Diff (Do Not edit in this column) | Source | EMI Date(Value Date) | Pay ID (Ctrl+Shift+V)
+//   Settlement Date | UTR | NBFC | SPOC | Sent to Lender | Date | Source | Remarks
+
+function normalizeKey(k) {
+  if (!k) return '';
+  return k
+    .replace(/[\n\r]+/g, ' ')    // Excel newlines → space
+    .replace(/\s*\(.*?\)\s*/g, '') // remove (anything in parens)
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
 function findKey(row, type) {
   const keys = Object.keys(row);
-  // Clean key: remove everything after newline, remove (anything), strip spaces
-  const clean = k => k.split('\n')[0].replace(/\(.*?\)/g,'').replace(/[₹\s]/g,'').trim().toLowerCase();
+  const n = k => normalizeKey(k);
+
   if (type === 'appid') {
-    return keys.find(k => /^app[\s_-]?id$/i.test(clean(k))) ||
-           keys.find(k => /app[\s_-]?id/i.test(k.split('\n')[0]));
+    // Matches: "App id (Ctrl+Shift+V)", "App id \n(Ctrl+Shift+V)", "App id", "App ID"
+    // After normalize: "app id" → match /^app id$/
+    return keys.find(k => n(k) === 'app id') ||
+           keys.find(k => /^app\s*id$/i.test(n(k))) ||
+           keys.find(k => n(k).startsWith('app id'));
   }
   if (type === 'payid') {
-    return keys.find(k => /^pay[\s_-]?id$/i.test(clean(k)));
+    // Matches: "Pay ID (Ctrl+Shift+V)", "Pay ID \n(Ctrl+Shift+V)", "Pay ID"
+    // After normalize: "pay id" → match
+    return keys.find(k => n(k) === 'pay id') ||
+           keys.find(k => /^pay\s*id$/i.test(n(k)));
   }
   if (type === 'utrid') {
-    return keys.find(k => /^utr$/i.test(clean(k))) ||
-           keys.find(k => /^utr[\s_-]?(no|number|#)?$/i.test(clean(k)));
+    // Matches: "UTR" exactly
+    return keys.find(k => n(k) === 'utr') ||
+           keys.find(k => /^utr$/i.test(n(k)));
   }
   if (type === 'amt') {
-    // "Amount\n(Ctrl+Shift+V)" -> clean = "amount" -> match!
-    return keys.find(k => /^amount$/i.test(clean(k)) && !/due|diff|emi due/i.test(k.split('\n')[0])) ||
-           keys.find(k => /^amount/i.test(clean(k)) && !/due|diff|emi due/i.test(k.split('\n')[0])) ||
-           keys.find(k => /amount/i.test(clean(k)) && !/due|diff|emi due/i.test(k));
+    // Matches: "Amount (Ctrl+Shift+V)", "Amount\n(Ctrl+Shift+V)", "Amount"
+    // After normalize → "amount"
+    // NOT: "EMI Due Amount", "Diff"
+    return keys.find(k => n(k) === 'amount') ||
+           keys.find(k => /^amount$/i.test(n(k)) && !/emi due|diff/i.test(n(k)));
   }
   return null;
 }
+
 function cleanNum(v) {
   if (v === null || v === undefined || v === '') return 0;
-  return parseFloat(String(v).replace(/[\u20b9,\s]/g,'').replace(/[^0-9.-]/g,'')) || 0;
+  // Handles: "9,984" / "₹23,413" / "23413.00" / 23413
+  return parseFloat(String(v).replace(/[₹\u20b9,\s]/g,'').replace(/[^0-9.-]/g,'')) || 0;
 }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function friendly(k) { return k.split('\n')[0].replace(/\(.*?\)/g,'').trim(); }
+function friendly(k) {
+  // Remove (anything) and newline-onwards, trim
+  return k.replace(/\s*\(.*?\)\s*/g,'').replace(/[\n\r].*/s,'').trim();
+}
 
-const COL_ORDER = ['App id','App ID','APP ID','Pay ID','Pay Id','PAY ID','Payment Type','Amount','Date','EMI Date','UTR','NBFC','SPOC','Source','Sent to Lender','Remarks'];
+// Preferred display order — matches both sheets
+const COL_ORDER = ['LAN','App id','Payment Type','Amount','Date','EMI Date','Settlement Date','Pay ID','UTR','NBFC','SPOC','Source','Sent to Lender','Remarks'];
 function sortCols(cols) {
   const ordered = [];
+  // Skip "Do Not edit" and "Diff" columns from display
+  const skip = c => /do not edit/i.test(c) || /^diff$/i.test(normalizeKey(c)) || /customer name/i.test(c) || /emi due amount/i.test(c);
   COL_ORDER.forEach(preferred => {
-    const found = cols.find(c => friendly(c).toLowerCase() === preferred.toLowerCase());
+    const found = cols.find(c => !skip(c) && friendly(c).trim().toLowerCase() === preferred.trim().toLowerCase());
     if (found && !ordered.includes(found)) ordered.push(found);
   });
-  cols.forEach(c => { if (!ordered.includes(c)) ordered.push(c); });
+  cols.forEach(c => { if (!ordered.includes(c) && !skip(c)) ordered.push(c); });
   return ordered;
 }
 
@@ -668,7 +733,7 @@ function renderStatsAndTable(type, results) {
 
 function buildTable(results, totalAmt) {
   const sample = results[0]?.matches[0] || {};
-  const rawCols = Object.keys(sample).filter(k => !/do not edit/i.test(k.split('\n')[0]));
+  const rawCols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
   const cols = sortCols(rawCols);
   const thead = '<tr><th>Sr</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
   let tbody = ''; let sr = 1;
@@ -677,13 +742,13 @@ function buildTable(results, totalAmt) {
     sheet.matches.forEach(row => {
       const cells = cols.map(k => {
         const v = row[k] !== undefined ? row[k] : '';
-        const fk = friendly(k).toLowerCase();
-        if (/^app[\s_-]?id$/i.test(fk)) return `<td class="td-appid">${esc(String(v))}</td>`;
-        if (/^pay[\s_-]?id$/i.test(fk)) return `<td class="td-payid">${esc(String(v))}</td>`;
-        if (/^utr$/i.test(fk.replace(/\s/g,''))) return `<td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#1565c0;">${esc(String(v))}</td>`;
-        if (/^amount$/i.test(fk) && !/due|diff/i.test(k)) {
+        const nk = normalizeKey(k);
+        if (/^app\s*id$/i.test(nk)) return `<td class="td-appid">${esc(String(v))}</td>`;
+        if (/^pay\s*id$/i.test(nk)) return `<td class="td-payid">${esc(String(v))}</td>`;
+        if (/^utr(\s*(no|number|#))?$/i.test(nk)) return `<td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#1565c0;">${esc(String(v))}</td>`;
+        if (/^amount$/i.test(nk) && !/due|diff/i.test(nk)) {
           const num = cleanNum(v);
-          return `<td class="td-amt">${num > 0 ? '\u20b9'+num.toLocaleString('en-IN') : esc(String(v))}</td>`;
+          return `<td class="td-amt">${num > 0 ? '₹'+num.toLocaleString('en-IN') : esc(String(v))}</td>`;
         }
         return `<td>${esc(String(v))}</td>`;
       }).join('');
@@ -691,8 +756,9 @@ function buildTable(results, totalAmt) {
     });
   });
   tbody += `<tr class="total-row"><td colspan="2" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{
-    if (/^amount$/i.test(friendly(k).toLowerCase()) && !/due|diff/i.test(k))
-      return `<td style="text-align:right">\u20b9${totalAmt.toLocaleString('en-IN')}</td>`;
+    const nk = normalizeKey(k);
+    if (/^amount$/i.test(nk) && !/due|diff/i.test(nk))
+      return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`;
     return '<td></td>';
   }).join('')}</tr>`;
   return `<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
@@ -848,7 +914,7 @@ function renderBulkResults(allResults, ids) {
   } else {
     // Pay ID / UTR bulk — simple table
     const sample = allResults[0]?.results[0]?.matches[0] || {};
-    const rawCols = Object.keys(sample).filter(k => !/do not edit/i.test(k.split('\n')[0]));
+    const rawCols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
     const cols = sortCols(rawCols);
     const thead = '<tr><th>Sr</th><th>Searched ID</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
     let tbody = ''; let sr = 1;
@@ -858,13 +924,13 @@ function renderBulkResults(allResults, ids) {
         sheet.matches.forEach(row => {
           const cells = cols.map(k => {
             const v = row[k] !== undefined ? row[k] : '';
-            const fk = friendly(k).toLowerCase();
-            if (/^app[\s_-]?id$/i.test(fk)) return `<td class="td-appid">${esc(String(v))}</td>`;
-            if (/^pay[\s_-]?id$/i.test(fk)) return `<td class="td-payid">${esc(String(v))}</td>`;
-            if (/^utr$/i.test(fk.replace(/\s/g,''))) return `<td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#1565c0;">${esc(String(v))}</td>`;
-            if (/^amount$/i.test(fk) && !/due|diff/i.test(k)) {
+            const nk = normalizeKey(k);
+            if (/^app\s*id$/i.test(nk)) return `<td class="td-appid">${esc(String(v))}</td>`;
+            if (/^pay\s*id$/i.test(nk)) return `<td class="td-payid">${esc(String(v))}</td>`;
+            if (/^utr(\s*(no|number|#))?$/i.test(nk)) return `<td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#1565c0;">${esc(String(v))}</td>`;
+            if (/^amount$/i.test(nk) && !/due|diff/i.test(nk)) {
               const num = cleanNum(v);
-              return `<td class="td-amt">${num > 0 ? '\u20b9'+num.toLocaleString('en-IN') : esc(String(v))}</td>`;
+              return `<td class="td-amt">${num > 0 ? '₹'+num.toLocaleString('en-IN') : esc(String(v))}</td>`;
             }
             return `<td>${esc(String(v))}</td>`;
           }).join('');
@@ -916,6 +982,115 @@ function exportCSV(type) {
 document.getElementById('appid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('appid'); });
 document.getElementById('payid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('payid'); });
 document.getElementById('utrid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('utrid'); });
+
+// ── GOOGLE SHEETS CONFIG ──
+// Sheet 3 is empty — only 2 active sheets
+const GOOGLE_SHEETS = [
+  {
+    id: '1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E',
+    sheetName: 'DPM DATA JAN 24 TO DEC 25',
+    label: 'Sheet 1 — DPM DATA JAN 24 TO DEC 25',
+    gid: '0'
+  },
+  {
+    id: '1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE',
+    sheetName: 'DPM DATA JAN 26 TO TILL DATE',
+    label: 'Sheet 2 — DPM DATA JAN 26 TO TILL DATE',
+    gid: '0'
+  }
+];
+
+let gsSheets = [];
+
+function getSheetCSVUrl(id, gid) {
+  return `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
+}
+
+function parseCSVText(csvText) {
+  const lines = csvText.split(/\r?\n/);
+  if (lines.length < 2) return [];
+  const headers = parseCSVLine(lines[0]);
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const vals = parseCSVLine(lines[i]);
+    const row = {};
+    headers.forEach((h, idx) => { row[h] = vals[idx] !== undefined ? vals[idx] : ''; });
+    // Skip completely empty rows
+    if (Object.values(row).every(v => !String(v).trim())) continue;
+    rows.push(row);
+  }
+  return rows;
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (c === ',' && !inQ) {
+      result.push(cur.trim()); cur = '';
+    } else { cur += c; }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function updateGSStatusList(statuses) {
+  const el = document.getElementById('gs-status-list');
+  el.innerHTML = statuses.map(s => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${s.ok?'#e8f5e9':'#fff3e0'};border:1px solid ${s.ok?'#a5d6a7':'#ffcc80'};border-radius:6px;">
+      <span style="font-size:16px">${s.ok?'✅':(s.loading?'⏳':'⚠️')}</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:${s.ok?'var(--green-dark)':'var(--orange)'}">${esc(s.label)}</div>
+        <div style="font-size:11px;color:#666;">${esc(s.msg)}</div>
+      </div>
+      ${s.ok?`<span style="font-size:11px;font-family:'JetBrains Mono',monospace;background:var(--green-dark);color:#fff;padding:2px 8px;border-radius:10px;">${s.rows.toLocaleString()} rows</span>`:''}
+    </div>`).join('');
+}
+
+async function syncAllGoogleSheets() {
+  const statusEl = document.getElementById('gs-sync-status');
+  if (!statusEl) return;
+  statusEl.textContent = '⏳ Syncing...';
+  gsSheets = [];
+
+  const statuses = GOOGLE_SHEETS.map(s => ({label:s.label, loading:true, ok:false, msg:'Fetching...', rows:0}));
+  updateGSStatusList(statuses);
+
+  for (let i = 0; i < GOOGLE_SHEETS.length; i++) {
+    const cfg = GOOGLE_SHEETS[i];
+    try {
+      const resp = await fetch(getSheetCSVUrl(cfg.id, cfg.gid));
+      if (!resp.ok) throw new Error('HTTP ' + resp.status + ' — Sheet publicly shared hai? (Anyone with link → Viewer)');
+      const text = await resp.text();
+      if (text.includes('<!DOCTYPE html') || text.includes('<html')) throw new Error('Sheet publicly shared nahi hai ya gid galat hai.');
+      const rows = parseCSVText(text);
+      if (rows.length === 0) throw new Error('Sheet empty hai ya headers nahi mile.');
+
+      // Debug: log first row keys so we can verify column detection
+      console.log(`[GS] Sheet "${cfg.sheetName}" — Sample keys:`, Object.keys(rows[0]));
+      console.log(`[GS] findKey appid:`, findKey(rows[0],'appid'), '| amt:', findKey(rows[0],'amt'), '| payid:', findKey(rows[0],'payid'), '| utr:', findKey(rows[0],'utrid'));
+
+      gsSheets.push({fileName:'GoogleSheet', sheetName:cfg.sheetName, dbId:'gs_'+i, rows, isGoogleSheet:true, label:cfg.label});
+      statuses[i] = {label:cfg.label, loading:false, ok:true, msg:'Synced · ' + new Date().toLocaleTimeString('en-IN'), rows:rows.length};
+    } catch(e) {
+      statuses[i] = {label:cfg.label, loading:false, ok:false, msg:'❌ ' + e.message, rows:0};
+      console.error('[GS] Error sheet', cfg.sheetName, e);
+    }
+    updateGSStatusList(statuses);
+  }
+
+  allSheets = allSheets.filter(s => !s.isGoogleSheet);
+  allSheets = [...gsSheets, ...allSheets];
+  updateDataSummary();
+  const total = gsSheets.reduce((a,s)=>a+s.rows.length,0);
+  statusEl.textContent = `✅ ${gsSheets.length}/${GOOGLE_SHEETS.length} sheets synced · ${total.toLocaleString()} rows`;
+  setTimeout(() => { statusEl.textContent = ''; }, 8000);
+}
 </script>
 </body>
 </html>
