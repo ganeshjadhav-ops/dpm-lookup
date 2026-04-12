@@ -185,23 +185,8 @@ table.dt tbody td:last-child{border-right:none;}
 
     <!-- FILES PANEL -->
     <div class="panel active" id="panel-files">
-      <!-- GOOGLE SHEETS AUTO FETCH -->
       <div class="upload-card">
-        <div class="card-title">🔗 Google Sheets — Auto Data Fetch</div>
-        <p style="font-size:13px;color:#666;margin-bottom:12px;">Data auto-fetches from Google Sheets on page load. Add new links anytime.</p>
-        <div id="gs-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--border);">
-          <input type="text" id="gs-url" placeholder="Paste Google Sheet URL..." style="flex:1;min-width:200px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;font-family:'Inter',sans-serif;"/>
-          <input type="text" id="gs-name" placeholder="Sheet tab name (e.g. DPM DATA JAN 26 TO TILL DATE)" style="width:300px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;font-family:'Inter',sans-serif;"/>
-          <button onclick="addGSheet()" style="padding:9px 16px;background:var(--green-dark);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">+ Add</button>
-        </div>
-        <button id="gs-btn" onclick="fetchAllGSheets()" style="width:100%;margin-top:10px;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">🔄 Fetch / Refresh All Google Sheet Data</button>
-        <div id="gs-status" style="display:none;margin-top:8px;padding:10px 14px;border-radius:6px;font-size:13px;"></div>
-      </div>
-
-      <!-- MANUAL UPLOAD -->
-      <div class="upload-card">
-        <div class="card-title">📂 Manual Excel Upload (Optional)</div>
+        <div class="card-title">📂 Upload & Manage Excel Files</div>
         <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
           <div style="font-size:24px;margin-bottom:6px">📊</div>
           <div class="upload-zone-text">Drag & drop Excel files here or click to browse</div>
@@ -347,18 +332,6 @@ table.dt tbody td:last-child{border-right:none;}
 
 <script src="config.js"></script>
 <script>
-// ── ALL VARIABLES FIRST ──
-var GS_DEFAULTS = [
-  {id:'gs1',name:'DPM DATA JAN 24 TO DEC 25',url:'https://docs.google.com/spreadsheets/d/1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E',sheetName:'DPM DATA JAN 24 TO DEC 25'},
-  {id:'gs2',name:'DPM DATA JAN 26 TO TILL DATE',url:'https://docs.google.com/spreadsheets/d/1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE',sheetName:'DPM DATA JAN 26 TO TILL DATE'},
-  {id:'gs3',name:'New Sheet Data',url:'https://docs.google.com/spreadsheets/d/16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY',sheetName:'Sheet1'}
-];
-var gSheets = [];
-var allSheets = [];
-var DB_NAME = 'DPMFiles', DB_VER = 1, STORE = 'files';
-var db = null;
-var lastResults = {appid:[], payid:[], utrid:[], bulk:[]};
-var bulkMode = 'appid';
 // ── AUTH ──
 function doLogin() {
   const u = document.getElementById('uname').value.trim();
@@ -396,15 +369,14 @@ function switchTab(name, el) {
 }
 
 // ── DATA STORE ──
+let allSheets = []; // [{fileName, sheetName, label, rows:[]}]
+const DB_NAME = 'DPMFiles', DB_VER = 1, STORE = 'files';
+let db = null;
 
 function initApp() {
-  var saved = localStorage.getItem('dpm_gs');
-  gSheets = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(GS_DEFAULTS));
-  renderGSList();
   openDB()
-    .then(function(){ return loadStoredFiles(); })
-    .catch(function(e){ console.error('DB error:', e); updateUI(); });
-  fetchAllGSheets();
+    .then(() => loadStoredFiles())
+    .catch(e => { console.error('DB init error:', e); updateUI(); });
 }
 
 function openDB() {
@@ -555,14 +527,13 @@ function updateFileList() {
 
 function updateDataSummary() {
   const el = document.getElementById('data-summary');
-  if (!allSheets.length) { el.textContent = 'No data loaded yet. Fetch Google Sheets or upload Excel files.'; return; }
+  if (!allSheets.length) { el.textContent = 'No files loaded yet. Upload Excel files above.'; return; }
   const totalRows = allSheets.reduce((a,s) => a+s.rows.length, 0);
   el.innerHTML = allSheets.map(s =>
     `<div style="padding:4px 0;border-bottom:1px solid #e8e8e8;font-size:12px;">
-      ${s.gsId?'🔗':'📊'} <b>${esc(s.fileName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span>
-      <span style="color:#999;font-size:10px;margin-left:4px;">${s.gsId?'(Google Sheet)':'(Excel Upload)'}</span>
+      📊 <b>${esc(s.fileName)}</b> — Sheet: <b>${esc(s.sheetName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span>
     </div>`
-  ).join('') + `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);">Total: ${totalRows.toLocaleString()} rows</div>`;
+  ).join('') + `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);">Total: ${totalRows.toLocaleString()} rows across ${allSheets.length} sheet(s)</div>`;
 }
 
 async function removeFile(id) {
@@ -571,19 +542,26 @@ async function removeFile(id) {
 }
 
 // ── SEARCH ──
+let lastResults = {appid:[], payid:[], utrid:[], bulk:[]};
 
 function findKey(row, type) {
   const keys = Object.keys(row);
-  const ck = k => k.replace(/\n[\s\S]*/,'').replace(/\([\s\S]*?\)/g,'').trim().toLowerCase();
-  if (type === 'appid') return keys.find(k => /app.?id/i.test(ck(k)));
-  if (type === 'payid') return keys.find(k => /^pay.?id/i.test(ck(k)));
-  if (type === 'utrid') return keys.find(k => /^utr/i.test(ck(k)));
-  if (type === 'amt') return keys.find(k => ck(k)==='amount') || keys.find(k => /^amount/i.test(ck(k)) && !/due|diff|emi/i.test(ck(k)));
+  const clean = k => k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim().toLowerCase();
+  if (type === 'appid') return keys.find(k => /app.?id/i.test(k.replace(/\n.*/,'')));
+  if (type === 'payid') return keys.find(k => {
+    const c = clean(k);
+    return c === 'pay id' || c === 'payid' || c === 'pay_id' || /^pay.?id$/i.test(c);
+  });
+  if (type === 'utrid') return keys.find(k => /^utr$/i.test(clean(k)) || /^utr\b/i.test(clean(k)));
+  if (type === 'amt') {
+    return keys.find(k => /^amount/i.test(k.replace(/\n.*/,'').trim())) ||
+           keys.find(k => /amount/i.test(k) && !/due|diff|emi due/i.test(k));
+  }
   return null;
 }
-function cleanNum(v) { return parseFloat(String(v).replace(/,/g,'').replace(/[^0-9.-]/g,''))||0; }
+function cleanNum(v) { return parseFloat(String(v).replace(/[^0-9.-]/g,''))||0; }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function friendly(k) { return k.replace(/\n[\s\S]*/,'').replace(/\([\s\S]*?\)/g,'').trim(); }
+function friendly(k) { return k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim(); }
 
 function doSingleSearch(type) {
   const input = document.getElementById(type+'-input').value.trim();
@@ -669,34 +647,32 @@ function renderStatsAndTable(type, results) {
 function buildTable(results, totalAmt) {
   const sample = results[0]?.matches[0] || {};
   const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
-  const fk = k => k.replace(/\n[\s\S]*/,'').replace(/\([\s\S]*?\)/g,'').trim();
-  const ck = k => fk(k).toLowerCase();
-  const thead = '<tr><th>Sr</th><th>Source</th>'+cols.map(k=>`<th>${esc(fk(k))}</th>`).join('')+'</tr>';
+  const thead = '<tr><th>Sr</th><th>File</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
   let tbody = ''; let sr = 1;
   results.forEach(sheet => {
-    tbody += `<tr class="sec-row"><td colspan="${cols.length+2}">${esc(sheet.fileName)} — ${esc(sheet.sheetName)}</td></tr>`;
+    tbody += `<tr class="sec-row"><td colspan="${cols.length+3}">${esc(sheet.fileName)} — ${esc(sheet.sheetName)}</td></tr>`;
     sheet.matches.forEach(row => {
       const cells = cols.map(k => {
         const v = row[k] !== undefined ? row[k] : '';
-        const c = ck(k);
-        if (/app.?id/i.test(c)) return `<td class="td-appid">${esc(String(v))}</td>`;
-        if (/^pay.?id/i.test(c)) return `<td class="td-payid">${esc(String(v))}</td>`;
-        if (/^utr/i.test(c)) return `<td style="font-family:monospace;font-size:11px;color:var(--blue);">${esc(String(v))}</td>`;
-        if (c==='amount'||(/^amount/i.test(c)&&!/due|diff|emi/i.test(c))) return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
+        const kl = k.toLowerCase();
+        if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
+        if (/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
+        if (/^amount/i.test(friendly(k)) || (/amount/i.test(kl) && !/due|diff/i.test(kl)))
+          return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
         return `<td>${esc(String(v))}</td>`;
       }).join('');
-      tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-sheet">${esc(sheet.fileName)}</td>${cells}</tr>`;
+      tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-sheet">${esc(sheet.fileName.replace('.xlsx','').replace('.xls',''))}</td><td class="td-sheet">${esc(sheet.sheetName)}</td>${cells}</tr>`;
     });
   });
-  tbody += `<tr class="total-row"><td colspan="2" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{
-    const c=ck(k);
-    if(c==='amount'||(/^amount/i.test(c)&&!/due|diff|emi/i.test(c))) return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`;
+  tbody += `<tr class="total-row"><td colspan="3" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{
+    if (/^amount/i.test(friendly(k))||(/amount/i.test(k)&&!/due|diff/i.test(k))) return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`;
     return '<td></td>';
   }).join('')}</tr>`;
   return `<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
 }
 
 // ── BULK ──
+let bulkMode = 'appid';
 function setBulkMode(mode) {
   bulkMode = mode;
   document.getElementById('bulk-mode-appid').classList.toggle('active', mode==='appid');
@@ -909,111 +885,6 @@ function exportCSV(type) {
 document.getElementById('appid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('appid'); });
 document.getElementById('payid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('payid'); });
 document.getElementById('utrid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('utrid'); });
-
-// ── GOOGLE SHEETS FUNCTIONS ──
-function getSheetId(url) {
-  var m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-  return m ? m[1] : null;
-}
-function saveGS() { localStorage.setItem('dpm_gs', JSON.stringify(gSheets)); }
-
-function addGSheet() {
-  var url = document.getElementById('gs-url').value.trim();
-  var name = document.getElementById('gs-name').value.trim();
-  if (!url||!name) { alert('URL aur Sheet tab name dono daalo!'); return; }
-  if (!getSheetId(url)) { alert('Invalid Google Sheet URL!'); return; }
-  gSheets.push({id:'gs'+Date.now(),name:name,url:url,sheetName:name});
-  saveGS(); renderGSList();
-  document.getElementById('gs-url').value='';
-  document.getElementById('gs-name').value='';
-}
-
-function removeGSheet(id) {
-  gSheets = gSheets.filter(function(s){return s.id!==id;});
-  allSheets = allSheets.filter(function(s){return s.gsId!==id;});
-  saveGS(); renderGSList(); updateDataSummary();
-}
-
-function renderGSList() {
-  var el = document.getElementById('gs-list');
-  if (!el) return;
-  if (!gSheets.length) { el.innerHTML='<p style="font-size:13px;color:#888;">No sheets added.</p>'; return; }
-  el.innerHTML = gSheets.map(function(s) {
-    var icon = s.status==='loaded'?'✅':s.status==='loading'?'⏳':s.status==='error'?'❌':'📊';
-    var info = s.status==='loaded'?(s.rowCount||0).toLocaleString()+' rows loaded'
-              :s.status==='loading'?'Fetching...'
-              :s.status==='error'?'Error: '+esc(s.error||'Failed')
-              :'Click Fetch to load';
-    return '<div style="display:flex;align-items:center;gap:10px;background:#f9fbe7;border:1px solid var(--border);border-radius:8px;padding:10px 14px;">'
-      +'<span>'+icon+'</span>'
-      +'<div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--green-dark);">'+esc(s.name)+'</div>'
-      +'<div style="font-size:11px;color:#666;font-family:monospace;">'+info+'</div></div>'
-      +'<button onclick="removeGSheet(\''+s.id+'\')" style="background:none;border:1px solid #ef9a9a;border-radius:4px;padding:3px 10px;font-size:11px;color:var(--red);cursor:pointer;">✕</button>'
-      +'</div>';
-  }).join('');
-}
-
-async function fetchAllGSheets() {
-  var btn = document.getElementById('gs-btn');
-  var statusEl = document.getElementById('gs-status');
-  if (btn) { btn.disabled=true; btn.textContent='⏳ Fetching...'; }
-  if (statusEl) { statusEl.style.cssText='display:block;margin-top:8px;padding:10px;border-radius:6px;font-size:13px;background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;'; statusEl.textContent='Connecting...'; }
-  allSheets = allSheets.filter(function(s){return !s.gsId;});
-  var loaded=0, errors=0, totalRows=0;
-  for (var i=0; i<gSheets.length; i++) {
-    var s = gSheets[i];
-    s.status='loading'; renderGSList();
-    if (statusEl) statusEl.textContent='Fetching '+(i+1)+'/'+gSheets.length+': '+s.name+'...';
-    try {
-      var sid = getSheetId(s.url);
-      if (!sid) throw new Error('Invalid URL');
-      var csvUrl = 'https://docs.google.com/spreadsheets/d/'+sid+'/gviz/tq?tqx=out:csv&sheet='+encodeURIComponent(s.sheetName);
-      var resp = await fetch(csvUrl);
-      if (!resp.ok) throw new Error('HTTP '+resp.status);
-      var text = await resp.text();
-      var rows = parseGSCSV(text);
-      if (!rows.length) throw new Error('No data found');
-      allSheets.push({fileName:s.name, sheetName:s.sheetName, gsId:s.id, rows:rows});
-      s.status='loaded'; s.rowCount=rows.length;
-      loaded++; totalRows+=rows.length;
-    } catch(e) { s.status='error'; s.error=e.message; errors++; }
-    renderGSList();
-  }
-  saveGS();
-  if (btn) { btn.disabled=false; btn.textContent='🔄 Fetch / Refresh All Google Sheet Data'; }
-  if (statusEl) {
-    if (errors===0) { statusEl.style.cssText='display:block;margin-top:8px;padding:10px;border-radius:6px;font-size:13px;background:#e8f5e9;color:#1a5c1a;border:1px solid #a5d6a7;'; statusEl.textContent='✅ '+loaded+' sheets loaded! '+totalRows.toLocaleString()+' rows ready.'; }
-    else { statusEl.style.cssText='display:block;margin-top:8px;padding:10px;border-radius:6px;font-size:13px;background:#fff3e0;color:#e65100;border:1px solid #ffb74d;'; statusEl.textContent='⚠️ '+loaded+' loaded, '+errors+' failed. '+totalRows.toLocaleString()+' rows.'; }
-  }
-  updateDataSummary();
-}
-
-function parseGSCSV(text) {
-  var lines = text.split('\n');
-  if (lines.length<2) return [];
-  var headers = parseGSLine(lines[0]);
-  var rows = [];
-  for (var i=1; i<lines.length; i++) {
-    if (!lines[i].trim()) continue;
-    var vals = parseGSLine(lines[i]);
-    var obj = {};
-    for (var j=0; j<headers.length; j++) obj[headers[j]] = vals[j]||'';
-    rows.push(obj);
-  }
-  return rows;
-}
-
-function parseGSLine(line) {
-  var result=[], cur='', inQ=false;
-  for (var i=0; i<line.length; i++) {
-    var c=line[i];
-    if (c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
-    else if(c===','&&!inQ){result.push(cur.trim());cur='';}
-    else cur+=c;
-  }
-  result.push(cur.trim());
-  return result;
-}
 </script>
 </body>
 </html>
