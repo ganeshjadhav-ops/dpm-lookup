@@ -188,21 +188,21 @@ table.dt tbody td:last-child{border-right:none;}
 
       <!-- GOOGLE SHEETS AUTO FETCH -->
       <div class="upload-card">
-        <div class="card-title">🔗 Google Sheets — Auto Data Source</div>
-        <p style="font-size:13px;color:#666;margin-bottom:12px;">Add Google Sheet links — data auto-fetches on page load. No manual upload needed!</p>
+        <div class="card-title">🔗 Google Sheets — Auto Data Fetch</div>
+        <p style="font-size:13px;color:#666;margin-bottom:12px;">Data automatically fetches from Google Sheets on page load. Add new sheet links anytime.</p>
         <div id="gsheet-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--border);">
-          <input type="text" id="gs-url" placeholder="Paste Google Sheet URL..." style="flex:1;min-width:200px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;"/>
-          <input type="text" id="gs-name" placeholder="Sheet tab name (e.g. DPM DATA JAN 26 TO TILL DATE)" style="width:280px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;"/>
-          <button onclick="addGSheet()" style="padding:9px 16px;background:var(--green-dark);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">+ Add</button>
+          <input type="text" id="gs-url" placeholder="Paste Google Sheet URL here..." style="flex:1;min-width:200px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;font-family:'Inter',sans-serif;"/>
+          <input type="text" id="gs-name" placeholder="Sheet tab name (e.g. DPM DATA JAN 26 TO TILL DATE)" style="width:300px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;outline:none;font-family:'Inter',sans-serif;"/>
+          <button onclick="addGSheet()" style="padding:9px 16px;background:var(--green-dark);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">+ Add Sheet</button>
         </div>
-        <button id="gs-fetch-btn" onclick="fetchAllGSheets()" style="width:100%;margin-top:10px;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">🔄 Fetch / Refresh All Google Sheet Data</button>
-        <div id="gs-status" style="display:none;margin-top:8px;padding:10px 14px;border-radius:6px;font-size:13px;"></div>
+        <button id="gs-fetch-btn" onclick="fetchAllGSheets()" style="width:100%;margin-top:10px;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">🔄 Fetch / Refresh All Google Sheet Data</button>
+        <div id="gs-status" style="display:none;margin-top:8px;padding:10px 14px;border-radius:6px;font-size:13px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;"></div>
       </div>
 
       <!-- MANUAL EXCEL UPLOAD -->
       <div class="upload-card">
-        <div class="card-title">📂 Manual Excel Upload (Optional)</div>
+        <div class="card-title">📂 Manual Excel Upload</div>
         <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
           <div style="font-size:24px;margin-bottom:6px">📊</div>
           <div class="upload-zone-text">Drag & drop Excel files here or click to browse</div>
@@ -549,8 +549,8 @@ function updateDataSummary() {
   const totalRows = allSheets.reduce((a,s) => a+s.rows.length, 0);
   el.innerHTML = allSheets.map(s =>
     `<div style="padding:4px 0;border-bottom:1px solid #e8e8e8;font-size:12px;">
-      ${s.gsId ? '🔗' : '📊'} <b>${esc(s.fileName)}</b> — Sheet: <b>${esc(s.sheetName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span>
-      <span style="color:#999;font-size:10px;margin-left:4px;">${s.gsId ? '(Google Sheet)' : '(Excel Upload)'}</span>
+      ${s.gsId?'🔗':'📊'} <b>${esc(s.fileName)}</b> — Sheet: <b>${esc(s.sheetName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span>
+      <span style="color:#999;font-size:10px;margin-left:6px;">${s.gsId?'(Google Sheet)':'(Excel Upload)'}</span>
     </div>`
   ).join('') + `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);">Total: ${totalRows.toLocaleString()} rows across ${allSheets.length} sheet(s)</div>`;
 }
@@ -900,11 +900,11 @@ function exportCSV(type) {
   a.click();
 }
 
-// ── GOOGLE SHEETS ──
+// ── GOOGLE SHEETS AUTO FETCH ──
 const DEFAULT_GSHEETS = [
-  {id:'gs1', name:'DPM DATA JAN 24 TO DEC 25', url:'https://docs.google.com/spreadsheets/d/1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E', sheetName:'DPM DATA JAN 24 TO DEC 25'},
+  {id:'gs1', name:'DPM DATA JAN 24 TO DEC 25',    url:'https://docs.google.com/spreadsheets/d/1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E', sheetName:'DPM DATA JAN 24 TO DEC 25'},
   {id:'gs2', name:'DPM DATA JAN 26 TO TILL DATE', url:'https://docs.google.com/spreadsheets/d/1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE', sheetName:'DPM DATA JAN 26 TO TILL DATE'},
-  {id:'gs3', name:'New Data Sheet', url:'https://docs.google.com/spreadsheets/d/16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY', sheetName:'Sheet1'}
+  {id:'gs3', name:'New Sheet Data',               url:'https://docs.google.com/spreadsheets/d/16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY', sheetName:'Sheet1'}
 ];
 let gSheets = [];
 
@@ -941,41 +941,46 @@ function removeGSheet(id) {
 
 function renderGSheetList() {
   const el = document.getElementById('gsheet-list');
-  if (!gSheets.length) { el.innerHTML = '<p style="font-size:13px;color:#888;">No Google Sheets added yet.</p>'; return; }
+  if (!gSheets.length) { el.innerHTML = '<p style="font-size:13px;color:#888;">No Google Sheets added.</p>'; return; }
   el.innerHTML = gSheets.map(s => `
-    <div style="display:flex;align-items:center;gap:8px;background:#f9fbe7;border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+    <div style="display:flex;align-items:center;gap:10px;background:#f9fbe7;border:1px solid var(--border);border-radius:8px;padding:10px 14px;">
       <span style="font-size:18px">${s.status==='loaded'?'✅':s.status==='loading'?'⏳':s.status==='error'?'❌':'📊'}</span>
       <div style="flex:1;">
         <div style="font-size:13px;font-weight:600;color:var(--green-dark);">${esc(s.name)}</div>
-        <div style="font-size:11px;color:#666;font-family:'JetBrains Mono',monospace;">${s.status==='loaded'?s.rowCount+' rows loaded':s.status==='loading'?'Fetching...':s.status==='error'?'❌ '+esc(s.error||'Failed'):'Pending fetch'}</div>
+        <div style="font-size:11px;color:#666;font-family:'JetBrains Mono',monospace;">${
+          s.status==='loaded' ? s.rowCount.toLocaleString()+' rows loaded' :
+          s.status==='loading' ? 'Fetching data...' :
+          s.status==='error' ? '❌ '+esc(s.error||'Failed') : 'Pending — click Fetch'
+        }</div>
       </div>
-      <button onclick="removeGSheet('${s.id}')" style="background:none;border:1px solid #ef9a9a;border-radius:4px;padding:3px 10px;font-size:11px;color:var(--red);cursor:pointer;">✕ Remove</button>
+      <button onclick="removeGSheet('${s.id}')" style="background:none;border:1px solid #ef9a9a;border-radius:4px;padding:3px 10px;font-size:11px;color:var(--red);cursor:pointer;font-family:'Inter',sans-serif;">✕ Remove</button>
     </div>`).join('');
 }
 
 async function fetchAllGSheets() {
   const btn = document.getElementById('gs-fetch-btn');
   const status = document.getElementById('gs-status');
-  btn.disabled = true; btn.textContent = '⏳ Fetching...';
+  btn.disabled = true; btn.textContent = '⏳ Fetching data from Google Sheets...';
   status.style.display = 'block';
-  status.style.background = '#e3f2fd'; status.style.color = '#1565c0'; status.style.border = '1px solid #90caf9';
-  // Remove old gsheet rows
+  status.style.background = '#e3f2fd'; status.style.color = '#1565c0'; status.style.borderColor = '#90caf9';
+  // Remove old gsheet data, keep Excel uploads
   allSheets = allSheets.filter(s => !s.gsId);
   let loaded = 0, errors = 0, totalRows = 0;
+
   for (let i = 0; i < gSheets.length; i++) {
     const s = gSheets[i];
     s.status = 'loading'; renderGSheetList();
     status.textContent = `Fetching ${i+1}/${gSheets.length}: ${s.name}...`;
     try {
       const sid = extractSheetId(s.url);
-      if (!sid) throw new Error('Invalid URL');
+      if (!sid) throw new Error('Invalid Google Sheet URL');
       const csvUrl = `https://docs.google.com/spreadsheets/d/${sid}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(s.sheetName)}`;
       const resp = await fetch(csvUrl);
-      if (!resp.ok) throw new Error('HTTP '+resp.status);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status + ' — Check if sheet is publicly shared');
       const text = await resp.text();
       const rows = parseCSVToRows(text);
-      if (!rows.length) throw new Error('No data found');
-      allSheets.push({fileName:s.name, sheetName:s.sheetName, gsId:s.id, rows});
+      if (!rows.length) throw new Error('No data found in sheet');
+      allSheets.push({fileName: s.name, sheetName: s.sheetName, gsId: s.id, rows});
       s.status = 'loaded'; s.rowCount = rows.length;
       loaded++; totalRows += rows.length;
     } catch(e) {
@@ -983,14 +988,19 @@ async function fetchAllGSheets() {
     }
     renderGSheetList();
   }
+
   saveGSheets();
   btn.disabled = false; btn.textContent = '🔄 Fetch / Refresh All Google Sheet Data';
+
   if (errors === 0) {
-    status.style.background = '#e8f5e9'; status.style.color = '#1a5c1a'; status.style.border = '1px solid #a5d6a7';
-    status.textContent = `✅ All loaded! ${totalRows.toLocaleString()} rows ready.`;
-  } else {
-    status.style.background = '#fff3e0'; status.style.color = '#e65100'; status.style.border = '1px solid #ffb74d';
+    status.style.background = '#e8f5e9'; status.style.color = '#1a5c1a'; status.style.borderColor = '#a5d6a7';
+    status.textContent = `✅ All ${loaded} sheets loaded! ${totalRows.toLocaleString()} total rows ready to search.`;
+  } else if (loaded > 0) {
+    status.style.background = '#fff3e0'; status.style.color = '#e65100'; status.style.borderColor = '#ffb74d';
     status.textContent = `⚠️ ${loaded} loaded, ${errors} failed. ${totalRows.toLocaleString()} rows available.`;
+  } else {
+    status.style.background = '#ffebee'; status.style.color = '#c62828'; status.style.borderColor = '#ef9a9a';
+    status.textContent = `❌ All sheets failed. Check if sheets are publicly shared (Anyone with link → Viewer).`;
   }
   updateDataSummary();
 }
@@ -1004,7 +1014,7 @@ function parseCSVToRows(text) {
     if (!lines[i].trim()) continue;
     const vals = parseCSVLine(lines[i]);
     const obj = {};
-    headers.forEach((h, idx) => { obj[h] = vals[idx] || ''; });
+    headers.forEach((h, idx) => { obj[h] = vals[idx] !== undefined ? vals[idx] : ''; });
     rows.push(obj);
   }
   return rows;
@@ -1014,8 +1024,10 @@ function parseCSVLine(line) {
   const result = []; let cur = '', inQ = false;
   for (let i = 0; i < line.length; i++) {
     const c = line[i];
-    if (c === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
-    else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+    if (c === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
     else cur += c;
   }
   result.push(cur.trim());
