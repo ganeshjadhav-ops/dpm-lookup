@@ -566,14 +566,33 @@ let lastResults = {appid:[], payid:[], utrid:[], bulk:[]};
 function findKey(row, type) {
   const keys = Object.keys(row);
   const clean = k => k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim().toLowerCase();
-  if (type === 'appid') return keys.find(k => /app.?id/i.test(k.replace(/\n.*/,'')));
-  if (type === 'payid') return keys.find(k => {
-    const c = clean(k);
-    return c === 'pay id' || c === 'payid' || c === 'pay_id' || /^pay.?id$/i.test(c);
-  });
-  if (type === 'utrid') return keys.find(k => /^utr$/i.test(clean(k)) || /^utr\b/i.test(clean(k)));
+
+  if (type === 'appid') {
+    return keys.find(k => {
+      const c = clean(k);
+      return c === 'app id' || c === 'appid' || c === 'app_id' || /^app.?id$/i.test(c);
+    });
+  }
+
+  if (type === 'payid') {
+    return keys.find(k => {
+      const c = clean(k);
+      return c === 'pay id' || c === 'payid' || c === 'pay_id' || /^pay.?id$/i.test(c);
+    });
+  }
+
+  if (type === 'utrid') {
+    return keys.find(k => {
+      const c = clean(k);
+      return c === 'utr' || c === 'utr no' || c === 'utr number' || /^utr$/i.test(c);
+    });
+  }
+
   if (type === 'amt') {
-    return keys.find(k => /^amount/i.test(k.replace(/\n.*/,'').trim())) ||
+    // Match "Amount" exactly first, then fallback
+    return keys.find(k => clean(k) === 'amount') ||
+           keys.find(k => /^amount$/i.test(clean(k))) ||
+           keys.find(k => /^amount/i.test(clean(k)) && !/due|diff|emi/i.test(k)) ||
            keys.find(k => /amount/i.test(k) && !/due|diff|emi due/i.test(k));
   }
   return null;
@@ -617,7 +636,6 @@ function searchAllSheets(type, query, mode) {
 }
 
 function renderStatsAndTable(type, results) {
-  const prefix = type === 'appid' ? 'as' : 'ps';
   const statsEl = document.getElementById(type+'-stats');
   const resultEl = document.getElementById(type+'-result');
   const exportEl = document.getElementById(type+'-export');
@@ -629,35 +647,19 @@ function renderStatsAndTable(type, results) {
     return;
   }
 
-  // Split by sheet type for stats
-  const sheet1Matches = results.filter(r => /jan.?24|oct.?24|dec.?25/i.test(r.sheetName)).flatMap(r=>r.matches);
-  const sheet2Matches = results.filter(r => /jan.?26/i.test(r.sheetName)).flatMap(r=>r.matches);
+  const sheet1Matches = results.filter(r => /jan.?24|oct.?24|dec.?25/i.test(r.sheetName)||/jan.?24|dec.?25/i.test(r.fileName)).flatMap(r=>r.matches);
+  const sheet2Matches = results.filter(r => /jan.?26/i.test(r.sheetName)||/jan.?26/i.test(r.fileName)).flatMap(r=>r.matches);
   const amt1 = sheet1Matches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
   const amt2 = sheet2Matches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
   const totalAmt = allMatches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
 
-  if (type === 'appid') {
-    document.getElementById('as1').textContent = allMatches.length;
-    document.getElementById('as2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
-    document.getElementById('as3').textContent = sheet1Matches.length;
-    document.getElementById('as4').textContent = sheet2Matches.length;
-    document.getElementById('as5').textContent = '₹'+amt1.toLocaleString('en-IN');
-    document.getElementById('as6').textContent = '₹'+amt2.toLocaleString('en-IN');
-  } else if (type === 'payid') {
-    document.getElementById('ps1').textContent = allMatches.length;
-    document.getElementById('ps2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
-    document.getElementById('ps3').textContent = sheet1Matches.length;
-    document.getElementById('ps4').textContent = sheet2Matches.length;
-    document.getElementById('ps5').textContent = '₹'+amt1.toLocaleString('en-IN');
-    document.getElementById('ps6').textContent = '₹'+amt2.toLocaleString('en-IN');
-  } else if (type === 'utrid') {
-    document.getElementById('us1').textContent = allMatches.length;
-    document.getElementById('us2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
-    document.getElementById('us3').textContent = sheet1Matches.length;
-    document.getElementById('us4').textContent = sheet2Matches.length;
-    document.getElementById('us5').textContent = '₹'+amt1.toLocaleString('en-IN');
-    document.getElementById('us6').textContent = '₹'+amt2.toLocaleString('en-IN');
-  }
+  const pfx = {appid:'as', payid:'ps', utrid:'us'}[type] || 'as';
+  document.getElementById(pfx+'1').textContent = allMatches.length;
+  document.getElementById(pfx+'2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+  document.getElementById(pfx+'3').textContent = sheet1Matches.length;
+  document.getElementById(pfx+'4').textContent = sheet2Matches.length;
+  document.getElementById(pfx+'5').textContent = '₹'+amt1.toLocaleString('en-IN');
+  document.getElementById(pfx+'6').textContent = '₹'+amt2.toLocaleString('en-IN');
   statsEl.style.display = 'grid';
   exportEl.classList.add('show');
   resultEl.innerHTML = buildTable(results, totalAmt);
@@ -666,25 +668,31 @@ function renderStatsAndTable(type, results) {
 function buildTable(results, totalAmt) {
   const sample = results[0]?.matches[0] || {};
   const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
-  const thead = '<tr><th>Sr</th><th>File</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
+  const thead = '<tr><th>Sr</th><th>Source</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
   let tbody = ''; let sr = 1;
   results.forEach(sheet => {
-    tbody += `<tr class="sec-row"><td colspan="${cols.length+3}">${esc(sheet.fileName)} — ${esc(sheet.sheetName)}</td></tr>`;
+    tbody += `<tr class="sec-row"><td colspan="${cols.length+2}">${esc(sheet.fileName)} — ${esc(sheet.sheetName)}</td></tr>`;
     sheet.matches.forEach(row => {
       const cells = cols.map(k => {
         const v = row[k] !== undefined ? row[k] : '';
-        const kl = k.toLowerCase();
-        if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
-        if (/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
-        if (/^amount/i.test(friendly(k)) || (/amount/i.test(kl) && !/due|diff/i.test(kl)))
+        const c = k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim().toLowerCase();
+        if (c === 'app id' || c === 'appid' || /^app.?id$/i.test(c))
+          return `<td class="td-appid">${esc(String(v))}</td>`;
+        if (c === 'pay id' || c === 'payid' || /^pay.?id$/i.test(c))
+          return `<td class="td-payid">${esc(String(v))}</td>`;
+        if (c === 'utr' || c === 'utr no' || c === 'utr number')
+          return `<td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);">${esc(String(v))}</td>`;
+        if (c === 'amount' || (/^amount/i.test(c) && !/due|diff|emi/i.test(c)))
           return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
         return `<td>${esc(String(v))}</td>`;
       }).join('');
-      tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-sheet">${esc(sheet.fileName.replace('.xlsx','').replace('.xls',''))}</td><td class="td-sheet">${esc(sheet.sheetName)}</td>${cells}</tr>`;
+      tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-sheet">${esc(sheet.fileName)}</td>${cells}</tr>`;
     });
   });
-  tbody += `<tr class="total-row"><td colspan="3" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{
-    if (/^amount/i.test(friendly(k))||(/amount/i.test(k)&&!/due|diff/i.test(k))) return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`;
+  tbody += `<tr class="total-row"><td colspan="2" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{
+    const c = k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim().toLowerCase();
+    if (c === 'amount' || (/^amount/i.test(c) && !/due|diff|emi/i.test(c)))
+      return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`;
     return '<td></td>';
   }).join('')}</tr>`;
   return `<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
