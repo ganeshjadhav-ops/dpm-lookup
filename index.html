@@ -589,7 +589,7 @@ function doSingleSearch(type) {
   const input = document.getElementById(type+'-input').value.trim();
   const mode = document.getElementById(type+'-mode').value;
   if (!input) return;
-  if (!allSheets.length) { alert('Please upload Excel files first!'); return; }
+  if (!allSheets.length) { alert('Please fetch Google Sheets data first! Go to Manage Files tab.'); return; }
   document.getElementById(type+'-loading').classList.add('show');
   document.getElementById(type+'-result').innerHTML = '';
   document.getElementById(type+'-stats').style.display = 'none';
@@ -605,7 +605,11 @@ function doSingleSearch(type) {
 function searchAllSheets(type, query, mode) {
   const q = query.toLowerCase();
   const results = [];
+  // If Google Sheets loaded, prefer GS over Excel for same sheet names
+  const gsSheetNames = allSheets.filter(s=>s.gsId).map(s=>s.sheetName.toLowerCase());
   allSheets.forEach(sheet => {
+    // Skip Excel sheet if same data already loaded from Google Sheets
+    if (!sheet.gsId && gsSheetNames.includes(sheet.sheetName.toLowerCase())) return;
     const matches = sheet.rows.filter(row => {
       const k = findKey(row, type);
       if (!k) return false;
@@ -708,7 +712,7 @@ function setBulkMode(mode) {
 function doBulkSearch() {
   const raw = document.getElementById('bulk-input').value.trim();
   if (!raw) return;
-  if (!allSheets.length) { alert('Please upload Excel files first!'); return; }
+  if (!allSheets.length) { alert('Please fetch Google Sheets data first! Go to Manage Files tab.'); return; }
   const ids = raw.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,500);
   if (!ids.length) return;
   document.getElementById('bulk-loading').classList.add('show');
@@ -967,6 +971,16 @@ async function fetchAllGSheets(){
     renderGSList();
   }
   saveGS();
+  // If Google Sheets loaded successfully, clear browser-saved Excel files to avoid duplicates
+  if(loaded>0 && db){
+    try{
+      var tx=db.transaction(STORE,'readwrite');
+      tx.objectStore(STORE).clear();
+      allSheets=allSheets.filter(function(s){return s.gsId;});
+      if(document.getElementById('file-list')) updateFileList();
+      if(document.getElementById('storage-info')) document.getElementById('storage-info').textContent='0 file(s) stored in browser';
+    }catch(e){console.log('Could not clear DB:',e);}
+  }
   if(btn){btn.disabled=false;btn.textContent='🔄 Fetch / Refresh All Google Sheet Data';}
   if(st){
     if(errors===0){st.style.cssText='display:block;padding:10px;border-radius:6px;font-size:13px;background:#e8f5e9;color:#1a5c1a;border:1px solid #a5d6a7;margin-top:8px;';st.textContent='✅ All '+loaded+' sheets loaded! '+totalRows.toLocaleString()+' rows ready to search.';}
