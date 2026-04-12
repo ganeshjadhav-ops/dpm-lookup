@@ -189,14 +189,14 @@ table.dt tbody td:last-child{border-right:none;}
       <!-- GOOGLE SHEETS SYNC CARD -->
       <div class="upload-card" style="border:2px solid #1565c0;">
         <div class="card-title" style="color:#1565c0;">🔗 Google Sheets — Auto Sync</div>
-        <div style="font-size:13px;color:#444;margin-bottom:10px;">Niche configured Google Sheets se data automatically fetch hoga. Koi file upload karne ki zaroorat nahi!</div>
+        <div style="font-size:13px;color:#444;margin-bottom:10px;">Data is automatically fetched from the configured Google Sheets below. No file upload needed!</div>
         <div id="gs-status-list" style="margin-bottom:10px;display:flex;flex-direction:column;gap:6px;"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
           <button onclick="syncAllGoogleSheets()" style="padding:9px 20px;background:#1565c0;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">🔄 Sync Google Sheets Now</button>
           <div id="gs-sync-status" style="font-size:12px;color:#666;"></div>
         </div>
         <div style="margin-top:8px;background:#e3f2fd;border:1px solid #90caf9;border-radius:6px;padding:8px 12px;font-size:11px;color:#1565c0;">
-          ⚠️ <b>Note:</b> Google Sheet publicly shared honi chahiye (Anyone with link → Viewer). Page load par auto-sync hoga.
+          ⚠️ <b>Note:</b> Google Sheet must be publicly shared (Anyone with link → Viewer). Auto-sync runs on page load.
         </div>
       </div>
       <div class="upload-card">
@@ -346,6 +346,13 @@ table.dt tbody td:last-child{border-right:none;}
 
 <script src="config.js"></script>
 <script>
+// ── DATA STORE — must be declared first ──
+let allSheets = [];
+const DB_NAME = 'DPMFiles', DB_VER = 1, STORE = 'files';
+let db = null;
+let gsSheets = [];
+let lastResults = {appid:[], payid:[], utrid:[], bulk:[]};
+
 // ── AUTH ──
 function doLogin() {
   const u = document.getElementById('uname').value.trim();
@@ -381,11 +388,6 @@ function switchTab(name, el) {
   el.classList.add('active');
   document.getElementById('panel-'+name).classList.add('active');
 }
-
-// ── DATA STORE ──
-let allSheets = []; // [{fileName, sheetName, label, rows:[]}]
-const DB_NAME = 'DPMFiles', DB_VER = 1, STORE = 'files';
-let db = null;
 
 function initApp() {
   openDB()
@@ -569,7 +571,6 @@ async function removeFile(id) {
 }
 
 // ── SEARCH ──
-let lastResults = {appid:[], payid:[], utrid:[], bulk:[]};
 
 // ── COLUMN KEY FINDER ──
 // Sheet 1 (JAN 24 TO DEC 25) exact columns from Google Sheet:
@@ -1000,8 +1001,6 @@ const GOOGLE_SHEETS = [
   }
 ];
 
-let gsSheets = [];
-
 function getSheetCSVUrl(id, gid) {
   return `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
 }
@@ -1065,11 +1064,11 @@ async function syncAllGoogleSheets() {
     const cfg = GOOGLE_SHEETS[i];
     try {
       const resp = await fetch(getSheetCSVUrl(cfg.id, cfg.gid));
-      if (!resp.ok) throw new Error('HTTP ' + resp.status + ' — Sheet publicly shared hai? (Anyone with link → Viewer)');
+      if (!resp.ok) throw new Error('HTTP ' + resp.status + ' — Is the sheet publicly shared? (Anyone with link → Viewer)');
       const text = await resp.text();
-      if (text.includes('<!DOCTYPE html') || text.includes('<html')) throw new Error('Sheet publicly shared nahi hai ya gid galat hai.');
+      if (text.includes('<!DOCTYPE html') || text.includes('<html')) throw new Error('Sheet is not publicly shared, or the sheet name / gid is incorrect.');
       const rows = parseCSVText(text);
-      if (rows.length === 0) throw new Error('Sheet empty hai ya headers nahi mile.');
+      if (rows.length === 0) throw new Error('Sheet is empty or no headers found.');
 
       // Debug: log first row keys so we can verify column detection
       console.log(`[GS] Sheet "${cfg.sheetName}" — Sample keys:`, Object.keys(rows[0]));
