@@ -927,19 +927,22 @@ const GOOGLE_SHEETS = [
     id: '1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E',
     sheetName: 'DPM DATA JAN 24 TO DEC 25',
     label: 'Sheet 1 — DPM DATA JAN 24 TO DEC 25',
-    gid: '0'
+    gid: '0',
+    freeze: true   // Data never changes — only manual sync when needed
   },
   {
     id: '1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE',
     sheetName: 'DPM DATA JAN 26 TO TILL DATE',
     label: 'Sheet 2 — DPM DATA JAN 26 TO TILL DATE',
-    gid: '0'
+    gid: '0',
+    freeze: false  // Auto sync on every page load
   },
   {
     id: '16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY',
     sheetName: '2027',
     label: 'Sheet 3 — DPM DATA 2027',
-    gid: '0'
+    gid: '0',
+    freeze: false  // Auto sync on every page load
   }
 ];
 
@@ -1055,16 +1058,40 @@ function parseCSVText(csvText) {
 function updateGSStatusList(statuses) {
   const el = document.getElementById('gs-status-list');
   if (!el) return;
-  el.innerHTML = statuses.map(s => `
-    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${s.ok?'#e8f5e9':'#fff3e0'};border:1px solid ${s.ok?'#a5d6a7':'#ffcc80'};border-radius:6px;">
-      <span style="font-size:16px">${s.ok?'✅':(s.loading?'⏳':'⚠️')}</span>
+  el.innerHTML = statuses.map((s, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${s.ok?'#e8f5e9':s.frozen?'#f3f3f3':'#fff3e0'};border:1px solid ${s.ok?'#a5d6a7':s.frozen?'#ccc':'#ffcc80'};border-radius:6px;">
+      <span style="font-size:16px">${s.frozen?'🔒':(s.ok?'✅':(s.loading?'⏳':'⚠️'))}</span>
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:600;color:${s.ok?'var(--green-dark)':'var(--orange)'}">${esc(s.label)}</div>
+        <div style="font-size:13px;font-weight:600;color:${s.frozen?'#666':s.ok?'var(--green-dark)':'var(--orange)'}">${esc(s.label)}</div>
         <div style="font-size:11px;color:#666;">${esc(s.msg)}</div>
       </div>
-      ${s.ok?`<span style="font-size:11px;font-family:'JetBrains Mono',monospace;background:var(--green-dark);color:#fff;padding:2px 8px;border-radius:10px;">${s.rows.toLocaleString()} rows</span>`:''}
+      <div style="display:flex;gap:6px;align-items:center;">
+        ${s.ok||s.frozen ? `<span style="font-size:11px;font-family:'JetBrains Mono',monospace;background:${s.frozen?'#888':'var(--green-dark)'};color:#fff;padding:2px 8px;border-radius:10px;">${s.rows.toLocaleString()} rows</span>` : ''}
+        <button onclick="syncSingleSheet(${i})" style="padding:4px 10px;background:${s.frozen?'#888':'#1565c0'};color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">🔄 Sync</button>
+        <button onclick="toggleFreezeSheet(${i})" style="padding:4px 10px;background:${s.frozen?'#e65100':'#555'};color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">${s.frozen?'🔓 Unfreeze':'🔒 Freeze'}</button>
+      </div>
     </div>`).join('');
 }
+
+// ── FREEZE STATE (saved in localStorage) ──
+const FREEZE_KEY = 'dpm_freeze_state';
+function getFreezeState() {
+  try { return JSON.parse(localStorage.getItem(FREEZE_KEY) || '{}'); } catch { return {}; }
+}
+function saveFreezeState(obj) { localStorage.setItem(FREEZE_KEY, JSON.stringify(obj)); }
+
+// Cache for frozen sheet data
+const CACHE_KEY = 'dpm_sheet_cache';
+function getSheetCache() {
+  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch { return {}; }
+}
+function saveSheetCache(key, rows) {
+  const cache = getSheetCache();
+  cache[key] = { rows, ts: Date.now() };
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch(e) { console.warn('Cache save failed:', e); }
+}
+
+let _currentStatuses = [];
 
 async function syncAllGoogleSheets() {
   const statusEl = document.getElementById('gs-sync-status');
@@ -1072,35 +1099,110 @@ async function syncAllGoogleSheets() {
   statusEl.textContent = '⏳ Syncing...';
   gsSheets = [];
 
-  // Combine hardcoded + manually added sheets
   const allConfigs = [...GOOGLE_SHEETS, ...getManualSheets()];
-  const statuses = allConfigs.map(s => ({label:s.label, loading:true, ok:false, msg:'Fetching...', rows:0}));
-  updateGSStatusList(statuses);
+  const freezeState = getFreezeState();
+  const cache = getSheetCache();
+
+  _currentStatuses = allConfigs.map((s, i) => {
+    // freeze: from config default OR user override in localStorage
+    const isFrozen = (i in freezeState) ? freezeState[i] : (s.freeze === true);
+    return { label: s.label, loading: !isFrozen, ok: false, frozen: isFrozen, msg: isFrozen ? '🔒 Frozen — using cached data' : 'Fetching...', rows: 0 };
+  });
+  updateGSStatusList(_currentStatuses);
 
   for (let i = 0; i < allConfigs.length; i++) {
     const cfg = allConfigs[i];
-    try {
-      const url = `https://docs.google.com/spreadsheets/d/${cfg.id}/export?format=csv&gid=${cfg.gid}`;
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error('HTTP ' + resp.status + ' — Is sheet publicly shared?');
-      const text = await resp.text();
-      if (text.includes('<!DOCTYPE') || text.includes('<html')) throw new Error('Sheet not publicly shared or wrong gid.');
-      const rows = parseCSVText(text);
-      if (!rows.length) throw new Error('Sheet is empty or no headers found.');
-      gsSheets.push({fileName: 'GoogleSheet', sheetName: cfg.sheetName, dbId: 'gs_'+i, rows, isGoogleSheet: true});
-      statuses[i] = {label:cfg.label, loading:false, ok:true, msg:'Synced · '+new Date().toLocaleTimeString('en-IN'), rows:rows.length};
-    } catch(e) {
-      statuses[i] = {label:cfg.label, loading:false, ok:false, msg:'Error: '+e.message, rows:0};
+    const isFrozen = _currentStatuses[i].frozen;
+    const cacheKey = cfg.id + '_' + cfg.sheetName;
+
+    if (isFrozen) {
+      // Load from cache
+      const cached = cache[cacheKey];
+      if (cached && cached.rows && cached.rows.length) {
+        gsSheets.push({fileName:'GoogleSheet', sheetName:cfg.sheetName, dbId:'gs_'+i, rows:cached.rows, isGoogleSheet:true});
+        _currentStatuses[i] = {label:cfg.label, loading:false, ok:true, frozen:true, msg:`🔒 Frozen · Cached ${new Date(cached.ts).toLocaleDateString('en-IN')}`, rows:cached.rows.length};
+      } else {
+        // No cache yet — fetch once
+        try {
+          const rows = await fetchSheetRows(cfg);
+          saveSheetCache(cacheKey, rows);
+          gsSheets.push({fileName:'GoogleSheet', sheetName:cfg.sheetName, dbId:'gs_'+i, rows, isGoogleSheet:true});
+          _currentStatuses[i] = {label:cfg.label, loading:false, ok:true, frozen:true, msg:`🔒 Frozen · Fetched once & cached`, rows:rows.length};
+        } catch(e) {
+          _currentStatuses[i] = {label:cfg.label, loading:false, ok:false, frozen:true, msg:'Error: '+e.message, rows:0};
+        }
+      }
+    } else {
+      // Normal fetch
+      try {
+        const rows = await fetchSheetRows(cfg);
+        saveSheetCache(cacheKey, rows);
+        gsSheets.push({fileName:'GoogleSheet', sheetName:cfg.sheetName, dbId:'gs_'+i, rows, isGoogleSheet:true});
+        _currentStatuses[i] = {label:cfg.label, loading:false, ok:true, frozen:false, msg:'Synced · '+new Date().toLocaleTimeString('en-IN'), rows:rows.length};
+      } catch(e) {
+        _currentStatuses[i] = {label:cfg.label, loading:false, ok:false, frozen:false, msg:'Error: '+e.message, rows:0};
+      }
     }
-    updateGSStatusList(statuses);
+    updateGSStatusList(_currentStatuses);
   }
 
   allSheets = allSheets.filter(s => !s.isGoogleSheet);
   allSheets = [...gsSheets, ...allSheets];
   updateUI();
   const total = gsSheets.reduce((a,s)=>a+s.rows.length,0);
-  statusEl.textContent = `✅ ${gsSheets.length}/${allConfigs.length} synced · ${total.toLocaleString()} rows`;
+  statusEl.textContent = `✅ ${gsSheets.length}/${allConfigs.length} loaded · ${total.toLocaleString()} rows`;
   setTimeout(()=>{ statusEl.textContent=''; }, 8000);
+}
+
+async function fetchSheetRows(cfg) {
+  const url = `https://docs.google.com/spreadsheets/d/${cfg.id}/export?format=csv&gid=${cfg.gid}`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' — Is sheet publicly shared?');
+  const text = await resp.text();
+  if (text.includes('<!DOCTYPE') || text.includes('<html')) throw new Error('Sheet not publicly shared or wrong gid.');
+  const rows = parseCSVText(text);
+  if (!rows.length) throw new Error('Sheet is empty or no headers found.');
+  return rows;
+}
+
+async function syncSingleSheet(idx) {
+  const allConfigs = [...GOOGLE_SHEETS, ...getManualSheets()];
+  const cfg = allConfigs[idx];
+  if (!cfg) return;
+  const cacheKey = cfg.id + '_' + cfg.sheetName;
+
+  _currentStatuses[idx] = {..._currentStatuses[idx], loading:true, msg:'Syncing...'};
+  updateGSStatusList(_currentStatuses);
+
+  try {
+    const rows = await fetchSheetRows(cfg);
+    saveSheetCache(cacheKey, rows);
+    // Update allSheets
+    const existing = gsSheets.findIndex(s => s.sheetName === cfg.sheetName);
+    const sheetObj = {fileName:'GoogleSheet', sheetName:cfg.sheetName, dbId:'gs_'+idx, rows, isGoogleSheet:true};
+    if (existing >= 0) gsSheets[existing] = sheetObj; else gsSheets.push(sheetObj);
+    allSheets = allSheets.filter(s => !s.isGoogleSheet);
+    allSheets = [...gsSheets, ...allSheets];
+    updateUI();
+    _currentStatuses[idx] = {label:cfg.label, loading:false, ok:true, frozen:_currentStatuses[idx].frozen, msg:'Synced · '+new Date().toLocaleTimeString('en-IN'), rows:rows.length};
+  } catch(e) {
+    _currentStatuses[idx] = {..._currentStatuses[idx], loading:false, ok:false, msg:'Error: '+e.message};
+  }
+  updateGSStatusList(_currentStatuses);
+}
+
+function toggleFreezeSheet(idx) {
+  const freezeState = getFreezeState();
+  const allConfigs = [...GOOGLE_SHEETS, ...getManualSheets()];
+  const cfg = allConfigs[idx];
+  const currentFrozen = _currentStatuses[idx]?.frozen ?? (cfg?.freeze === true);
+  freezeState[idx] = !currentFrozen;
+  saveFreezeState(freezeState);
+  if (_currentStatuses[idx]) {
+    _currentStatuses[idx].frozen = !currentFrozen;
+    _currentStatuses[idx].msg = !currentFrozen ? '🔒 Frozen — using cached data' : 'Auto sync enabled';
+    updateGSStatusList(_currentStatuses);
+  }
 }
 
 // Render manual list on page load
