@@ -200,6 +200,25 @@ table.dt tbody td:last-child{border-right:none;}
         </div>
       </div>
 
+      <!-- ADD GOOGLE SHEET MANUALLY -->
+      <div class="upload-card" style="border:2px solid #2d7a2d;">
+        <div class="card-title" style="color:var(--green-dark);">➕ Add Google Sheet Manually</div>
+        <div style="font-size:13px;color:#444;margin-bottom:12px;">Paste Google Sheet link below to add a new sheet. Saved in browser — no need to re-add after refresh!</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" id="gs-add-url" placeholder="Paste Google Sheet URL — https://docs.google.com/spreadsheets/d/..." 
+              style="flex:1;min-width:250px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+            <input type="text" id="gs-add-sheetname" placeholder="Sub-sheet tab name (e.g. 2027)"
+              style="width:200px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+            <input type="text" id="gs-add-label" placeholder="Display name (e.g. Sheet 3 — 2027)"
+              style="width:200px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+            <button onclick="addManualGoogleSheet()" style="padding:9px 20px;background:var(--green-dark);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">➕ Add Sheet</button>
+          </div>
+          <div id="gs-add-error" style="font-size:12px;color:var(--red);display:none;"></div>
+        </div>
+        <div id="gs-manual-list" style="margin-top:12px;display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+
       <div class="upload-card">
         <div class="card-title">📂 Upload & Manage Excel Files</div>
         <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
@@ -915,8 +934,94 @@ const GOOGLE_SHEETS = [
     sheetName: 'DPM DATA JAN 26 TO TILL DATE',
     label: 'Sheet 2 — DPM DATA JAN 26 TO TILL DATE',
     gid: '0'
+  },
+  {
+    id: '16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY',
+    sheetName: '2027',
+    label: 'Sheet 3 — DPM DATA 2027',
+    gid: '0'
   }
 ];
+
+// ── MANUAL GOOGLE SHEETS (saved in localStorage) ──
+const MANUAL_GS_KEY = 'dpm_manual_gsheets';
+
+function getManualSheets() {
+  try { return JSON.parse(localStorage.getItem(MANUAL_GS_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveManualSheets(arr) {
+  localStorage.setItem(MANUAL_GS_KEY, JSON.stringify(arr));
+}
+
+function extractSheetId(url) {
+  // Extract ID from full URL or raw ID
+  const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : url.trim();
+}
+function extractGid(url) {
+  const m = url.match(/[#&?]gid=(\d+)/);
+  return m ? m[1] : '0';
+}
+
+function renderManualList() {
+  const arr = getManualSheets();
+  const el = document.getElementById('gs-manual-list');
+  if (!el) return;
+  if (!arr.length) { el.innerHTML = '<div style="font-size:12px;color:#aaa;">No manually added sheets yet.</div>'; return; }
+  el.innerHTML = arr.map((s, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;">
+      <span style="font-size:16px;">📊</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:var(--green-dark);">${esc(s.label)}</div>
+        <div style="font-size:11px;color:#666;font-family:'JetBrains Mono',monospace;">Sheet: ${esc(s.sheetName)} · ID: ${esc(s.id.substring(0,20))}...</div>
+      </div>
+      <button onclick="removeManualSheet(${i})" style="background:none;border:1px solid #ef9a9a;border-radius:4px;padding:2px 8px;font-size:11px;color:var(--red);cursor:pointer;">✕ Remove</button>
+    </div>`).join('');
+}
+
+function addManualGoogleSheet() {
+  const urlEl = document.getElementById('gs-add-url');
+  const nameEl = document.getElementById('gs-add-sheetname');
+  const labelEl = document.getElementById('gs-add-label');
+  const errEl = document.getElementById('gs-add-error');
+
+  const url = urlEl.value.trim();
+  const sheetName = nameEl.value.trim();
+  const label = labelEl.value.trim();
+
+  errEl.style.display = 'none';
+
+  if (!url) { errEl.textContent = '❌ Please enter a Google Sheet URL.'; errEl.style.display='block'; return; }
+  if (!sheetName) { errEl.textContent = '❌ Please enter the sub-sheet tab name.'; errEl.style.display='block'; return; }
+
+  const id = extractSheetId(url);
+  const gid = extractGid(url);
+
+  if (!id || id.length < 10) { errEl.textContent = '❌ Invalid URL — could not extract Sheet ID.'; errEl.style.display='block'; return; }
+
+  const arr = getManualSheets();
+  // Check duplicate
+  if (arr.find(s => s.id === id && s.sheetName === sheetName)) {
+    errEl.textContent = '❌ This sheet is already added.'; errEl.style.display='block'; return;
+  }
+
+  arr.push({ id, sheetName, label: label || `Manual Sheet — ${sheetName}`, gid });
+  saveManualSheets(arr);
+
+  urlEl.value = ''; nameEl.value = ''; labelEl.value = '';
+  renderManualList();
+  // Auto sync after adding
+  syncAllGoogleSheets();
+}
+
+function removeManualSheet(idx) {
+  const arr = getManualSheets();
+  arr.splice(idx, 1);
+  saveManualSheets(arr);
+  renderManualList();
+  syncAllGoogleSheets();
+}
 
 let gsSheets = [];
 
@@ -966,11 +1071,14 @@ async function syncAllGoogleSheets() {
   if (!statusEl) return;
   statusEl.textContent = '⏳ Syncing...';
   gsSheets = [];
-  const statuses = GOOGLE_SHEETS.map(s => ({label:s.label, loading:true, ok:false, msg:'Fetching...', rows:0}));
+
+  // Combine hardcoded + manually added sheets
+  const allConfigs = [...GOOGLE_SHEETS, ...getManualSheets()];
+  const statuses = allConfigs.map(s => ({label:s.label, loading:true, ok:false, msg:'Fetching...', rows:0}));
   updateGSStatusList(statuses);
 
-  for (let i = 0; i < GOOGLE_SHEETS.length; i++) {
-    const cfg = GOOGLE_SHEETS[i];
+  for (let i = 0; i < allConfigs.length; i++) {
+    const cfg = allConfigs[i];
     try {
       const url = `https://docs.google.com/spreadsheets/d/${cfg.id}/export?format=csv&gid=${cfg.gid}`;
       const resp = await fetch(url);
@@ -987,14 +1095,16 @@ async function syncAllGoogleSheets() {
     updateGSStatusList(statuses);
   }
 
-  // Merge google sheets into allSheets (remove old, add new at front)
   allSheets = allSheets.filter(s => !s.isGoogleSheet);
   allSheets = [...gsSheets, ...allSheets];
   updateUI();
   const total = gsSheets.reduce((a,s)=>a+s.rows.length,0);
-  statusEl.textContent = `✅ ${gsSheets.length}/${GOOGLE_SHEETS.length} synced · ${total.toLocaleString()} rows`;
+  statusEl.textContent = `✅ ${gsSheets.length}/${allConfigs.length} synced · ${total.toLocaleString()} rows`;
   setTimeout(()=>{ statusEl.textContent=''; }, 8000);
 }
+
+// Render manual list on page load
+document.addEventListener('DOMContentLoaded', () => { renderManualList(); });
 </script>
 </body>
 </html>
