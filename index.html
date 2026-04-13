@@ -181,6 +181,7 @@ table.dt tbody td:last-child{border-right:none;}
       <button class="tab-btn" onclick="switchTab('utrid',this)">🏦 UTR Search</button>
       <button class="tab-btn" onclick="switchTab('bulk',this)">📋 Bulk Search</button>
       <button class="tab-btn" onclick="switchTab('files',this)">📂 Manage Files</button>
+      <button class="tab-btn" onclick="switchTab('latest',this)">⚡ Latest Transfer</button>
     </div>
 
     <!-- FILES PANEL -->
@@ -359,6 +360,26 @@ table.dt tbody td:last-child{border-right:none;}
           <button class="export-btn export-csv" onclick="exportCSV('bulk')">⬇ Download CSV</button>
         </div>
         <div id="bulk-result"><div class="placeholder"><div class="ph">📋</div><p>Enter multiple IDs above to search in bulk</p></div></div>
+      </div>
+    </div>
+
+    <!-- LATEST TRANSFER PANEL -->
+    <div class="panel" id="panel-latest">
+      <div class="lookup-card">
+        <div class="lookup-titlebar">⚡ LATEST TRANSFER</div>
+        <div class="lookup-subbar">Enter App ID → Get the single latest transaction row</div>
+        <div class="single-search-row">
+          <div class="input-label">ENTER APP ID :</div>
+          <input type="text" class="app-id-input" id="latest-input" placeholder="e.g. 1000975"/>
+          <button class="search-btn" onclick="doLatestSearch()">⚡ Search</button>
+          <button class="clear-btn" onclick="clearLatest()">✕ Clear</button>
+        </div>
+        <div class="loading" id="latest-loading"><span class="spinner"></span>Searching...</div>
+        <div class="export-row" id="latest-export">
+          <span class="export-label">Export result:</span>
+          <button class="export-btn export-csv" onclick="exportCSV('latest')">⬇ Download CSV</button>
+        </div>
+        <div id="latest-result"><div class="placeholder"><div class="ph">⚡</div><p>Enter App ID to get latest transaction</p></div></div>
       </div>
     </div>
   </div>
@@ -577,7 +598,7 @@ async function removeFile(id) {
 }
 
 // ── SEARCH ──
-let lastResults = {appid:[], payid:[], utrid:[], bulk:[]};
+let lastResults = {appid:[], payid:[], utrid:[], bulk:[], latest:[]};
 
 function findKey(row, type) {
   const keys = Object.keys(row);
@@ -813,7 +834,15 @@ function clearResult(type) {
 // ── EXPORT CSV ──
 function exportCSV(type) {
   let rows = [];
-  if (type === 'bulk') {
+  if (type === 'latest') {
+    lastResults['latest'].forEach(sheet => sheet.matches.forEach(row => {
+      const rawRow = {};
+      rawRow['File'] = sheet.fileName;
+      rawRow['Sheet'] = sheet.sheetName;
+      Object.keys(row).forEach(k => { rawRow[friendly(k)||k] = row[k]; });
+      rows.push(rawRow);
+    }));
+  } else if (type === 'bulk') {
     lastResults.bulk.forEach(({id, results}) => {
       results.forEach(sheet => sheet.matches.forEach(row => {
         // Export raw sheet columns exactly as they are — no formatting
@@ -853,10 +882,111 @@ function exportCSV(type) {
   a.click();
 }
 
+
+// ── LATEST TRANSFER ──
+function doLatestSearch() {
+  const input = document.getElementById('latest-input').value.trim();
+  if (!input) return;
+  if (!allSheets.length) { alert('Please upload Excel files first!'); return; }
+  document.getElementById('latest-loading').classList.add('show');
+  document.getElementById('latest-result').innerHTML = '';
+  document.getElementById('latest-export').classList.remove('show');
+  setTimeout(() => {
+    // Get all matching rows across all sheets
+    const allMatches = [];
+    allSheets.forEach(sheet => {
+      sheet.rows.forEach(row => {
+        const k = findKey(row, 'appid');
+        if (!k) return;
+        const v = String(row[k]).trim();
+        if (v === input) allMatches.push({row, sheet});
+      });
+    });
+
+    document.getElementById('latest-loading').classList.remove('show');
+
+    if (!allMatches.length) {
+      document.getElementById('latest-result').innerHTML = '<div class="no-result"><p>No records found for App ID: ' + esc(input) + '</p></div>';
+      return;
+    }
+
+    // Parse dates and find latest
+    function parseDate(val) {
+      if (!val) return new Date(0);
+      // Try DD-Mon-YY format like 30-Mar-26
+      const m1 = String(val).match(/^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/);
+      if (m1) {
+        const months = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+        const yr = parseInt(m1[3]) < 100 ? 2000 + parseInt(m1[3]) : parseInt(m1[3]);
+        return new Date(yr, months[m1[2].toLowerCase()] ?? 0, parseInt(m1[1]));
+      }
+      // Try numeric serial (Excel date)
+      const num = parseFloat(val);
+      if (!isNaN(num) && num > 40000) {
+        return new Date((num - 25569) * 86400 * 1000);
+      }
+      return new Date(val);
+    }
+
+    // Find the single row with the latest date
+    let latestEntry = allMatches[0];
+    let latestDate = new Date(0);
+    allMatches.forEach(entry => {
+      const dateKey = Object.keys(entry.row).find(k => /^date$/i.test(friendly(k)));
+      const d = parseDate(dateKey ? entry.row[dateKey] : '');
+      if (d > latestDate) { latestDate = d; latestEntry = entry; }
+    });
+
+    // Build same table format as single search
+    lastResults['latest'] = [{...latestEntry.sheet, matches:[latestEntry.row]}];
+    const cols = Object.keys(latestEntry.row).filter(k => !/do not edit/i.test(k));
+    const thead = '<tr><th>Sr</th><th>File</th><th>Sheet</th>' + cols.map(k => `<th>${esc(friendly(k))}</th>`).join('') + '</tr>';
+    const amtKey = findKey(latestEntry.row, 'amt');
+    const totalAmt = amtKey ? cleanNum(latestEntry.row[amtKey]) : 0;
+    const cells = cols.map(k => {
+      const v = latestEntry.row[k] !== undefined ? latestEntry.row[k] : '';
+      const kl = k.toLowerCase();
+      if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
+      if (/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
+      if (/^amount/i.test(friendly(k)) || (/amount/i.test(kl) && !/due|diff/i.test(kl)))
+        return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
+      return `<td>${esc(String(v))}</td>`;
+    }).join('');
+
+    const tbody = `
+      <tr class="sec-row"><td colspan="${cols.length+3}">${esc(latestEntry.sheet.fileName)} — ${esc(latestEntry.sheet.sheetName)}</td></tr>
+      <tr><td class="td-sr">1</td><td class="td-sheet">${esc(latestEntry.sheet.fileName.replace('.xlsx','').replace('.xls',''))}</td><td class="td-sheet">${esc(latestEntry.sheet.sheetName)}</td>${cells}</tr>
+      <tr class="total-row"><td colspan="3" style="text-align:center;font-family:'Inter',sans-serif">LATEST TRANSACTION</td>${cols.map(k => {
+        if (/^amount/i.test(friendly(k)) || (/amount/i.test(k) && !/due|diff/i.test(k)))
+          return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`;
+        return '<td></td>';
+      }).join('')}</tr>`;
+
+    const html = `
+      <div style="padding:10px 16px;background:#e8f5e9;border-bottom:1px solid var(--border);font-size:13px;">
+        ✅ App ID: <b style="color:var(--green-dark)">${esc(input)}</b> &nbsp;·&nbsp;
+        Total records found: <b>${allMatches.length}</b> &nbsp;·&nbsp;
+        Showing: <b style="color:var(--orange)">Latest 1 row</b>
+      </div>
+      <div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+
+    document.getElementById('latest-result').innerHTML = html;
+    document.getElementById('latest-export').classList.add('show');
+  }, 100);
+}
+
+function clearLatest() {
+  document.getElementById('latest-input').value = '';
+  document.getElementById('latest-export').classList.remove('show');
+  document.getElementById('latest-result').innerHTML = '<div class="placeholder"><div class="ph">⚡</div><p>Enter App ID to get latest transaction</p></div>';
+  lastResults['latest'] = [];
+}
+
 // Enter key
 document.getElementById('appid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('appid'); });
 document.getElementById('payid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('payid'); });
 document.getElementById('utrid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('utrid'); });
+document.getElementById('latest-input').addEventListener('keydown', e => { if(e.key==='Enter') doLatestSearch(); });
 
 // ── GOOGLE SHEETS CONFIG ──
 const GOOGLE_SHEETS = [
