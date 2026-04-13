@@ -1083,10 +1083,15 @@ async function syncAllGoogleSheets() {
     updateGSStatusList(_currentStatuses);
   }
 
+  // Deduplicate gsSheets by sheetName — prevent same sheet appearing twice
+  const seenByName = new Map();
+  gsSheets.forEach(s => { seenByName.set(s.sheetName, s); });
+  const dedupedGsSheets = Array.from(seenByName.values());
+
   allSheets = allSheets.filter(s => !s.isGoogleSheet);
-  allSheets = [...gsSheets, ...allSheets];
+  allSheets = [...dedupedGsSheets, ...allSheets];
   updateUI();
-  const total = gsSheets.reduce((a,s)=>a+s.rows.length,0);
+  const total = dedupedGsSheets.reduce((a,s)=>a+s.rows.length,0);
   statusEl.textContent = `✅ ${gsSheets.length}/${allConfigs.length} loaded · ${total.toLocaleString()} rows`;
   setTimeout(()=>{ statusEl.textContent=''; }, 8000);
 }
@@ -1118,8 +1123,12 @@ async function syncSingleSheet(idx) {
     const existing = gsSheets.findIndex(s => s.sheetName === cfg.sheetName);
     const sheetObj = {fileName:'GoogleSheet', sheetName:cfg.sheetName, dbId:'gs_'+idx, rows, isGoogleSheet:true};
     if (existing >= 0) gsSheets[existing] = sheetObj; else gsSheets.push(sheetObj);
+    // Deduplicate by sheetName before merging
+    const seenByName2 = new Map();
+    gsSheets.forEach(s => { seenByName2.set(s.sheetName, s); });
+    const dedupedGs2 = Array.from(seenByName2.values());
     allSheets = allSheets.filter(s => !s.isGoogleSheet);
-    allSheets = [...gsSheets, ...allSheets];
+    allSheets = [...dedupedGs2, ...allSheets];
     updateUI();
     _currentStatuses[idx] = {label:cfg.label, loading:false, ok:true, frozen:_currentStatuses[idx].frozen, msg:'Synced · '+new Date().toLocaleTimeString('en-IN'), rows:rows.length};
   } catch(e) {
