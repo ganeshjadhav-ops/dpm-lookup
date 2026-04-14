@@ -15,8 +15,6 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Inter',sans-serif;background:#f0f4f0;min-height:100vh;}
-
-/* LOGIN */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a5c1a,#2d7a2d 50%,#1565c0);}
 .login-card{background:#fff;border-radius:12px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
 .login-header{text-align:center;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:2px solid var(--green-dark);}
@@ -31,8 +29,6 @@ body{font-family:'Inter',sans-serif;background:#f0f4f0;min-height:100vh;}
 .login-btn:hover{background:var(--green-mid);}
 .lerr{background:#ffebee;border:1px solid #ef9a9a;border-radius:6px;padding:8px 12px;font-size:13px;color:var(--red);margin-bottom:1rem;display:none;}
 .login-hint{text-align:center;font-size:12px;color:#999;margin-top:1rem;}
-
-/* APP */
 #app-screen{display:none;}
 .topbar{background:var(--green-dark);color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.2);}
 .topbar-title{font-size:16px;font-weight:700;}
@@ -40,17 +36,11 @@ body{font-family:'Inter',sans-serif;background:#f0f4f0;min-height:100vh;}
 .logout-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:4px 12px;color:#fff;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;}
 .logout-btn:hover{background:rgba(255,255,255,.25);}
 .main{max-width:1500px;margin:0 auto;padding:16px;}
-
-/* TABS */
 .tabs{display:flex;gap:4px;margin-bottom:16px;background:#fff;border-radius:8px;padding:6px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,.06);}
 .tab-btn{flex:1;padding:10px;background:none;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;color:#666;transition:all .2s;}
 .tab-btn.active{background:var(--green-dark);color:#fff;}
-
-/* PANEL */
 .panel{display:none;}
 .panel.active{display:block;}
-
-/* UPLOAD CARD */
 .upload-card{background:#fff;border-radius:8px;padding:16px;border:1px solid var(--border);margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,.06);}
 .card-title{font-size:13px;font-weight:700;color:var(--green-dark);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
 .upload-zone{border:2px dashed #a5d6a7;border-radius:6px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:#f9fbe7;}
@@ -62,23 +52,13 @@ body{font-family:'Inter',sans-serif;background:#f0f4f0;min-height:100vh;}
 .file-item-name{font-size:13px;font-weight:600;color:var(--green-dark);flex:1;}
 .file-item-meta{font-size:11px;color:#666;font-family:'JetBrains Mono',monospace;}
 .file-item-remove{background:none;border:1px solid #ef9a9a;border-radius:4px;padding:2px 8px;font-size:11px;color:var(--red);cursor:pointer;}
-.add-more-btn{display:flex;align-items:center;gap:6px;background:none;border:1px dashed #a5d6a7;border-radius:6px;padding:8px 14px;font-size:12px;color:var(--green-dark);cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;margin-top:6px;}
-.add-more-btn:hover{border-color:var(--green-dark);background:#f1f8e9;}
-
-/* STORAGE INFO */
 .storage-bar{display:flex;align-items:center;gap:8px;background:#e3f2fd;border:1px solid #90caf9;border-radius:6px;padding:8px 12px;font-size:12px;color:var(--blue);margin-top:8px;}
-
-/* LOOKUP CARD */
 .lookup-card{background:#fff;border-radius:8px;border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,.06);overflow:hidden;margin-bottom:16px;}
 .lookup-titlebar{background:var(--green-dark);color:#fff;text-align:center;padding:10px;font-size:15px;font-weight:700;letter-spacing:1px;}
 .lookup-subbar{background:var(--green-mid);color:rgba(255,255,255,.9);text-align:center;padding:6px;font-size:11px;font-style:italic;}
-
-/* SEARCH MODE TOGGLE */
 .search-mode-row{display:flex;gap:8px;padding:10px 16px;background:#f9fbe7;border-bottom:1px solid var(--border);}
 .mode-btn{padding:6px 16px;border-radius:20px;border:1px solid #a5d6a7;background:#fff;color:var(--green-dark);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;}
 .mode-btn.active{background:var(--green-dark);color:#fff;border-color:var(--green-dark);}
-
-/* SINGLE SEARCH */
 .single-search-row{display:flex;align-items:center;gap:0;padding:12px 16px;background:#f9fbe7;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
 .input-label{background:var(--green-dark);color:#fff;padding:10px 16px;font-size:13px;font-weight:700;border-radius:4px 0 0 4px;white-space:nowrap;}
 .app-id-input{padding:10px 14px;border:2px solid var(--gold);background:var(--gold);font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#1a1a1a;outline:none;width:180px;text-align:center;border-radius:0;}
@@ -87,8 +67,6 @@ body{font-family:'Inter',sans-serif;background:#f0f4f0;min-height:100vh;}
 .search-btn{padding:10px 20px;background:var(--green-dark);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;border-radius:0 4px 4px 0;font-family:'Inter',sans-serif;}
 .search-btn:hover{background:var(--green-light);}
 .clear-btn{padding:10px 14px;background:#ef5350;color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;border-radius:4px;font-family:'Inter',sans-serif;}
-
-/* BULK SEARCH */
 .bulk-section{padding:12px 16px;background:#f9fbe7;border-bottom:1px solid var(--border);}
 .bulk-label{font-size:12px;font-weight:700;color:var(--green-dark);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
 .bulk-textarea{width:100%;padding:10px;border:1.5px solid #a5d6a7;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:13px;resize:vertical;min-height:90px;outline:none;background:#fff;}
@@ -96,8 +74,6 @@ body{font-family:'Inter',sans-serif;background:#f0f4f0;min-height:100vh;}
 .bulk-hint{font-size:11px;color:#888;margin-top:4px;}
 .bulk-search-btn{margin-top:8px;padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
 .bulk-search-btn:hover{background:#1976d2;}
-
-/* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--border);}
 .stat-box{border-right:1px solid var(--border);}
 .stat-box:last-child{border-right:none;}
@@ -105,8 +81,6 @@ body{font-family:'Inter',sans-serif;background:#f0f4f0;min-height:100vh;}
 .stat-val{font-size:20px;font-weight:700;padding:10px 4px;text-align:center;font-family:'JetBrains Mono',monospace;}
 .bg-g{background:var(--green-dark);} .bg-b{background:var(--blue);} .bg-p{background:var(--pink);} .bg-o{background:var(--orange);} .bg-d{background:var(--dark-hdr);}
 .vg{background:#e8f5e9;color:var(--green-dark);} .vb{background:#e3f2fd;color:var(--blue);} .vp{background:#fce4ec;color:var(--pink);} .vo{background:#fff3e0;color:var(--orange);} .vd{background:#f5f5f5;color:var(--dark-hdr);}
-
-/* TABLE */
 .table-wrap{overflow-x:auto;border-top:1px solid var(--border);}
 table.dt{width:100%;border-collapse:collapse;font-size:12px;}
 table.dt thead th{background:var(--green-dark);color:#fff;padding:8px 10px;text-align:center;font-weight:600;font-size:11px;white-space:nowrap;border-right:1px solid rgba(255,255,255,.2);position:sticky;top:0;}
@@ -124,8 +98,6 @@ table.dt tbody td:last-child{border-right:none;}
 .sec-row2 td{background:var(--green-mid);color:#fff;font-weight:700;text-align:center;font-size:12px;padding:8px;font-family:'Inter',sans-serif;}
 .total-row td{background:var(--green-dark);color:#fff;font-weight:700;font-family:'JetBrains Mono',monospace;padding:9px 10px;}
 .bulk-sep-row td{background:#fff3e0;color:var(--orange);font-weight:700;text-align:center;font-size:12px;padding:6px;font-family:'Inter',sans-serif;border-bottom:2px solid var(--orange);}
-
-/* STATES */
 .placeholder{text-align:center;padding:3rem;color:#aaa;}
 .placeholder .ph{font-size:36px;margin-bottom:8px;opacity:.5;}
 .no-result{text-align:center;padding:2rem;background:#fff3f3;border-top:1px solid #ffcdd2;}
@@ -134,20 +106,15 @@ table.dt tbody td:last-child{border-right:none;}
 .loading.show{display:block;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .spinner{display:inline-block;width:18px;height:18px;border:3px solid #c8e6c9;border-top-color:var(--green-dark);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:8px;}
-
-/* EXPORT BTN */
 .export-row{padding:8px 16px;background:#f9fbe7;border-top:1px solid var(--border);display:none;}
 .export-row.show{display:flex;gap:8px;align-items:center;}
 .export-btn{padding:7px 16px;border-radius:4px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
 .export-csv{background:#1565c0;color:#fff;}
 .export-label{font-size:12px;color:#666;}
-
 @media(max-width:768px){.stats-grid{grid-template-columns:repeat(2,1fr);}.main{padding:10px;}}
 </style>
 </head>
 <body>
-
-<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
     <div class="login-header">
@@ -162,8 +129,6 @@ table.dt tbody td:last-child{border-right:none;}
     <div class="login-hint">Default: admin / admin123 · Change in config.js</div>
   </div>
 </div>
-
-<!-- APP -->
 <div id="app-screen">
   <div class="topbar">
     <div class="topbar-title">🔍 DPM — APP ID & PAY ID LOOKUP PORTAL</div>
@@ -172,9 +137,7 @@ table.dt tbody td:last-child{border-right:none;}
       <button class="logout-btn" onclick="doLogout()">Logout</button>
     </div>
   </div>
-
   <div class="main">
-    <!-- TABS -->
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('appid',this)">🔍 App ID Search</button>
       <button class="tab-btn" onclick="switchTab('payid',this)">💳 Pay ID Search</button>
@@ -183,11 +146,8 @@ table.dt tbody td:last-child{border-right:none;}
       <button class="tab-btn" onclick="switchTab('files',this)">📂 Manage Files</button>
       <button class="tab-btn" onclick="switchTab('latest',this)">⚡ Latest Transfer</button>
     </div>
-
     <!-- FILES PANEL -->
     <div class="panel active" id="panel-files">
-
-      <!-- GOOGLE SHEETS AUTO SYNC -->
       <div class="upload-card" style="border:2px solid #1565c0;">
         <div class="card-title" style="color:#1565c0;">🔗 Google Sheets — Auto Sync</div>
         <div style="font-size:13px;color:#444;margin-bottom:10px;">Data is automatically fetched from Google Sheets. No file upload needed!</div>
@@ -200,26 +160,20 @@ table.dt tbody td:last-child{border-right:none;}
           ⚠️ <b>Note:</b> Google Sheet must be shared as "Anyone with link → Viewer". Auto-sync runs on page load.
         </div>
       </div>
-
-      <!-- ADD GOOGLE SHEET MANUALLY -->
       <div class="upload-card" style="border:2px solid #2d7a2d;">
         <div class="card-title" style="color:var(--green-dark);">➕ Add Google Sheet Manually</div>
         <div style="font-size:13px;color:#444;margin-bottom:12px;">Paste Google Sheet link below to add a new sheet. Saved in browser — no need to re-add after refresh!</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <input type="text" id="gs-add-url" placeholder="Paste Google Sheet URL — https://docs.google.com/spreadsheets/d/..." 
-              style="flex:1;min-width:250px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;outline:none;">
-            <input type="text" id="gs-add-sheetname" placeholder="Sub-sheet tab name (e.g. 2027)"
-              style="width:200px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;outline:none;">
-            <input type="text" id="gs-add-label" placeholder="Display name (e.g. Sheet 3 — 2027)"
-              style="width:200px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+            <input type="text" id="gs-add-url" placeholder="Paste Google Sheet URL — https://docs.google.com/spreadsheets/d/..." style="flex:1;min-width:250px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+            <input type="text" id="gs-add-sheetname" placeholder="Sub-sheet tab name (e.g. 2027)" style="width:200px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+            <input type="text" id="gs-add-label" placeholder="Display name (e.g. Sheet 3 — 2027)" style="width:200px;padding:9px 12px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;outline:none;">
             <button onclick="addManualGoogleSheet()" style="padding:9px 20px;background:var(--green-dark);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">➕ Add Sheet</button>
           </div>
           <div id="gs-add-error" style="font-size:12px;color:var(--red);display:none;"></div>
         </div>
         <div id="gs-manual-list" style="margin-top:12px;display:flex;flex-direction:column;gap:6px;"></div>
       </div>
-
       <div class="upload-card">
         <div class="card-title">📂 Upload & Manage Excel Files</div>
         <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
@@ -229,16 +183,13 @@ table.dt tbody td:last-child{border-right:none;}
           <input type="file" id="file-input" accept=".xlsx,.xls,.xlsb,.csv" multiple style="display:none">
         </div>
         <div class="file-list" id="file-list"></div>
-        <div class="storage-bar">
-          💾 Files are saved in your browser — no need to re-upload after refresh! · <span id="storage-info">0 files stored</span>
-        </div>
+        <div class="storage-bar">💾 Files are saved in your browser — no need to re-upload after refresh! · <span id="storage-info">0 files stored</span></div>
       </div>
       <div class="upload-card">
         <div class="card-title">📊 Loaded Data Summary</div>
         <div id="data-summary" style="font-size:13px;color:#666;padding:8px 0;">No files loaded yet. Upload Excel files above.</div>
       </div>
     </div>
-
     <!-- APP ID PANEL -->
     <div class="panel" id="panel-appid">
       <div class="lookup-card">
@@ -264,14 +215,10 @@ table.dt tbody td:last-child{border-right:none;}
           <div class="stat-box"><div class="stat-head bg-d">JAN26 Amount</div><div class="stat-val vd" id="as6">₹0</div></div>
         </div>
         <div class="loading" id="appid-loading"><span class="spinner"></span>Searching...</div>
-        <div class="export-row" id="appid-export">
-          <span class="export-label">Export results:</span>
-          <button class="export-btn export-csv" onclick="exportCSV('appid')">⬇ Download CSV</button>
-        </div>
+        <div class="export-row" id="appid-export"><span class="export-label">Export results:</span><button class="export-btn export-csv" onclick="exportCSV('appid')">⬇ Download CSV</button></div>
         <div id="appid-result"><div class="placeholder"><div class="ph">🔍</div><p>Upload Excel files and enter App ID to search</p></div></div>
       </div>
     </div>
-
     <!-- PAY ID PANEL -->
     <div class="panel" id="panel-payid">
       <div class="lookup-card">
@@ -297,14 +244,10 @@ table.dt tbody td:last-child{border-right:none;}
           <div class="stat-box"><div class="stat-head bg-d">JAN26 Amount</div><div class="stat-val vd" id="ps6">₹0</div></div>
         </div>
         <div class="loading" id="payid-loading"><span class="spinner"></span>Searching...</div>
-        <div class="export-row" id="payid-export">
-          <span class="export-label">Export results:</span>
-          <button class="export-btn export-csv" onclick="exportCSV('payid')">⬇ Download CSV</button>
-        </div>
+        <div class="export-row" id="payid-export"><span class="export-label">Export results:</span><button class="export-btn export-csv" onclick="exportCSV('payid')">⬇ Download CSV</button></div>
         <div id="payid-result"><div class="placeholder"><div class="ph">💳</div><p>Upload Excel files and enter Pay ID to search</p></div></div>
       </div>
     </div>
-
     <!-- UTR PANEL -->
     <div class="panel" id="panel-utrid">
       <div class="lookup-card">
@@ -330,14 +273,10 @@ table.dt tbody td:last-child{border-right:none;}
           <div class="stat-box"><div class="stat-head bg-d">JAN26 Amount</div><div class="stat-val vd" id="us6">₹0</div></div>
         </div>
         <div class="loading" id="utrid-loading"><span class="spinner"></span>Searching...</div>
-        <div class="export-row" id="utrid-export">
-          <span class="export-label">Export results:</span>
-          <button class="export-btn export-csv" onclick="exportCSV('utrid')">⬇ Download CSV</button>
-        </div>
+        <div class="export-row" id="utrid-export"><span class="export-label">Export results:</span><button class="export-btn export-csv" onclick="exportCSV('utrid')">⬇ Download CSV</button></div>
         <div id="utrid-result"><div class="placeholder"><div class="ph">🏦</div><p>Upload Excel files and enter UTR number to search</p></div></div>
       </div>
     </div>
-
     <!-- BULK PANEL -->
     <div class="panel" id="panel-bulk">
       <div class="lookup-card">
@@ -355,19 +294,22 @@ table.dt tbody td:last-child{border-right:none;}
           <button class="bulk-search-btn" onclick="doBulkSearch()">🔍 Search All IDs</button>
         </div>
         <div class="loading" id="bulk-loading"><span class="spinner"></span>Processing bulk search...</div>
-        <div class="export-row" id="bulk-export">
-          <span class="export-label">Export results:</span>
-          <button class="export-btn export-csv" onclick="exportCSV('bulk')">⬇ Download CSV</button>
-        </div>
+        <div class="export-row" id="bulk-export"><span class="export-label">Export results:</span><button class="export-btn export-csv" onclick="exportCSV('bulk')">⬇ Download CSV</button></div>
         <div id="bulk-result"><div class="placeholder"><div class="ph">📋</div><p>Enter multiple IDs above to search in bulk</p></div></div>
       </div>
     </div>
-
     <!-- LATEST TRANSFER PANEL -->
     <div class="panel" id="panel-latest">
       <div class="lookup-card">
         <div class="lookup-titlebar">⚡ LATEST TRANSFER</div>
         <div class="lookup-subbar">Enter multiple App IDs (one per line) → Get latest transaction of each</div>
+        <!-- CHANGE 1: 3 mode buttons added -->
+        <div class="search-mode-row">
+          <button class="mode-btn active" id="latest-mode-all"  onclick="setLatestMode('all')">⚡ Latest Transfer</button>
+          <button class="mode-btn"        id="latest-mode-excl" onclick="setLatestMode('excl')">🚫 Latest Transfer (Excl.)</button>
+          <button class="mode-btn"        id="latest-mode-emi"  onclick="setLatestMode('emi')">✅ Latest EMI</button>
+        </div>
+        <div id="latest-mode-desc" style="padding:6px 16px;font-size:12px;color:#555;background:#f9fbe7;border-bottom:1px solid var(--border);">Mode: <b>Latest Transfer</b> — all payment types</div>
         <div class="bulk-section">
           <div class="bulk-label">ENTER APP IDs (ONE PER LINE):</div>
           <textarea class="bulk-textarea" id="latest-input" placeholder="1208596&#10;1629979&#10;1331126&#10;..."></textarea>
@@ -375,16 +317,12 @@ table.dt tbody td:last-child{border-right:none;}
           <button class="bulk-search-btn" onclick="doLatestSearch()">⚡ Search Latest</button>
         </div>
         <div class="loading" id="latest-loading"><span class="spinner"></span>Searching...</div>
-        <div class="export-row" id="latest-export">
-          <span class="export-label">Export results:</span>
-          <button class="export-btn export-csv" onclick="exportCSV('latest')">⬇ Download CSV</button>
-        </div>
+        <div class="export-row" id="latest-export"><span class="export-label">Export results:</span><button class="export-btn export-csv" onclick="exportCSV('latest')">⬇ Download CSV</button></div>
         <div id="latest-result"><div class="placeholder"><div class="ph">⚡</div><p>Enter App IDs above to get latest transaction of each</p></div></div>
       </div>
     </div>
   </div>
 </div>
-
 <script src="config.js"></script>
 <script>
 // ── AUTH ──
@@ -414,7 +352,6 @@ if (sessionStorage.getItem('li')) {
   document.getElementById('topbar-user').textContent = 'Welcome, ' + (sessionStorage.getItem('un')||'User');
   initApp();
 }
-
 // ── TABS ──
 function switchTab(name, el) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -422,19 +359,13 @@ function switchTab(name, el) {
   el.classList.add('active');
   document.getElementById('panel-'+name).classList.add('active');
 }
-
 // ── DATA STORE ──
-let allSheets = []; // [{fileName, sheetName, label, rows:[]}]
+let allSheets = [];
 const DB_NAME = 'DPMFiles', DB_VER = 1, STORE = 'files';
 let db = null;
-
 function initApp() {
-  openDB()
-    .then(() => loadStoredFiles())
-    .then(() => syncAllGoogleSheets())
-    .catch(e => { console.error('DB init error:', e); updateUI(); });
+  openDB().then(() => loadStoredFiles()).then(() => syncAllGoogleSheets()).catch(e => { console.error('DB init error:', e); updateUI(); });
 }
-
 function openDB() {
   return new Promise((res, rej) => {
     const req = indexedDB.open(DB_NAME, DB_VER);
@@ -443,123 +374,68 @@ function openDB() {
     req.onerror = () => rej();
   });
 }
-
 function saveFileToDB(name, data) {
-  return new Promise((res) => {
-    const tx = db.transaction(STORE, 'readwrite');
-    tx.objectStore(STORE).add({name, data, ts: Date.now()});
-    tx.oncomplete = res;
-  });
+  return new Promise((res) => { const tx = db.transaction(STORE, 'readwrite'); tx.objectStore(STORE).add({name, data, ts: Date.now()}); tx.oncomplete = res; });
 }
-
 function getAllFromDB() {
-  return new Promise((res) => {
-    const tx = db.transaction(STORE, 'readonly');
-    const req = tx.objectStore(STORE).getAll();
-    req.onsuccess = () => res(req.result||[]);
-  });
+  return new Promise((res) => { const tx = db.transaction(STORE, 'readonly'); const req = tx.objectStore(STORE).getAll(); req.onsuccess = () => res(req.result||[]); });
 }
-
 function deleteFromDB(id) {
-  return new Promise((res) => {
-    const tx = db.transaction(STORE, 'readwrite');
-    tx.objectStore(STORE).delete(id);
-    tx.oncomplete = res;
-  });
+  return new Promise((res) => { const tx = db.transaction(STORE, 'readwrite'); tx.objectStore(STORE).delete(id); tx.oncomplete = res; });
 }
-
 function loadStoredFiles() {
   return getAllFromDB().then(files => {
-    // First update UI with file names immediately (before parsing)
     updateFileListFromDB(files);
-    // Then parse in background
     allSheets = [];
-    files.forEach(f => {
-      try { parseFileData(f.name, f.data, f.id); } 
-      catch(e) { console.error('Parse error:', f.name, e); }
-    });
+    files.forEach(f => { try { parseFileData(f.name, f.data, f.id); } catch(e) { console.error('Parse error:', f.name, e); } });
     updateUI();
   }).catch(e => { console.error('DB error:', e); updateUI(); });
 }
-
 function updateFileListFromDB(files) {
   const info = document.getElementById('storage-info');
   const list = document.getElementById('file-list');
   info.textContent = files.length + ' file(s) stored in browser';
   if (!files.length) { list.innerHTML = ''; return; }
-  list.innerHTML = files.map(f => `
-    <div class="file-item">
-      <span style="font-size:16px">📊</span>
-      <div style="flex:1">
-        <div class="file-item-name">${esc(f.name)}</div>
-        <div class="file-item-meta">Stored · Loading rows...</div>
-      </div>
-      <button class="file-item-remove" onclick="removeFile(${f.id})">✕ Remove</button>
-    </div>`).join('');
+  list.innerHTML = files.map(f => `<div class="file-item"><span style="font-size:16px">📊</span><div style="flex:1"><div class="file-item-name">${esc(f.name)}</div><div class="file-item-meta">Stored · Loading rows...</div></div><button class="file-item-remove" onclick="removeFile(${f.id})">✕ Remove</button></div>`).join('');
 }
-
 function parseFileData(name, data, dbId) {
   try {
     const ext = name.split('.').pop().toLowerCase();
     let wb;
-    if (ext === 'csv') {
-      wb = XLSX.read(data, {type:'binary', raw:false});
-    } else {
-      // xlsx, xls, xlsb all use same read
-      wb = XLSX.read(data, {type:'binary', cellDates:true, raw:false});
-    }
+    if (ext === 'csv') { wb = XLSX.read(data, {type:'binary', raw:false}); }
+    else { wb = XLSX.read(data, {type:'binary', cellDates:true, raw:false}); }
     wb.SheetNames.forEach(sn => {
       const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], {defval:'', raw:false});
       if (rows.length > 0) allSheets.push({fileName:name, sheetName:sn, dbId, rows});
     });
   } catch(e) { console.error('Parse error:', e); alert('File parse error: ' + name + '\n' + e.message); }
 }
-
-function updateUI() {
-  updateFileList();
-  updateDataSummary();
-}
-
-// ── FILE UPLOAD ──
+function updateUI() { updateFileList(); updateDataSummary(); }
 const dz = document.getElementById('drop-zone');
 const fi = document.getElementById('file-input');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
 dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
 fi.addEventListener('change', e => { if(e.target.files.length) handleFiles(e.target.files); fi.value=''; });
-
 function handleFiles(files) {
   Array.from(files).forEach(file => {
-    document.getElementById('file-list').innerHTML = `
-      <div style="padding:12px;background:#e3f2fd;border-radius:6px;font-size:13px;color:var(--blue);">
-        <span class="spinner"></span> Loading <b>${esc(file.name)}</b> (${(file.size/1024/1024).toFixed(1)} MB) — Please wait...
-      </div>`;
+    document.getElementById('file-list').innerHTML = `<div style="padding:12px;background:#e3f2fd;border-radius:6px;font-size:13px;color:var(--blue);"><span class="spinner"></span> Loading <b>${esc(file.name)}</b> (${(file.size/1024/1024).toFixed(1)} MB) — Please wait...</div>`;
     const reader = new FileReader();
     reader.onload = async function(e) {
       try {
         const data = e.target.result;
-        // Make sure DB is open before saving
         if (!db) await openDB();
         await saveFileToDB(file.name, data);
         await loadStoredFiles();
       } catch(err) {
         console.error(err);
-        document.getElementById('file-list').innerHTML = `
-          <div style="padding:12px;background:#ffebee;border-radius:6px;font-size:13px;color:var(--red);">
-            ❌ Error: ${esc(err.message)}
-          </div>`;
+        document.getElementById('file-list').innerHTML = `<div style="padding:12px;background:#ffebee;border-radius:6px;font-size:13px;color:var(--red);">❌ Error: ${esc(err.message)}</div>`;
       }
     };
-    reader.onerror = () => {
-      document.getElementById('file-list').innerHTML = `
-        <div style="padding:12px;background:#ffebee;border-radius:6px;font-size:13px;color:var(--red);">
-          ❌ Could not read file. Please try again.
-        </div>`;
-    };
+    reader.onerror = () => { document.getElementById('file-list').innerHTML = `<div style="padding:12px;background:#ffebee;border-radius:6px;font-size:13px;color:var(--red);">❌ Could not read file. Please try again.</div>`; };
     reader.readAsBinaryString(file);
   });
 }
-
 function updateFileList() {
   getAllFromDB().then(files => {
     const list = document.getElementById('file-list');
@@ -569,56 +445,31 @@ function updateFileList() {
     list.innerHTML = files.map(f => {
       const sheets = allSheets.filter(s => s.dbId === f.id);
       const totalRows = sheets.reduce((a,s) => a+s.rows.length, 0);
-      return `<div class="file-item">
-        <span style="font-size:16px">📊</span>
-        <div style="flex:1">
-          <div class="file-item-name">${esc(f.name)}</div>
-          <div class="file-item-meta">${totalRows.toLocaleString()} rows · ${sheets.length} sheet(s)</div>
-        </div>
-        <button class="file-item-remove" onclick="removeFile(${f.id})">✕ Remove</button>
-      </div>`;
+      return `<div class="file-item"><span style="font-size:16px">📊</span><div style="flex:1"><div class="file-item-name">${esc(f.name)}</div><div class="file-item-meta">${totalRows.toLocaleString()} rows · ${sheets.length} sheet(s)</div></div><button class="file-item-remove" onclick="removeFile(${f.id})">✕ Remove</button></div>`;
     }).join('');
   });
 }
-
 function updateDataSummary() {
   const el = document.getElementById('data-summary');
   if (!allSheets.length) { el.textContent = 'No files loaded yet. Upload Excel files above.'; return; }
   const totalRows = allSheets.reduce((a,s) => a+s.rows.length, 0);
-  el.innerHTML = allSheets.map(s =>
-    `<div style="padding:4px 0;border-bottom:1px solid #e8e8e8;font-size:12px;">
-      📊 <b>${esc(s.fileName)}</b> — Sheet: <b>${esc(s.sheetName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span>
-    </div>`
-  ).join('') + `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);">Total: ${totalRows.toLocaleString()} rows across ${allSheets.length} sheet(s)</div>`;
+  el.innerHTML = allSheets.map(s => `<div style="padding:4px 0;border-bottom:1px solid #e8e8e8;font-size:12px;">📊 <b>${esc(s.fileName)}</b> — Sheet: <b>${esc(s.sheetName)}</b> — <span style="color:var(--green-dark);font-weight:600">${s.rows.length.toLocaleString()} rows</span></div>`).join('') + `<div style="padding:8px 0;font-weight:700;color:var(--green-dark);">Total: ${totalRows.toLocaleString()} rows across ${allSheets.length} sheet(s)</div>`;
 }
-
-async function removeFile(id) {
-  await deleteFromDB(id);
-  await loadStoredFiles();
-}
-
+async function removeFile(id) { await deleteFromDB(id); await loadStoredFiles(); }
 // ── SEARCH ──
 let lastResults = {appid:[], payid:[], utrid:[], bulk:[], latest:[]};
-
 function findKey(row, type) {
   const keys = Object.keys(row);
   const clean = k => k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim().toLowerCase();
   if (type === 'appid') return keys.find(k => /app.?id/i.test(k.replace(/\n.*/,'')));
-  if (type === 'payid') return keys.find(k => {
-    const c = clean(k);
-    return c === 'pay id' || c === 'payid' || c === 'pay_id' || /^pay.?id$/i.test(c);
-  });
+  if (type === 'payid') return keys.find(k => { const c = clean(k); return c === 'pay id' || c === 'payid' || c === 'pay_id' || /^pay.?id$/i.test(c); });
   if (type === 'utrid') return keys.find(k => /^utr$/i.test(clean(k)) || /^utr\b/i.test(clean(k)));
-  if (type === 'amt') {
-    return keys.find(k => /^amount/i.test(k.replace(/\n.*/,'').trim())) ||
-           keys.find(k => /amount/i.test(k) && !/due|diff|emi due/i.test(k));
-  }
+  if (type === 'amt') { return keys.find(k => /^amount/i.test(k.replace(/\n.*/,'').trim())) || keys.find(k => /amount/i.test(k) && !/due|diff|emi due/i.test(k)); }
   return null;
 }
 function cleanNum(v) { return parseFloat(String(v).replace(/[^0-9.-]/g,''))||0; }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function friendly(k) { return k.replace(/\n.*/,'').replace(/\(.*?\)/g,'').trim(); }
-
 function doSingleSearch(type) {
   const input = document.getElementById(type+'-input').value.trim();
   const mode = document.getElementById(type+'-mode').value;
@@ -635,7 +486,6 @@ function doSingleSearch(type) {
     renderStatsAndTable(type, matches);
   }, 100);
 }
-
 function searchAllSheets(type, query, mode) {
   const q = query.toLowerCase();
   const results = [];
@@ -652,54 +502,34 @@ function searchAllSheets(type, query, mode) {
   });
   return results;
 }
-
 function renderStatsAndTable(type, results) {
-  const prefix = type === 'appid' ? 'as' : 'ps';
   const statsEl = document.getElementById(type+'-stats');
   const resultEl = document.getElementById(type+'-result');
   const exportEl = document.getElementById(type+'-export');
-
   const allMatches = results.flatMap(r => r.matches);
-  if (!allMatches.length) {
-    resultEl.innerHTML = '<div class="no-result"><p>No records found for this ID</p></div>';
-    statsEl.style.display = 'none';
-    return;
-  }
-
-  // Split by sheet type for stats
+  if (!allMatches.length) { resultEl.innerHTML = '<div class="no-result"><p>No records found for this ID</p></div>'; statsEl.style.display = 'none'; return; }
   const sheet1Matches = results.filter(r => /jan.?24|oct.?24|dec.?25/i.test(r.sheetName)).flatMap(r=>r.matches);
   const sheet2Matches = results.filter(r => /jan.?26/i.test(r.sheetName)).flatMap(r=>r.matches);
   const amt1 = sheet1Matches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
   const amt2 = sheet2Matches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
   const totalAmt = allMatches.reduce((s,r) => { const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); }, 0);
-
   if (type === 'appid') {
-    document.getElementById('as1').textContent = allMatches.length;
-    document.getElementById('as2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
-    document.getElementById('as3').textContent = sheet1Matches.length;
-    document.getElementById('as4').textContent = sheet2Matches.length;
-    document.getElementById('as5').textContent = '₹'+amt1.toLocaleString('en-IN');
-    document.getElementById('as6').textContent = '₹'+amt2.toLocaleString('en-IN');
+    document.getElementById('as1').textContent = allMatches.length; document.getElementById('as2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+    document.getElementById('as3').textContent = sheet1Matches.length; document.getElementById('as4').textContent = sheet2Matches.length;
+    document.getElementById('as5').textContent = '₹'+amt1.toLocaleString('en-IN'); document.getElementById('as6').textContent = '₹'+amt2.toLocaleString('en-IN');
   } else if (type === 'payid') {
-    document.getElementById('ps1').textContent = allMatches.length;
-    document.getElementById('ps2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
-    document.getElementById('ps3').textContent = sheet1Matches.length;
-    document.getElementById('ps4').textContent = sheet2Matches.length;
-    document.getElementById('ps5').textContent = '₹'+amt1.toLocaleString('en-IN');
-    document.getElementById('ps6').textContent = '₹'+amt2.toLocaleString('en-IN');
+    document.getElementById('ps1').textContent = allMatches.length; document.getElementById('ps2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+    document.getElementById('ps3').textContent = sheet1Matches.length; document.getElementById('ps4').textContent = sheet2Matches.length;
+    document.getElementById('ps5').textContent = '₹'+amt1.toLocaleString('en-IN'); document.getElementById('ps6').textContent = '₹'+amt2.toLocaleString('en-IN');
   } else if (type === 'utrid') {
-    document.getElementById('us1').textContent = allMatches.length;
-    document.getElementById('us2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
-    document.getElementById('us3').textContent = sheet1Matches.length;
-    document.getElementById('us4').textContent = sheet2Matches.length;
-    document.getElementById('us5').textContent = '₹'+amt1.toLocaleString('en-IN');
-    document.getElementById('us6').textContent = '₹'+amt2.toLocaleString('en-IN');
+    document.getElementById('us1').textContent = allMatches.length; document.getElementById('us2').textContent = '₹'+totalAmt.toLocaleString('en-IN');
+    document.getElementById('us3').textContent = sheet1Matches.length; document.getElementById('us4').textContent = sheet2Matches.length;
+    document.getElementById('us5').textContent = '₹'+amt1.toLocaleString('en-IN'); document.getElementById('us6').textContent = '₹'+amt2.toLocaleString('en-IN');
   }
   statsEl.style.display = 'grid';
   exportEl.classList.add('show');
   resultEl.innerHTML = buildTable(results, totalAmt);
 }
-
 function buildTable(results, totalAmt) {
   const sample = results[0]?.matches[0] || {};
   const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
@@ -713,20 +543,15 @@ function buildTable(results, totalAmt) {
         const kl = k.toLowerCase();
         if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
         if (/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
-        if (/^amount/i.test(friendly(k)) || (/amount/i.test(kl) && !/due|diff/i.test(kl)))
-          return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
+        if (/^amount/i.test(friendly(k)) || (/amount/i.test(kl) && !/due|diff/i.test(kl))) return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
         return `<td>${esc(String(v))}</td>`;
       }).join('');
       tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-sheet">${esc(sheet.fileName.replace('.xlsx','').replace('.xls',''))}</td><td class="td-sheet">${esc(sheet.sheetName)}</td>${cells}</tr>`;
     });
   });
-  tbody += `<tr class="total-row"><td colspan="3" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{
-    if (/^amount/i.test(friendly(k))||(/amount/i.test(k)&&!/due|diff/i.test(k))) return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`;
-    return '<td></td>';
-  }).join('')}</tr>`;
+  tbody += `<tr class="total-row"><td colspan="3" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{ if (/^amount/i.test(friendly(k))||(/amount/i.test(k)&&!/due|diff/i.test(k))) return `<td style="text-align:right">₹${totalAmt.toLocaleString('en-IN')}</td>`; return '<td></td>'; }).join('')}</tr>`;
   return `<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
 }
-
 // ── BULK ──
 let bulkMode = 'appid';
 function setBulkMode(mode) {
@@ -739,7 +564,6 @@ function setBulkMode(mode) {
   document.getElementById('bulk-label').textContent = labels[mode];
   document.getElementById('bulk-input').placeholder = placeholders[mode];
 }
-
 function doBulkSearch() {
   const raw = document.getElementById('bulk-input').value.trim();
   if (!raw) return;
@@ -751,49 +575,27 @@ function doBulkSearch() {
   document.getElementById('bulk-export').classList.remove('show');
   setTimeout(() => {
     const allResults = [];
-    ids.forEach(id => {
-      const results = searchAllSheets(bulkMode, id, 'exact');
-      if (results.length) allResults.push({id, results});
-    });
+    ids.forEach(id => { const results = searchAllSheets(bulkMode, id, 'exact'); if (results.length) allResults.push({id, results}); });
     lastResults.bulk = allResults;
     document.getElementById('bulk-loading').classList.remove('show');
     renderBulkResults(allResults, ids);
   }, 150);
 }
-
 function renderBulkResults(allResults, ids) {
   const resultEl = document.getElementById('bulk-result');
   const exportEl = document.getElementById('bulk-export');
-  if (!allResults.length) {
-    resultEl.innerHTML = '<div class="no-result"><p>No records found for any of the entered IDs</p></div>';
-    return;
-  }
+  if (!allResults.length) { resultEl.innerHTML = '<div class="no-result"><p>No records found for any of the entered IDs</p></div>'; return; }
   const found = allResults.length;
   const notFound = ids.filter(id => !allResults.find(r => r.id === id));
-
-  // Summary header — same as single search
-  let html = `<div style="padding:10px 16px;background:#e8f5e9;border-bottom:1px solid var(--border);font-size:13px;">
-    ✅ Found: <b style="color:var(--green-dark)">${found}</b> IDs &nbsp;·&nbsp;
-    ❌ Not Found: <b style="color:var(--red)">${notFound.length}</b> IDs
-    ${notFound.length ? ' &nbsp;· <span style="color:#888;font-family:JetBrains Mono,monospace;font-size:11px;">'+notFound.map(esc).join(', ')+'</span>' : ''}
-  </div>`;
-
-  // Flatten all results into same structure as single search uses in buildTable
-  // Each searched ID gets its own separator row, then all its rows in same format
+  let html = `<div style="padding:10px 16px;background:#e8f5e9;border-bottom:1px solid var(--border);font-size:13px;">✅ Found: <b style="color:var(--green-dark)">${found}</b> IDs &nbsp;·&nbsp; ❌ Not Found: <b style="color:var(--red)">${notFound.length}</b> IDs ${notFound.length ? ' &nbsp;· <span style="color:#888;font-family:JetBrains Mono,monospace;font-size:11px;">'+notFound.map(esc).join(', ')+'</span>' : ''}</div>`;
   const sample = allResults[0]?.results[0]?.matches[0] || {};
   const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
   const thead = '<tr><th>Sr</th><th>Searched ID</th><th>File</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
-
-  let tbody = ''; let sr = 1;
-  let grandTotal = 0;
-
+  let tbody = ''; let sr = 1; let grandTotal = 0;
   allResults.forEach(({id, results}) => {
-    // Separator row per searched ID — same style as single search sheet separator
     const idTotal = results.flatMap(r=>r.matches).reduce((s,r)=>{const k=findKey(r,'amt');return s+(k?cleanNum(r[k]):0);},0);
     grandTotal += idTotal;
-
     results.forEach(sheet => {
-      // Sheet separator row — same style as buildTable
       tbody += `<tr class="sec-row"><td colspan="${cols.length+4}">🔍 ${esc(id)} &nbsp;|&nbsp; ${esc(sheet.fileName)} — ${esc(sheet.sheetName)}</td></tr>`;
       sheet.matches.forEach(row => {
         const cells = cols.map(k => {
@@ -801,27 +603,18 @@ function renderBulkResults(allResults, ids) {
           const kl = k.toLowerCase();
           if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
           if (/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
-          if (/^amount/i.test(friendly(k))||(/amount/i.test(kl)&&!/due|diff/i.test(kl)))
-            return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
+          if (/^amount/i.test(friendly(k))||(/amount/i.test(kl)&&!/due|diff/i.test(kl))) return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
           return `<td>${esc(String(v))}</td>`;
         }).join('');
         tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-appid">${esc(id)}</td><td class="td-sheet">${esc(sheet.fileName.replace('.xlsx','').replace('.xls',''))}</td><td class="td-sheet">${esc(sheet.sheetName)}</td>${cells}</tr>`;
       });
     });
   });
-
-  // Grand total row — same as buildTable
-  tbody += `<tr class="total-row"><td colspan="4" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{
-    if (/^amount/i.test(friendly(k))||(/amount/i.test(k)&&!/due|diff/i.test(k))) return `<td style="text-align:right">₹${grandTotal.toLocaleString('en-IN')}</td>`;
-    return '<td></td>';
-  }).join('')}</tr>`;
-
+  tbody += `<tr class="total-row"><td colspan="4" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{ if (/^amount/i.test(friendly(k))||(/amount/i.test(k)&&!/due|diff/i.test(k))) return `<td style="text-align:right">₹${grandTotal.toLocaleString('en-IN')}</td>`; return '<td></td>'; }).join('')}</tr>`;
   html += `<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
-
   resultEl.innerHTML = html;
   exportEl.classList.add('show');
 }
-
 // ── CLEAR ──
 function clearResult(type) {
   document.getElementById(type+'-input').value = '';
@@ -830,71 +623,47 @@ function clearResult(type) {
   document.getElementById(type+'-result').innerHTML = `<div class="placeholder"><div class="ph">🔍</div><p>Enter an ID to search</p></div>`;
   lastResults[type] = [];
 }
-
 // ── EXPORT CSV ──
 function exportCSV(type) {
   let rows = [];
   if (type === 'latest') {
-    lastResults['latest'].forEach(sheet => sheet.matches.forEach(row => {
-      const rawRow = {};
-      rawRow['File'] = sheet.fileName;
-      rawRow['Sheet'] = sheet.sheetName;
-      Object.keys(row).forEach(k => { rawRow[friendly(k)||k] = row[k]; });
-      rows.push(rawRow);
-    }));
+    lastResults['latest'].forEach(sheet => sheet.matches.forEach(row => { const rawRow = {}; rawRow['File'] = sheet.fileName; rawRow['Sheet'] = sheet.sheetName; Object.keys(row).forEach(k => { rawRow[friendly(k)||k] = row[k]; }); rows.push(rawRow); }));
   } else if (type === 'bulk') {
-    lastResults.bulk.forEach(({id, results}) => {
-      results.forEach(sheet => sheet.matches.forEach(row => {
-        // Export raw sheet columns exactly as they are — no formatting
-        const rawRow = {};
-        rawRow['SearchedID'] = id;
-        rawRow['File'] = sheet.fileName;
-        rawRow['Sheet'] = sheet.sheetName;
-        Object.keys(row).forEach(k => {
-          const col = friendly(k) || k;
-          rawRow[col] = row[k]; // raw value, no ₹ prefix, no toLocaleString
-        });
-        rows.push(rawRow);
-      }));
-    });
+    lastResults.bulk.forEach(({id, results}) => { results.forEach(sheet => sheet.matches.forEach(row => { const rawRow = {}; rawRow['SearchedID'] = id; rawRow['File'] = sheet.fileName; rawRow['Sheet'] = sheet.sheetName; Object.keys(row).forEach(k => { rawRow[friendly(k)||k] = row[k]; }); rows.push(rawRow); })); });
   } else {
-    lastResults[type].forEach(sheet => sheet.matches.forEach(row => {
-      const rawRow = {};
-      rawRow['File'] = sheet.fileName;
-      rawRow['Sheet'] = sheet.sheetName;
-      Object.keys(row).forEach(k => {
-        const col = friendly(k) || k;
-        rawRow[col] = row[k]; // raw value, no ₹ prefix, no toLocaleString
-      });
-      rows.push(rawRow);
-    }));
+    lastResults[type].forEach(sheet => sheet.matches.forEach(row => { const rawRow = {}; rawRow['File'] = sheet.fileName; rawRow['Sheet'] = sheet.sheetName; Object.keys(row).forEach(k => { rawRow[friendly(k)||k] = row[k]; }); rows.push(rawRow); }));
   }
   if (!rows.length) return;
   const cols = Object.keys(rows[0]);
-  const csv = [
-    cols.map(c => '"'+c.replace(/"/g,'""')+'"').join(','),
-    ...rows.map(r => cols.map(c => '"'+(String(r[c] !== undefined ? r[c] : '')).replace(/"/g,'""')+'"').join(','))
-  ].join('\n');
+  const csv = [cols.map(c => '"'+c.replace(/"/g,'""')+'"').join(','), ...rows.map(r => cols.map(c => '"'+(String(r[c] !== undefined ? r[c] : '')).replace(/"/g,'""')+'"').join(','))].join('\n');
   const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'dpm-export-'+type+'-'+Date.now()+'.csv';
-  a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'dpm-export-'+type+'-'+Date.now()+'.csv'; a.click();
 }
-
-
 // ── LATEST TRANSFER ──
+// CHANGE 2: EXCL_TYPES list + setLatestMode function + filter logic in doLatestSearch
+const EXCL_TYPES = ['mandate activation charges','bounce charges','lpp charges','dropout shortfall','adjust from retention','pos','foreclosure shortfall'];
+let latestMode = 'all';
+function setLatestMode(mode) {
+  latestMode = mode;
+  document.getElementById('latest-mode-all').classList.toggle('active',  mode==='all');
+  document.getElementById('latest-mode-excl').classList.toggle('active', mode==='excl');
+  document.getElementById('latest-mode-emi').classList.toggle('active',  mode==='emi');
+  const descs = {
+    all:  'Mode: <b>Latest Transfer</b> — all payment types',
+    excl: 'Mode: <b>Latest Transfer (Excl.)</b> — excluding: Mandate Activation Charges, Bounce Charges, LPP Charges, DropOut Shortfall, Adjust from Retention, POS, Foreclosure Shortfall',
+    emi:  'Mode: <b>Latest EMI</b> — EMI type transactions only'
+  };
+  document.getElementById('latest-mode-desc').innerHTML = descs[mode];
+}
 function doLatestSearch() {
   const raw = document.getElementById('latest-input').value.trim();
   if (!raw) return;
   if (!allSheets.length) { alert('Please upload Excel files first!'); return; }
   const ids = raw.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 500);
   if (!ids.length) return;
-
   document.getElementById('latest-loading').classList.add('show');
   document.getElementById('latest-result').innerHTML = '';
   document.getElementById('latest-export').classList.remove('show');
-
   setTimeout(() => {
     function parseDate(val) {
       if (!val) return new Date(0);
@@ -908,13 +677,13 @@ function doLatestSearch() {
       if (!isNaN(num) && num > 40000) return new Date((num - 25569) * 86400 * 1000);
       return new Date(val);
     }
-
-    const foundIds = [];
-    const notFoundIds = [];
-    const latestRows = [];
-
+    function getPaymentType(row) {
+      const ptKey = Object.keys(row).find(k => /payment.?type/i.test(friendly(k)));
+      return ptKey ? String(row[ptKey]).trim().toLowerCase() : '';
+    }
+    const foundIds = [], notFoundIds = [], latestRows = [];
     ids.forEach(id => {
-      const allMatches = [];
+      let allMatches = [];
       allSheets.forEach(sheet => {
         sheet.rows.forEach(row => {
           const k = findKey(row, 'appid');
@@ -922,11 +691,12 @@ function doLatestSearch() {
           if (String(row[k]).trim() === id) allMatches.push({row, sheet});
         });
       });
+      // Apply mode filter
+      if (latestMode === 'excl') allMatches = allMatches.filter(e => !EXCL_TYPES.includes(getPaymentType(e.row)));
+      else if (latestMode === 'emi') allMatches = allMatches.filter(e => getPaymentType(e.row) === 'emi');
       if (!allMatches.length) { notFoundIds.push(id); return; }
       foundIds.push(id);
-
-      let latestEntry = allMatches[0];
-      let latestDate = new Date(0);
+      let latestEntry = allMatches[0], latestDate = new Date(0);
       allMatches.forEach(entry => {
         const dateKey = Object.keys(entry.row).find(k => /^date$/i.test(friendly(k)));
         const d = parseDate(dateKey ? entry.row[dateKey] : '');
@@ -934,177 +704,84 @@ function doLatestSearch() {
       });
       latestRows.push({id, entry: latestEntry, totalCount: allMatches.length});
     });
-
     document.getElementById('latest-loading').classList.remove('show');
-
-    if (!latestRows.length) {
-      document.getElementById('latest-result').innerHTML = '<div class="no-result"><p>No records found for any of the entered IDs</p></div>';
-      return;
-    }
-
+    if (!latestRows.length) { document.getElementById('latest-result').innerHTML = '<div class="no-result"><p>No records found for any of the entered IDs</p></div>'; return; }
     lastResults['latest'] = latestRows.map(({entry}) => ({...entry.sheet, matches:[entry.row]}));
-
     const sample = latestRows[0].entry.row;
     const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
     const thead = '<tr><th>Sr</th><th>App ID</th><th>File</th><th>Sheet</th>' + cols.map(k => `<th>${esc(friendly(k))}</th>`).join('') + '</tr>';
-
     let tbody = ''; let sr = 1; let grandTotal = 0;
     latestRows.forEach(({id, entry, totalCount}) => {
       const row = entry.row;
       const amtKey = findKey(row, 'amt');
       const amt = amtKey ? cleanNum(row[amtKey]) : 0;
       grandTotal += amt;
-      tbody += `<tr class="sec-row"><td colspan="${cols.length+4}">⚡ ${esc(id)} &nbsp;|&nbsp; ${esc(entry.sheet.fileName)} — ${esc(entry.sheet.sheetName)} &nbsp;·&nbsp; Total records: ${totalCount} · Showing: Latest 1</td></tr>`;
+      tbody += `<tr class="sec-row"><td colspan="${cols.length+4}">⚡ ${esc(id)} &nbsp;|&nbsp; ${esc(entry.sheet.fileName)} — ${esc(entry.sheet.sheetName)} &nbsp;·&nbsp; Matched: ${totalCount} · Showing: Latest 1</td></tr>`;
       const cells = cols.map(k => {
         const v = row[k] !== undefined ? row[k] : '';
         const kl = k.toLowerCase();
         if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
         if (/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
-        if (/^amount/i.test(friendly(k)) || (/amount/i.test(kl) && !/due|diff/i.test(kl)))
-          return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
+        if (/^amount/i.test(friendly(k)) || (/amount/i.test(kl) && !/due|diff/i.test(kl))) return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
         return `<td>${esc(String(v))}</td>`;
       }).join('');
       tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-appid">${esc(id)}</td><td class="td-sheet">${esc(entry.sheet.fileName.replace('.xlsx','').replace('.xls',''))}</td><td class="td-sheet">${esc(entry.sheet.sheetName)}</td>${cells}</tr>`;
     });
-
-    tbody += `<tr class="total-row"><td colspan="4" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k => {
-      if (/^amount/i.test(friendly(k)) || (/amount/i.test(k) && !/due|diff/i.test(k)))
-        return `<td style="text-align:right">₹${grandTotal.toLocaleString('en-IN')}</td>`;
-      return '<td></td>';
-    }).join('')}</tr>`;
-
-    let html = `<div style="padding:10px 16px;background:#e8f5e9;border-bottom:1px solid var(--border);font-size:13px;">
-      ✅ Found: <b style="color:var(--green-dark)">${foundIds.length}</b> IDs &nbsp;·&nbsp;
-      ❌ Not Found: <b style="color:var(--red)">${notFoundIds.length}</b> IDs
-      ${notFoundIds.length ? ' &nbsp;· <span style="color:#888;font-family:JetBrains Mono,monospace;font-size:11px;">'+notFoundIds.map(esc).join(', ')+'</span>' : ''}
-    </div>`;
+    tbody += `<tr class="total-row"><td colspan="4" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k => { if (/^amount/i.test(friendly(k)) || (/amount/i.test(k) && !/due|diff/i.test(k))) return `<td style="text-align:right">₹${grandTotal.toLocaleString('en-IN')}</td>`; return '<td></td>'; }).join('')}</tr>`;
+    const modeLabels = {all:'Latest Transfer', excl:'Latest Transfer (Excl.)', emi:'Latest EMI'};
+    let html = `<div style="padding:10px 16px;background:#e8f5e9;border-bottom:1px solid var(--border);font-size:13px;">✅ Found: <b style="color:var(--green-dark)">${foundIds.length}</b> IDs &nbsp;·&nbsp; ❌ Not Found: <b style="color:var(--red)">${notFoundIds.length}</b> IDs &nbsp;·&nbsp; Mode: <b style="color:var(--blue)">${modeLabels[latestMode]}</b>${notFoundIds.length ? ' &nbsp;· <span style="color:#888;font-family:JetBrains Mono,monospace;font-size:11px;">'+notFoundIds.map(esc).join(', ')+'</span>' : ''}</div>`;
     html += `<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
-
     document.getElementById('latest-result').innerHTML = html;
     document.getElementById('latest-export').classList.add('show');
   }, 150);
 }
-
 function clearLatest() {
   document.getElementById('latest-input').value = '';
   document.getElementById('latest-export').classList.remove('show');
   document.getElementById('latest-result').innerHTML = '<div class="placeholder"><div class="ph">⚡</div><p>Enter App IDs above to get latest transaction of each</p></div>';
   lastResults['latest'] = [];
 }
-
-
-// Enter keyElementById('appid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('appid'); });
+// ── ENTER KEY — CHANGE 3: Fixed broken appid listener ──
+document.getElementById('appid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('appid'); });
 document.getElementById('payid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('payid'); });
 document.getElementById('utrid-input').addEventListener('keydown', e => { if(e.key==='Enter') doSingleSearch('utrid'); });
 document.getElementById('latest-input').addEventListener('keydown', e => { if(e.key==='Enter') doLatestSearch(); });
-
 // ── GOOGLE SHEETS CONFIG ──
 const GOOGLE_SHEETS = [
-  {
-    id: '1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E',
-    sheetName: 'DPM DATA JAN 24 TO DEC 25',
-    label: 'Sheet 1 — DPM DATA JAN 24 TO DEC 25',
-    gid: '0',
-    freeze: true   // Data never changes — only manual sync when needed
-  },
-  {
-    id: '1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE',
-    sheetName: 'DPM DATA JAN 26 TO TILL DATE',
-    label: 'Sheet 2 — DPM DATA JAN 26 TO TILL DATE',
-    gid: '0',
-    freeze: false  // Auto sync on every page load
-  },
-  {
-    id: '16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY',
-    sheetName: '2027',
-    label: 'Sheet 3 — DPM DATA 2027',
-    gid: '0',
-    freeze: false  // Auto sync on every page load
-  }
+  { id: '1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E', sheetName: 'DPM DATA JAN 24 TO DEC 25', label: 'Sheet 1 — DPM DATA JAN 24 TO DEC 25', gid: '0', freeze: true },
+  { id: '1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE', sheetName: 'DPM DATA JAN 26 TO TILL DATE', label: 'Sheet 2 — DPM DATA JAN 26 TO TILL DATE', gid: '0', freeze: false },
+  { id: '16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY', sheetName: '2027', label: 'Sheet 3 — DPM DATA 2027', gid: '0', freeze: false }
 ];
-
-// ── MANUAL GOOGLE SHEETS (saved in localStorage) ──
 const MANUAL_GS_KEY = 'dpm_manual_gsheets';
-
-function getManualSheets() {
-  try { return JSON.parse(localStorage.getItem(MANUAL_GS_KEY) || '[]'); }
-  catch { return []; }
-}
-function saveManualSheets(arr) {
-  localStorage.setItem(MANUAL_GS_KEY, JSON.stringify(arr));
-}
-
-function extractSheetId(url) {
-  // Extract ID from full URL or raw ID
-  const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
-  return m ? m[1] : url.trim();
-}
-function extractGid(url) {
-  const m = url.match(/[#&?]gid=(\d+)/);
-  return m ? m[1] : '0';
-}
-
+function getManualSheets() { try { return JSON.parse(localStorage.getItem(MANUAL_GS_KEY) || '[]'); } catch { return []; } }
+function saveManualSheets(arr) { localStorage.setItem(MANUAL_GS_KEY, JSON.stringify(arr)); }
+function extractSheetId(url) { const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/); return m ? m[1] : url.trim(); }
+function extractGid(url) { const m = url.match(/[#&?]gid=(\d+)/); return m ? m[1] : '0'; }
 function renderManualList() {
   const arr = getManualSheets();
   const el = document.getElementById('gs-manual-list');
   if (!el) return;
   if (!arr.length) { el.innerHTML = '<div style="font-size:12px;color:#aaa;">No manually added sheets yet.</div>'; return; }
-  el.innerHTML = arr.map((s, i) => `
-    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;">
-      <span style="font-size:16px;">📊</span>
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:600;color:var(--green-dark);">${esc(s.label)}</div>
-        <div style="font-size:11px;color:#666;font-family:'JetBrains Mono',monospace;">Sheet: ${esc(s.sheetName)} · ID: ${esc(s.id.substring(0,20))}...</div>
-      </div>
-      <button onclick="removeManualSheet(${i})" style="background:none;border:1px solid #ef9a9a;border-radius:4px;padding:2px 8px;font-size:11px;color:var(--red);cursor:pointer;">✕ Remove</button>
-    </div>`).join('');
+  el.innerHTML = arr.map((s, i) => `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;"><span style="font-size:16px;">📊</span><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--green-dark);">${esc(s.label)}</div><div style="font-size:11px;color:#666;font-family:'JetBrains Mono',monospace;">Sheet: ${esc(s.sheetName)} · ID: ${esc(s.id.substring(0,20))}...</div></div><button onclick="removeManualSheet(${i})" style="background:none;border:1px solid #ef9a9a;border-radius:4px;padding:2px 8px;font-size:11px;color:var(--red);cursor:pointer;">✕ Remove</button></div>`).join('');
 }
-
 function addManualGoogleSheet() {
-  const urlEl = document.getElementById('gs-add-url');
-  const nameEl = document.getElementById('gs-add-sheetname');
-  const labelEl = document.getElementById('gs-add-label');
-  const errEl = document.getElementById('gs-add-error');
-
-  const url = urlEl.value.trim();
-  const sheetName = nameEl.value.trim();
-  const label = labelEl.value.trim();
-
+  const urlEl = document.getElementById('gs-add-url'), nameEl = document.getElementById('gs-add-sheetname'), labelEl = document.getElementById('gs-add-label'), errEl = document.getElementById('gs-add-error');
+  const url = urlEl.value.trim(), sheetName = nameEl.value.trim(), label = labelEl.value.trim();
   errEl.style.display = 'none';
-
   if (!url) { errEl.textContent = '❌ Please enter a Google Sheet URL.'; errEl.style.display='block'; return; }
   if (!sheetName) { errEl.textContent = '❌ Please enter the sub-sheet tab name.'; errEl.style.display='block'; return; }
-
-  const id = extractSheetId(url);
-  const gid = extractGid(url);
-
+  const id = extractSheetId(url), gid = extractGid(url);
   if (!id || id.length < 10) { errEl.textContent = '❌ Invalid URL — could not extract Sheet ID.'; errEl.style.display='block'; return; }
-
   const arr = getManualSheets();
-  // Check duplicate
-  if (arr.find(s => s.id === id && s.sheetName === sheetName)) {
-    errEl.textContent = '❌ This sheet is already added.'; errEl.style.display='block'; return;
-  }
-
+  if (arr.find(s => s.id === id && s.sheetName === sheetName)) { errEl.textContent = '❌ This sheet is already added.'; errEl.style.display='block'; return; }
   arr.push({ id, sheetName, label: label || `Manual Sheet — ${sheetName}`, gid });
   saveManualSheets(arr);
-
   urlEl.value = ''; nameEl.value = ''; labelEl.value = '';
   renderManualList();
-  // Auto sync after adding
   syncAllGoogleSheets();
 }
-
-function removeManualSheet(idx) {
-  const arr = getManualSheets();
-  arr.splice(idx, 1);
-  saveManualSheets(arr);
-  renderManualList();
-  syncAllGoogleSheets();
-}
-
+function removeManualSheet(idx) { const arr = getManualSheets(); arr.splice(idx, 1); saveManualSheets(arr); renderManualList(); syncAllGoogleSheets(); }
 let gsSheets = [];
-
 function parseCSVLine(line) {
   const result = []; let cur = '', inQ = false;
   for (let i = 0; i < line.length; i++) {
@@ -1113,10 +790,8 @@ function parseCSVLine(line) {
     else if (c===',' && !inQ) { result.push(cur); cur=''; }
     else cur+=c;
   }
-  result.push(cur);
-  return result;
+  result.push(cur); return result;
 }
-
 function parseCSVText(csvText) {
   const lines = csvText.split(/\r?\n/);
   if (lines.length < 2) return [];
@@ -1131,103 +806,58 @@ function parseCSVText(csvText) {
   }
   return rows;
 }
-
 function updateGSStatusList(statuses) {
   const el = document.getElementById('gs-status-list');
   if (!el) return;
-  el.innerHTML = statuses.map((s, i) => `
-    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${s.ok?'#e8f5e9':s.frozen?'#f3f3f3':'#fff3e0'};border:1px solid ${s.ok?'#a5d6a7':s.frozen?'#ccc':'#ffcc80'};border-radius:6px;">
-      <span style="font-size:16px">${s.frozen?'🔒':(s.ok?'✅':(s.loading?'⏳':'⚠️'))}</span>
-      <div style="flex:1">
-        <div style="font-size:13px;font-weight:600;color:${s.frozen?'#666':s.ok?'var(--green-dark)':'var(--orange)'}">${esc(s.label)}</div>
-        <div style="font-size:11px;color:#666;">${esc(s.msg)}</div>
-      </div>
-      <div style="display:flex;gap:6px;align-items:center;">
-        ${s.ok||s.frozen ? `<span style="font-size:11px;font-family:'JetBrains Mono',monospace;background:${s.frozen?'#888':'var(--green-dark)'};color:#fff;padding:2px 8px;border-radius:10px;">${s.rows.toLocaleString()} rows</span>` : ''}
-        <button onclick="syncSingleSheet(${i})" style="padding:4px 10px;background:${s.frozen?'#888':'#1565c0'};color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">🔄 Sync</button>
-        <button onclick="toggleFreezeSheet(${i})" style="padding:4px 10px;background:${s.frozen?'#e65100':'#555'};color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">${s.frozen?'🔓 Unfreeze':'🔒 Freeze'}</button>
-      </div>
-    </div>`).join('');
+  el.innerHTML = statuses.map((s, i) => `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${s.ok?'#e8f5e9':s.frozen?'#f3f3f3':'#fff3e0'};border:1px solid ${s.ok?'#a5d6a7':s.frozen?'#ccc':'#ffcc80'};border-radius:6px;"><span style="font-size:16px">${s.frozen?'🔒':(s.ok?'✅':(s.loading?'⏳':'⚠️'))}</span><div style="flex:1"><div style="font-size:13px;font-weight:600;color:${s.frozen?'#666':s.ok?'var(--green-dark)':'var(--orange)'}">${esc(s.label)}</div><div style="font-size:11px;color:#666;">${esc(s.msg)}</div></div><div style="display:flex;gap:6px;align-items:center;">${s.ok||s.frozen ? `<span style="font-size:11px;font-family:'JetBrains Mono',monospace;background:${s.frozen?'#888':'var(--green-dark)'};color:#fff;padding:2px 8px;border-radius:10px;">${s.rows.toLocaleString()} rows</span>` : ''}<button onclick="syncSingleSheet(${i})" style="padding:4px 10px;background:${s.frozen?'#888':'#1565c0'};color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">🔄 Sync</button><button onclick="toggleFreezeSheet(${i})" style="padding:4px 10px;background:${s.frozen?'#e65100':'#555'};color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">${s.frozen?'🔓 Unfreeze':'🔒 Freeze'}</button></div></div>`).join('');
 }
-
-// ── FREEZE STATE (saved in localStorage) ──
 const FREEZE_KEY = 'dpm_freeze_state';
-function getFreezeState() {
-  try { return JSON.parse(localStorage.getItem(FREEZE_KEY) || '{}'); } catch { return {}; }
-}
+function getFreezeState() { try { return JSON.parse(localStorage.getItem(FREEZE_KEY) || '{}'); } catch { return {}; } }
 function saveFreezeState(obj) { localStorage.setItem(FREEZE_KEY, JSON.stringify(obj)); }
-
-// Cache for frozen sheet data
 const CACHE_KEY = 'dpm_sheet_cache';
-function getSheetCache() {
-  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch { return {}; }
-}
-function saveSheetCache(key, rows) {
-  const cache = getSheetCache();
-  cache[key] = { rows, ts: Date.now() };
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch(e) { console.warn('Cache save failed:', e); }
-}
-
+function getSheetCache() { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch { return {}; } }
+function saveSheetCache(key, rows) { const cache = getSheetCache(); cache[key] = { rows, ts: Date.now() }; try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch(e) { console.warn('Cache save failed:', e); } }
 let _currentStatuses = [];
-
 async function syncAllGoogleSheets() {
   const statusEl = document.getElementById('gs-sync-status');
   if (!statusEl) return;
   statusEl.textContent = '⏳ Syncing...';
   gsSheets = [];
-
   const allConfigs = [...GOOGLE_SHEETS, ...getManualSheets()];
   const freezeState = getFreezeState();
   const cache = getSheetCache();
-
-  _currentStatuses = allConfigs.map((s, i) => {
-    // freeze: from config default OR user override in localStorage
-    const isFrozen = (i in freezeState) ? freezeState[i] : (s.freeze === true);
-    return { label: s.label, loading: !isFrozen, ok: false, frozen: isFrozen, msg: isFrozen ? '🔒 Frozen — using cached data' : 'Fetching...', rows: 0 };
-  });
+  _currentStatuses = allConfigs.map((s, i) => { const isFrozen = (i in freezeState) ? freezeState[i] : (s.freeze === true); return { label: s.label, loading: !isFrozen, ok: false, frozen: isFrozen, msg: isFrozen ? '🔒 Frozen — using cached data' : 'Fetching...', rows: 0 }; });
   updateGSStatusList(_currentStatuses);
-
   for (let i = 0; i < allConfigs.length; i++) {
     const cfg = allConfigs[i];
     const isFrozen = _currentStatuses[i].frozen;
     const cacheKey = cfg.id + '_' + cfg.sheetName;
-
     if (isFrozen) {
-      // Load from cache
       const cached = cache[cacheKey];
       if (cached && cached.rows && cached.rows.length) {
         gsSheets.push({fileName:'GoogleSheet', sheetName:cfg.sheetName, dbId:'gs_'+i, rows:cached.rows, isGoogleSheet:true});
         _currentStatuses[i] = {label:cfg.label, loading:false, ok:true, frozen:true, msg:`🔒 Frozen · Cached ${new Date(cached.ts).toLocaleDateString('en-IN')}`, rows:cached.rows.length};
       } else {
-        // No cache yet — fetch once
         try {
           const rows = await fetchSheetRows(cfg);
           saveSheetCache(cacheKey, rows);
           gsSheets.push({fileName:'GoogleSheet', sheetName:cfg.sheetName, dbId:'gs_'+i, rows, isGoogleSheet:true});
           _currentStatuses[i] = {label:cfg.label, loading:false, ok:true, frozen:true, msg:`🔒 Frozen · Fetched once & cached`, rows:rows.length};
-        } catch(e) {
-          _currentStatuses[i] = {label:cfg.label, loading:false, ok:false, frozen:true, msg:'Error: '+e.message, rows:0};
-        }
+        } catch(e) { _currentStatuses[i] = {label:cfg.label, loading:false, ok:false, frozen:true, msg:'Error: '+e.message, rows:0}; }
       }
     } else {
-      // Normal fetch
       try {
         const rows = await fetchSheetRows(cfg);
         saveSheetCache(cacheKey, rows);
         gsSheets.push({fileName:'GoogleSheet', sheetName:cfg.sheetName, dbId:'gs_'+i, rows, isGoogleSheet:true});
         _currentStatuses[i] = {label:cfg.label, loading:false, ok:true, frozen:false, msg:'Synced · '+new Date().toLocaleTimeString('en-IN'), rows:rows.length};
-      } catch(e) {
-        _currentStatuses[i] = {label:cfg.label, loading:false, ok:false, frozen:false, msg:'Error: '+e.message, rows:0};
-      }
+      } catch(e) { _currentStatuses[i] = {label:cfg.label, loading:false, ok:false, frozen:false, msg:'Error: '+e.message, rows:0}; }
     }
     updateGSStatusList(_currentStatuses);
   }
-
-  // Deduplicate gsSheets by sheetName — prevent same sheet appearing twice
   const seenByName = new Map();
   gsSheets.forEach(s => { seenByName.set(s.sheetName, s); });
   const dedupedGsSheets = Array.from(seenByName.values());
-
   allSheets = allSheets.filter(s => !s.isGoogleSheet);
   allSheets = [...dedupedGsSheets, ...allSheets];
   updateUI();
@@ -1235,7 +865,6 @@ async function syncAllGoogleSheets() {
   statusEl.textContent = `✅ ${gsSheets.length}/${allConfigs.length} loaded · ${total.toLocaleString()} rows`;
   setTimeout(()=>{ statusEl.textContent=''; }, 8000);
 }
-
 async function fetchSheetRows(cfg) {
   const url = `https://docs.google.com/spreadsheets/d/${cfg.id}/export?format=csv&gid=${cfg.gid}`;
   const resp = await fetch(url);
@@ -1246,24 +875,19 @@ async function fetchSheetRows(cfg) {
   if (!rows.length) throw new Error('Sheet is empty or no headers found.');
   return rows;
 }
-
 async function syncSingleSheet(idx) {
   const allConfigs = [...GOOGLE_SHEETS, ...getManualSheets()];
   const cfg = allConfigs[idx];
   if (!cfg) return;
   const cacheKey = cfg.id + '_' + cfg.sheetName;
-
   _currentStatuses[idx] = {..._currentStatuses[idx], loading:true, msg:'Syncing...'};
   updateGSStatusList(_currentStatuses);
-
   try {
     const rows = await fetchSheetRows(cfg);
     saveSheetCache(cacheKey, rows);
-    // Update allSheets
     const existing = gsSheets.findIndex(s => s.sheetName === cfg.sheetName);
     const sheetObj = {fileName:'GoogleSheet', sheetName:cfg.sheetName, dbId:'gs_'+idx, rows, isGoogleSheet:true};
     if (existing >= 0) gsSheets[existing] = sheetObj; else gsSheets.push(sheetObj);
-    // Deduplicate by sheetName before merging
     const seenByName2 = new Map();
     gsSheets.forEach(s => { seenByName2.set(s.sheetName, s); });
     const dedupedGs2 = Array.from(seenByName2.values());
@@ -1271,12 +895,9 @@ async function syncSingleSheet(idx) {
     allSheets = [...dedupedGs2, ...allSheets];
     updateUI();
     _currentStatuses[idx] = {label:cfg.label, loading:false, ok:true, frozen:_currentStatuses[idx].frozen, msg:'Synced · '+new Date().toLocaleTimeString('en-IN'), rows:rows.length};
-  } catch(e) {
-    _currentStatuses[idx] = {..._currentStatuses[idx], loading:false, ok:false, msg:'Error: '+e.message};
-  }
+  } catch(e) { _currentStatuses[idx] = {..._currentStatuses[idx], loading:false, ok:false, msg:'Error: '+e.message}; }
   updateGSStatusList(_currentStatuses);
 }
-
 function toggleFreezeSheet(idx) {
   const freezeState = getFreezeState();
   const allConfigs = [...GOOGLE_SHEETS, ...getManualSheets()];
@@ -1284,14 +905,8 @@ function toggleFreezeSheet(idx) {
   const currentFrozen = _currentStatuses[idx]?.frozen ?? (cfg?.freeze === true);
   freezeState[idx] = !currentFrozen;
   saveFreezeState(freezeState);
-  if (_currentStatuses[idx]) {
-    _currentStatuses[idx].frozen = !currentFrozen;
-    _currentStatuses[idx].msg = !currentFrozen ? '🔒 Frozen — using cached data' : 'Auto sync enabled';
-    updateGSStatusList(_currentStatuses);
-  }
+  if (_currentStatuses[idx]) { _currentStatuses[idx].frozen = !currentFrozen; _currentStatuses[idx].msg = !currentFrozen ? '🔒 Frozen — using cached data' : 'Auto sync enabled'; updateGSStatusList(_currentStatuses); }
 }
-
-// Render manual list on page load
 document.addEventListener('DOMContentLoaded', () => { renderManualList(); });
 </script>
 </body>
