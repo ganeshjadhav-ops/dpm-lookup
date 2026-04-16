@@ -286,6 +286,7 @@ table.dt tbody td:last-child{border-right:none;}
           <button class="mode-btn active" id="bulk-mode-appid" onclick="setBulkMode('appid')">App ID Search</button>
           <button class="mode-btn" id="bulk-mode-payid" onclick="setBulkMode('payid')">Pay ID Search</button>
           <button class="mode-btn" id="bulk-mode-utrid" onclick="setBulkMode('utrid')">UTR Search</button>
+          <button class="mode-btn" id="bulk-mode-apppay" onclick="setBulkMode('apppay')">🔗 App ID + Pay ID Match</button>
         </div>
         <div class="bulk-section">
           <div class="bulk-label" id="bulk-label">Enter App IDs (one per line):</div>
@@ -559,8 +560,19 @@ function setBulkMode(mode) {
   document.getElementById('bulk-mode-appid').classList.toggle('active', mode==='appid');
   document.getElementById('bulk-mode-payid').classList.toggle('active', mode==='payid');
   document.getElementById('bulk-mode-utrid').classList.toggle('active', mode==='utrid');
-  const labels = {appid:'Enter App IDs (one per line):', payid:'Enter Pay IDs (one per line):', utrid:'Enter UTR Numbers (one per line):'};
-  const placeholders = {appid:'1208596\n1629979\n1331126\n...', payid:'pay_Sa7ru...\npay_Sadj...\n...', utrid:'UTIBR720...\nYESOB400...\n...'};
+  document.getElementById('bulk-mode-apppay').classList.toggle('active', mode==='apppay');
+  const labels = {
+    appid:'Enter App IDs (one per line):',
+    payid:'Enter Pay IDs (one per line):',
+    utrid:'Enter UTR Numbers (one per line):',
+    apppay:'Enter App ID + Pay ID pairs (one per line, format: AppID,PayID):'
+  };
+  const placeholders = {
+    appid:'1208596\n1629979\n1331126\n...',
+    payid:'pay_Sa7ru...\npay_Sadj...\n...',
+    utrid:'UTIBR720...\nYESOB400...\n...',
+    apppay:'1208596,pay_Sa7ru...\n1629979,pay_Sadj...\n...'
+  };
   document.getElementById('bulk-label').textContent = labels[mode];
   document.getElementById('bulk-input').placeholder = placeholders[mode];
 }
@@ -568,18 +580,99 @@ function doBulkSearch() {
   const raw = document.getElementById('bulk-input').value.trim();
   if (!raw) return;
   if (!allSheets.length) { alert('Please upload Excel files first!'); return; }
-  const ids = raw.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,500);
-  if (!ids.length) return;
   document.getElementById('bulk-loading').classList.add('show');
   document.getElementById('bulk-result').innerHTML = '';
   document.getElementById('bulk-export').classList.remove('show');
-  setTimeout(() => {
-    const allResults = [];
-    ids.forEach(id => { const results = searchAllSheets(bulkMode, id, 'exact'); if (results.length) allResults.push({id, results}); });
-    lastResults.bulk = allResults;
-    document.getElementById('bulk-loading').classList.remove('show');
-    renderBulkResults(allResults, ids);
-  }, 150);
+
+  if (bulkMode === 'apppay') {
+    // App ID + Pay ID match mode
+    const pairs = raw.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,500);
+    setTimeout(() => {
+      const allResults = [];
+      pairs.forEach(pair => {
+        const parts = pair.split(',').map(s=>s.trim());
+        if (parts.length < 2) return;
+        const appId = parts[0], payId = parts[1];
+        const matched = [];
+        allSheets.forEach(sheet => {
+          const matches = sheet.rows.filter(row => {
+            const ak = findKey(row, 'appid');
+            const pk = findKey(row, 'payid');
+            if (!ak || !pk) return false;
+            return String(row[ak]).trim().toLowerCase() === appId.toLowerCase() &&
+                   String(row[pk]).trim().toLowerCase() === payId.toLowerCase();
+          });
+          if (matches.length) matched.push({...sheet, matches});
+        });
+        allResults.push({id: pair, appId, payId, results: matched, found: matched.length > 0});
+      });
+      lastResults.bulk = allResults.filter(r => r.found).map(r => ({id: r.id, results: r.results}));
+      document.getElementById('bulk-loading').classList.remove('show');
+      renderAppPayResults(allResults, pairs);
+    }, 150);
+  } else {
+    const ids = raw.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,500);
+    if (!ids.length) { document.getElementById('bulk-loading').classList.remove('show'); return; }
+    setTimeout(() => {
+      const allResults = [];
+      ids.forEach(id => { const results = searchAllSheets(bulkMode, id, 'exact'); if (results.length) allResults.push({id, results}); });
+      lastResults.bulk = allResults;
+      document.getElementById('bulk-loading').classList.remove('show');
+      renderBulkResults(allResults, ids);
+    }, 150);
+  }
+}
+
+function renderAppPayResults(allResults, pairs) {
+  const resultEl = document.getElementById('bulk-result');
+  const exportEl = document.getElementById('bulk-export');
+
+  const found = allResults.filter(r => r.found).length;
+  const notFound = allResults.filter(r => !r.found);
+
+  let html = `<div style="padding:10px 16px;background:#e8f5e9;border-bottom:1px solid var(--border);font-size:13px;">
+    ✅ Matched: <b style="color:var(--green-dark)">${found}</b> pairs &nbsp;·&nbsp;
+    ❌ Not Matched: <b style="color:var(--red)">${notFound.length}</b> pairs
+    ${notFound.length ? ' &nbsp;· <span style="color:#888;font-family:JetBrains Mono,monospace;font-size:11px;">'+notFound.map(r=>esc(r.id)).join(', ')+'</span>' : ''}
+  </div>`;
+
+  if (!found) {
+    html += '<div class="no-result"><p>No matching App ID + Pay ID pairs found</p></div>';
+    resultEl.innerHTML = html;
+    return;
+  }
+
+  // Merge all columns from all matched results
+  const allColsSet = new Set();
+  allResults.filter(r=>r.found).forEach(({results}) => results.forEach(sheet => {
+    if (sheet.matches[0]) Object.keys(sheet.matches[0]).forEach(k => { if (!/do not edit/i.test(k)) allColsSet.add(k); });
+  }));
+  const cols = Array.from(allColsSet);
+  const thead = '<tr><th>Sr</th><th>Searched Pair</th><th>File</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
+
+  let tbody = ''; let sr = 1; let grandTotal = 0;
+  allResults.filter(r => r.found).forEach(({id, results}) => {
+    const idTotal = results.flatMap(r=>r.matches).reduce((s,r)=>{const k=findKey(r,'amt');return s+(k?cleanNum(r[k]):0);},0);
+    grandTotal += idTotal;
+    results.forEach(sheet => {
+      tbody += `<tr class="sec-row"><td colspan="${cols.length+4}">🔗 ${esc(id)} &nbsp;|&nbsp; ${esc(sheet.fileName)} — ${esc(sheet.sheetName)}</td></tr>`;
+      sheet.matches.forEach(row => {
+        const cells = cols.map(k => {
+          const v = row[k] !== undefined ? row[k] : '';
+          const kl = k.toLowerCase();
+          if (/app.?id/i.test(friendly(k))) return `<td class="td-appid">${esc(String(v))}</td>`;
+          if (/pay.?id/i.test(friendly(k))) return `<td class="td-payid">${esc(String(v))}</td>`;
+          if (/^amount/i.test(friendly(k))||(/amount/i.test(kl)&&!/due|diff/i.test(kl))) return `<td class="td-amt">₹${cleanNum(v).toLocaleString('en-IN')}</td>`;
+          return `<td>${esc(String(v))}</td>`;
+        }).join('');
+        tbody += `<tr><td class="td-sr">${sr++}</td><td class="td-appid" style="font-size:10px">${esc(id)}</td><td class="td-sheet">${esc(sheet.fileName.replace('.xlsx','').replace('.xls',''))}</td><td class="td-sheet">${esc(sheet.sheetName)}</td>${cells}</tr>`;
+      });
+    });
+  });
+  tbody += `<tr class="total-row"><td colspan="4" style="text-align:center;font-family:'Inter',sans-serif">GRAND TOTAL</td>${cols.map(k=>{ if (/^amount/i.test(friendly(k))||(/amount/i.test(k)&&!/due|diff/i.test(k))) return `<td style="text-align:right">₹${grandTotal.toLocaleString('en-IN')}</td>`; return '<td></td>'; }).join('')}</tr>`;
+  html += `<div class="table-wrap"><table class="dt"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+  resultEl.innerHTML = html;
+  exportEl.classList.add('show');
 }
 function renderBulkResults(allResults, ids) {
   const resultEl = document.getElementById('bulk-result');
@@ -588,8 +681,12 @@ function renderBulkResults(allResults, ids) {
   const found = allResults.length;
   const notFound = ids.filter(id => !allResults.find(r => r.id === id));
   let html = `<div style="padding:10px 16px;background:#e8f5e9;border-bottom:1px solid var(--border);font-size:13px;">✅ Found: <b style="color:var(--green-dark)">${found}</b> IDs &nbsp;·&nbsp; ❌ Not Found: <b style="color:var(--red)">${notFound.length}</b> IDs ${notFound.length ? ' &nbsp;· <span style="color:#888;font-family:JetBrains Mono,monospace;font-size:11px;">'+notFound.map(esc).join(', ')+'</span>' : ''}</div>`;
-  const sample = allResults[0]?.results[0]?.matches[0] || {};
-  const cols = Object.keys(sample).filter(k => !/do not edit/i.test(k));
+  // Merge ALL columns from ALL sheets to avoid missing columns
+  const allColsSet = new Set();
+  allResults.forEach(({results}) => results.forEach(sheet => {
+    if (sheet.matches[0]) Object.keys(sheet.matches[0]).forEach(k => { if (!/do not edit/i.test(k)) allColsSet.add(k); });
+  }));
+  const cols = Array.from(allColsSet);
   const thead = '<tr><th>Sr</th><th>Searched ID</th><th>File</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
   let tbody = ''; let sr = 1; let grandTotal = 0;
   allResults.forEach(({id, results}) => {
@@ -750,7 +847,11 @@ document.getElementById('latest-input').addEventListener('keydown', e => { if(e.
 const GOOGLE_SHEETS = [
   { id: '1T3lYxhXinlVGx-1_xPZf9QUcSJ9fa-OeV46GHiYZG5E', sheetName: 'DPM DATA JAN 24 TO DEC 25', label: 'Sheet 1 — DPM DATA JAN 24 TO DEC 25', gid: '0', freeze: true },
   { id: '1V9MXUZrggVkKsw0ZBx41Te-xvNsGoeAXKxLXJU887uE', sheetName: 'DPM DATA JAN 26 TO TILL DATE', label: 'Sheet 2 — DPM DATA JAN 26 TO TILL DATE', gid: '0', freeze: false },
-  { id: '16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY', sheetName: '2027', label: 'Sheet 3 — DPM DATA 2027', gid: '0', freeze: false }
+  { id: '16xjZv7EpVQ3p8qqDeU4uBFMShr-Mso11LhWZZOCtGRY', sheetName: '2027', label: 'Sheet 3 — DPM DATA 2027', gid: '0', freeze: false },
+  { id: '1rnpZ3QxKnFOT5z_iNAU5usjFGgJ5H2ol7EBdYSGnQZA', sheetName: 'DEC 24 TO AUG 25', label: 'Sheet 4 — NACH DPM FORM DEC 24 TO AUG 25', gid: '0', freeze: false },
+  { id: '1MogcJo7F5enwKaEf9eo3WJEcKNAQKHUJ', sheetName: 'SEP 25 TO MAR 26', label: 'Sheet 5 — NACH DPM FORM SEP 25 TO MAR 26', gid: '71617882', freeze: false },
+  { id: '1ERCilDddH0LSP3Eq0R9Dyl-AicCQGhpZt8rKWMHQVQ8', sheetName: 'APR 26 TO TILL DATE', label: 'Sheet 6 — NACH DPM FORM APR 26 TO TILL DATE', gid: '0', freeze: false },
+  { id: '1KjPa_clvlNQ1FY25fAJAgA_N6j7-SRisoT2ZyV5NuKI', sheetName: 'EXTRA SHEET', label: 'Sheet 7 — NACH DPM EXTRA', gid: '0', freeze: false }
 ];
 const MANUAL_GS_KEY = 'dpm_manual_gsheets';
 function getManualSheets() { try { return JSON.parse(localStorage.getItem(MANUAL_GS_KEY) || '[]'); } catch { return []; } }
