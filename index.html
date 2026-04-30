@@ -94,8 +94,8 @@ table.dt tbody td:last-child{border-right:none;}
 .td-appid{font-weight:700;color:var(--green-dark);text-align:center;}
 .td-payid{font-weight:600;color:var(--blue);text-align:center;}
 .td-amt{text-align:right;font-weight:600;color:var(--green-dark);}
-.sec-row td{background:var(--blue);color:#fff;font-weight:700;text-align:center;font-size:12px;padding:8px;font-family:'Inter',sans-serif;}
-.sec-row2 td{background:var(--green-mid);color:#fff;font-weight:700;text-align:center;font-size:12px;padding:8px;font-family:'Inter',sans-serif;}
+.sec-row td{background:#f0f4f8;color:#37474f;font-weight:600;text-align:left;font-size:11px;padding:6px 12px;font-family:'Inter',sans-serif;border-left:3px solid #90a4ae;letter-spacing:.3px;}
+.sec-row2 td{background:#f1f8e9;color:#33691e;font-weight:600;text-align:left;font-size:11px;padding:6px 12px;font-family:'Inter',sans-serif;border-left:3px solid #aed581;letter-spacing:.3px;}
 .total-row td{background:var(--green-dark);color:#fff;font-weight:700;font-family:'JetBrains Mono',monospace;padding:9px 10px;}
 .bulk-sep-row td{background:#fff3e0;color:var(--orange);font-weight:700;text-align:center;font-size:12px;padding:6px;font-family:'Inter',sans-serif;border-bottom:2px solid var(--orange);}
 .placeholder{text-align:center;padding:3rem;color:#aaa;}
@@ -114,22 +114,24 @@ table.dt tbody td:last-child{border-right:none;}
 @media(max-width:768px){.stats-grid{grid-template-columns:repeat(2,1fr);}.main{padding:10px;}}
 
 /* INFO PANEL */
-.info-panel{display:none;margin:0;border-bottom:1px solid var(--border);}
-.info-panel.show{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;}
-.info-col{padding:14px 16px;border-right:1px solid var(--border);}
+.info-panel{display:none;margin:0;border:1px solid #e0e0e0;border-radius:0 0 8px 8px;overflow:hidden;}
+.info-panel.show{display:grid;grid-template-columns:1fr 1fr 1fr;}
+.info-col{padding:16px 20px;border-right:1px solid #e0e0e0;}
 .info-col:last-child{border-right:none;}
-.info-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;color:#fff;background:var(--green-dark);padding:5px 10px;border-radius:4px;display:inline-block;}
-.info-row{display:flex;align-items:flex-start;padding:4px 0;border-bottom:1px solid #f0f0f0;font-size:12px;gap:6px;}
+.info-col-title{font-size:12px;font-weight:700;color:#333;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid rgba(0,0,0,.08);}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:13px;}
 .info-row:last-child{border-bottom:none;}
-.info-key{font-weight:600;color:#555;white-space:nowrap;min-width:120px;}
-.info-val{color:#1a1a1a;font-family:'JetBrains Mono',monospace;font-size:11px;}
-.info-val.hi-green{color:var(--green-dark);font-weight:700;}
-.info-val.hi-red{color:var(--red);font-weight:700;}
-.info-val.hi-blue{color:var(--blue);font-weight:700;}
-.info-val.hi-orange{color:var(--orange);font-weight:700;}
+.info-key{font-weight:600;color:#444;font-family:'Inter',sans-serif;}
+.info-val{color:#1a1a1a;font-family:'Inter',sans-serif;font-size:13px;text-align:right;}
+.info-val.hi-green{color:#1a6b1a;font-weight:700;}
+.info-val.hi-red{color:#c62828;font-weight:700;}
+.info-val.hi-blue{color:#0d47a1;font-weight:700;}
+.info-val.hi-orange{color:#e65100;font-weight:700;}
+.info-col.bg-white{background:#fff;}
 .info-col.bg-green{background:#e8f5e9;}
 .info-col.bg-red{background:#fce4ec;}
 .info-col.bg-blue{background:#e3f2fd;}
+.info-app-badge{display:inline-block;background:#1565c0;color:#fff;font-size:12px;font-weight:700;padding:2px 10px;border-radius:12px;margin-left:6px;}
 </style>
 </head>
 <body>
@@ -537,6 +539,95 @@ function parseRowDate(row) {
   return new Date(val);
 }
 
+function buildInfoPanel(allMatches, searchedId, allResults) {
+  function getVal(key) {
+    for (const row of allMatches) {
+      const k = Object.keys(row).find(k2 => new RegExp(key,'i').test(friendly(k2)));
+      if (k && row[k] && String(row[k]).trim()) return String(row[k]).trim();
+    }
+    return '—';
+  }
+  const totalAmt = allMatches.reduce((s,r)=>{ const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); },0);
+  const nbfc     = getVal('nbfc');
+  const spoc     = getVal('spoc');
+  const custName = getVal('customer.?name');
+  const lan      = getVal('^lan$');
+  const appId    = searchedId || getVal('app.?id');
+
+  // Payment type breakdown
+  const ptCount = {};
+  allMatches.forEach(r => {
+    const k = Object.keys(r).find(k2 => /payment.?type/i.test(friendly(k2)));
+    const pt = k ? String(r[k]).trim() : 'Unknown';
+    ptCount[pt] = (ptCount[pt]||0)+1;
+  });
+
+  // Sheet breakdown using allResults
+  const sheetBreakdown = (allResults||[]).map(sheet => {
+    const sheetAmt = sheet.matches.reduce((s,r)=>{ const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); },0);
+    return {name: sheet.sheetName, count: sheet.matches.length, amt: sheetAmt};
+  });
+
+  // Dates — latest first
+  const dates = allMatches.map(r => parseRowDate(r)).filter(d => d > new Date(0)).sort((a,b)=>a-b);
+  const fmt = d => d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const firstDate = dates.length ? fmt(dates[0]) : '—';
+  const lastDate  = dates.length ? fmt(dates[dates.length-1]) : '—';
+
+  // EMI count
+  const emiCount = allMatches.filter(r => { const k=Object.keys(r).find(k2=>/payment.?type/i.test(friendly(k2))); return k && /^emi$/i.test(String(r[k]).trim()); }).length;
+
+  return `<div class="info-panel show">
+    <!-- Col 1: Basic Info — white bg like GrayQuest left panel -->
+    <div class="info-col bg-white" style="border:none;border-right:1px solid #e0e0e0;">
+      <div class="info-col-title" style="color:#555;">📋 Application Info &nbsp;<span class="info-app-badge">${esc(appId)}</span></div>
+      ${custName !== '—' ? `<div class="info-row"><span class="info-key">Customer Name</span><span class="info-val hi-blue">${esc(custName)}</span></div>` : ''}
+      ${lan !== '—' ? `<div class="info-row"><span class="info-key">LAN</span><span class="info-val">${esc(lan)}</span></div>` : ''}
+      <div class="info-row"><span class="info-key">NBFC / Lender</span><span class="info-val hi-blue">${esc(nbfc)}</span></div>
+      <div class="info-row"><span class="info-key">SPOC</span><span class="info-val">${esc(spoc)}</span></div>
+      <div class="info-row"><span class="info-key">First Transaction</span><span class="info-val">${esc(firstDate)}</span></div>
+      <div class="info-row"><span class="info-key">Latest Transaction</span><span class="info-val hi-orange">${esc(lastDate)}</span></div>
+      <div class="info-row"><span class="info-key">Total Transactions</span><span class="info-val">${allMatches.length}</span></div>
+    </div>
+    <!-- Col 2: Amount Summary — light green like GrayQuest middle panel -->
+    <div class="info-col bg-green">
+      <div class="info-col-title" style="color:#2e7d32;">💰 Amount Summary</div>
+      <div class="info-row"><span class="info-key">Total Amount Paid</span><span class="info-val hi-green">₹${totalAmt.toLocaleString('en-IN')}</span></div>
+      <div class="info-row"><span class="info-key">EMI Transactions</span><span class="info-val">${emiCount}</span></div>
+      ${Object.entries(ptCount).map(([pt,cnt]) => {
+        const ptAmt = allMatches.filter(r => {
+          const k=Object.keys(r).find(k2=>/payment.?type/i.test(friendly(k2)));
+          return k && String(r[k]).trim()===pt;
+        }).reduce((s,r)=>{ const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); },0);
+        return `<div class="info-row"><span class="info-key">${esc(pt)}</span><span class="info-val">×${cnt} &nbsp;₹${ptAmt.toLocaleString('en-IN')}</span></div>`;
+      }).join('')}
+    </div>
+    <!-- Col 3: Sheet Breakdown — light pink like GrayQuest right panel -->
+    <div class="info-col bg-red">
+      <div class="info-col-title" style="color:#b71c1c;">📊 Sheet Breakdown</div>
+      ${sheetBreakdown.map(s => `
+        <div class="info-row"><span class="info-key" style="font-size:11px;">${esc(s.name)}</span><span class="info-val">×${s.count} &nbsp;₹${s.amt.toLocaleString('en-IN')}</span></div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+
+function parseRowDate(row) {
+  const dateKey = Object.keys(row).find(k => /^date$/i.test(friendly(k)));
+  if (!dateKey) return new Date(0);
+  const val = String(row[dateKey]);
+  const m = val.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/);
+  if (m) {
+    const months = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+    const yr = parseInt(m[3]) < 100 ? 2000+parseInt(m[3]) : parseInt(m[3]);
+    return new Date(yr, months[m[2].toLowerCase()]??0, parseInt(m[1]));
+  }
+  const num = parseFloat(val);
+  if (!isNaN(num) && num > 40000) return new Date((num-25569)*86400*1000);
+  return new Date(val);
+}
+
 function buildInfoPanel(allMatches, searchedId) {
   // Gather all unique field values across matches
   function getVal(key) {
@@ -638,13 +729,23 @@ function renderStatsAndTable(type, results) {
     const infoEl = document.getElementById('appid-info-panel');
     if (infoEl) {
       const searchedId = document.getElementById('appid-input').value.trim();
-      infoEl.outerHTML = buildInfoPanel(allMatches, searchedId);
+      infoEl.outerHTML = buildInfoPanel(allMatches, searchedId, results);
     }
   }
 
-  // Sort all matches by date descending (latest first) per sheet
+  // Sort all matches by date descending (latest first) — globally across all sheets
+  // First flatten, sort, then rebuild per-sheet order
+  const allSorted = results.flatMap(s => s.matches.map(m => ({m, sheetName:s.sheetName, fileName:s.fileName})));
+  allSorted.sort((a, b) => parseRowDate(b.m) - parseRowDate(a.m));
+  // Also sort within each sheet
   results.forEach(sheet => {
     sheet.matches.sort((a, b) => parseRowDate(b) - parseRowDate(a));
+  });
+  // Sort sheets themselves by their latest transaction date
+  results.sort((a, b) => {
+    const latestA = a.matches.length ? parseRowDate(a.matches[0]) : new Date(0);
+    const latestB = b.matches.length ? parseRowDate(b.matches[0]) : new Date(0);
+    return latestB - latestA;
   });
 
   resultEl.innerHTML = buildTable(results, totalAmt);
@@ -655,7 +756,7 @@ function buildTable(results, totalAmt) {
   const thead = '<tr><th>Sr</th><th>File</th><th>Sheet</th>'+cols.map(k=>`<th>${esc(friendly(k))}</th>`).join('')+'</tr>';
   let tbody = ''; let sr = 1;
   results.forEach(sheet => {
-    tbody += `<tr class="sec-row"><td colspan="${cols.length+3}">${esc(sheet.fileName)} — ${esc(sheet.sheetName)}</td></tr>`;
+    tbody += `<tr class="sec-row"><td colspan="${cols.length+3}">📂 ${esc(sheet.sheetName)}</td></tr>`;
     sheet.matches.forEach(row => {
       const cells = cols.map(k => {
         const v = row[k] !== undefined ? row[k] : '';
@@ -811,7 +912,7 @@ function renderBulkResults(allResults, ids) {
     const idTotal = results.flatMap(r=>r.matches).reduce((s,r)=>{const k=findKey(r,'amt');return s+(k?cleanNum(r[k]):0);},0);
     grandTotal += idTotal;
     results.forEach(sheet => {
-      tbody += `<tr class="sec-row"><td colspan="${cols.length+4}">🔍 ${esc(id)} &nbsp;|&nbsp; ${esc(sheet.fileName)} — ${esc(sheet.sheetName)}</td></tr>`;
+      tbody += `<tr class="sec-row"><td colspan="${cols.length+4}">🔍 ${esc(id)} &nbsp;&nbsp; ${esc(sheet.sheetName)}</td></tr>`;
       sheet.matches.forEach(row => {
         const cells = cols.map(k => {
           const v = row[k] !== undefined ? row[k] : '';
