@@ -112,6 +112,24 @@ table.dt tbody td:last-child{border-right:none;}
 .export-csv{background:#1565c0;color:#fff;}
 .export-label{font-size:12px;color:#666;}
 @media(max-width:768px){.stats-grid{grid-template-columns:repeat(2,1fr);}.main{padding:10px;}}
+
+/* INFO PANEL */
+.info-panel{display:none;margin:0;border-bottom:1px solid var(--border);}
+.info-panel.show{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;}
+.info-col{padding:14px 16px;border-right:1px solid var(--border);}
+.info-col:last-child{border-right:none;}
+.info-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;color:#fff;background:var(--green-dark);padding:5px 10px;border-radius:4px;display:inline-block;}
+.info-row{display:flex;align-items:flex-start;padding:4px 0;border-bottom:1px solid #f0f0f0;font-size:12px;gap:6px;}
+.info-row:last-child{border-bottom:none;}
+.info-key{font-weight:600;color:#555;white-space:nowrap;min-width:120px;}
+.info-val{color:#1a1a1a;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.info-val.hi-green{color:var(--green-dark);font-weight:700;}
+.info-val.hi-red{color:var(--red);font-weight:700;}
+.info-val.hi-blue{color:var(--blue);font-weight:700;}
+.info-val.hi-orange{color:var(--orange);font-weight:700;}
+.info-col.bg-green{background:#e8f5e9;}
+.info-col.bg-red{background:#fce4ec;}
+.info-col.bg-blue{background:#e3f2fd;}
 </style>
 </head>
 <body>
@@ -214,6 +232,7 @@ table.dt tbody td:last-child{border-right:none;}
           <div class="stat-box"><div class="stat-head bg-o">OCT24 Amount</div><div class="stat-val vo" id="as5">₹0</div></div>
           <div class="stat-box"><div class="stat-head bg-d">JAN26 Amount</div><div class="stat-val vd" id="as6">₹0</div></div>
         </div>
+        <div class="info-panel" id="appid-info-panel"></div>
         <div class="loading" id="appid-loading"><span class="spinner"></span>Searching...</div>
         <div class="export-row" id="appid-export"><span class="export-label">Export results:</span><button class="export-btn export-csv" onclick="exportCSV('appid')">⬇ Download CSV</button></div>
         <div id="appid-result"><div class="placeholder"><div class="ph">🔍</div><p>Upload Excel files and enter App ID to search</p></div></div>
@@ -503,6 +522,90 @@ function searchAllSheets(type, query, mode) {
   });
   return results;
 }
+function parseRowDate(row) {
+  const dateKey = Object.keys(row).find(k => /^date$/i.test(friendly(k)));
+  if (!dateKey) return new Date(0);
+  const val = String(row[dateKey]);
+  const m = val.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/);
+  if (m) {
+    const months = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+    const yr = parseInt(m[3]) < 100 ? 2000+parseInt(m[3]) : parseInt(m[3]);
+    return new Date(yr, months[m[2].toLowerCase()]??0, parseInt(m[1]));
+  }
+  const num = parseFloat(val);
+  if (!isNaN(num) && num > 40000) return new Date((num-25569)*86400*1000);
+  return new Date(val);
+}
+
+function buildInfoPanel(allMatches, searchedId) {
+  // Gather all unique field values across matches
+  function getVal(key) {
+    for (const row of allMatches) {
+      const k = Object.keys(row).find(k2 => new RegExp(key,'i').test(friendly(k2)));
+      if (k && row[k] && String(row[k]).trim()) return String(row[k]).trim();
+    }
+    return '—';
+  }
+  const totalAmt   = allMatches.reduce((s,r)=>{ const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); },0);
+  const totalEmiDue = allMatches.reduce((s,r)=>{ const k=Object.keys(r).find(k2=>/emi.?due.?amount/i.test(friendly(k2))); return s+(k?cleanNum(r[k]):0); },0);
+  const nbfc       = getVal('nbfc');
+  const spoc       = getVal('spoc');
+  const appId      = searchedId || getVal('app.?id');
+  const lender     = nbfc !== '—' ? nbfc : '—';
+  // Count payment types
+  const ptCount = {};
+  allMatches.forEach(r => {
+    const k = Object.keys(r).find(k2 => /payment.?type/i.test(friendly(k2)));
+    const pt = k ? String(r[k]).trim() : 'Unknown';
+    ptCount[pt] = (ptCount[pt]||0)+1;
+  });
+  const ptSummary = Object.entries(ptCount).map(([k,v])=>`${k}: ${v}`).join(' · ');
+  // Dates
+  const dates = allMatches.map(r => parseRowDate(r)).filter(d => d > new Date(0)).sort((a,b)=>a-b);
+  const firstDate = dates.length ? dates[0].toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}) : '—';
+  const lastDate  = dates.length ? dates[dates.length-1].toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}) : '—';
+
+  return `<div class="info-panel show">
+    <div class="info-col bg-blue">
+      <div class="info-col-title">📋 Application Info</div>
+      <div class="info-row"><span class="info-key">App ID</span><span class="info-val hi-green">${esc(appId)}</span></div>
+      <div class="info-row"><span class="info-key">NBFC / Lender</span><span class="info-val hi-blue">${esc(lender)}</span></div>
+      <div class="info-row"><span class="info-key">SPOC</span><span class="info-val">${esc(spoc)}</span></div>
+      <div class="info-row"><span class="info-key">Payment Types</span><span class="info-val" style="font-family:'Inter',sans-serif;font-size:11px;">${esc(ptSummary)}</span></div>
+      <div class="info-row"><span class="info-key">First Transaction</span><span class="info-val">${esc(firstDate)}</span></div>
+      <div class="info-row"><span class="info-key">Latest Transaction</span><span class="info-val hi-orange">${esc(lastDate)}</span></div>
+    </div>
+    <div class="info-col bg-green">
+      <div class="info-col-title">💰 Amount Summary</div>
+      <div class="info-row"><span class="info-key">Total Paid</span><span class="info-val hi-green">₹${totalAmt.toLocaleString('en-IN')}</span></div>
+      <div class="info-row"><span class="info-key">Total Transactions</span><span class="info-val hi-green">${allMatches.length}</span></div>
+      ${totalEmiDue ? `<div class="info-row"><span class="info-key">EMI Due (Total)</span><span class="info-val hi-blue">₹${totalEmiDue.toLocaleString('en-IN')}</span></div>` : ''}
+      <div class="info-row"><span class="info-key">Avg per Transaction</span><span class="info-val">₹${allMatches.length ? Math.round(totalAmt/allMatches.length).toLocaleString('en-IN') : 0}</span></div>
+    </div>
+    <div class="info-col bg-red">
+      <div class="info-col-title">📊 Sheet Breakdown</div>
+      ${Object.entries(Object.groupBy ? Object.groupBy(allMatches, (_, i) => {
+        // fallback groupBy
+        return 'all';
+      }) : {}).map(([k,v])=>'').join('')}
+      ${(() => {
+        const sheetMap = {};
+        allMatches.forEach((r,i) => {
+          // We can't access sheet info here directly, show payment type breakdown instead
+        });
+        const breakdown = Object.entries(ptCount).map(([pt,cnt]) => {
+          const ptAmt = allMatches.filter(r => {
+            const k = Object.keys(r).find(k2 => /payment.?type/i.test(friendly(k2)));
+            return k && String(r[k]).trim() === pt;
+          }).reduce((s,r)=>{ const k=findKey(r,'amt'); return s+(k?cleanNum(r[k]):0); },0);
+          return `<div class="info-row"><span class="info-key">${esc(pt)}</span><span class="info-val">×${cnt} &nbsp; ₹${ptAmt.toLocaleString('en-IN')}</span></div>`;
+        }).join('');
+        return breakdown;
+      })()}
+    </div>
+  </div>`;
+}
+
 function renderStatsAndTable(type, results) {
   const statsEl = document.getElementById(type+'-stats');
   const resultEl = document.getElementById(type+'-result');
@@ -529,6 +632,21 @@ function renderStatsAndTable(type, results) {
   }
   statsEl.style.display = 'grid';
   exportEl.classList.add('show');
+
+  // Show info panel for appid search
+  if (type === 'appid') {
+    const infoEl = document.getElementById('appid-info-panel');
+    if (infoEl) {
+      const searchedId = document.getElementById('appid-input').value.trim();
+      infoEl.outerHTML = buildInfoPanel(allMatches, searchedId);
+    }
+  }
+
+  // Sort all matches by date descending (latest first) per sheet
+  results.forEach(sheet => {
+    sheet.matches.sort((a, b) => parseRowDate(b) - parseRowDate(a));
+  });
+
   resultEl.innerHTML = buildTable(results, totalAmt);
 }
 function buildTable(results, totalAmt) {
@@ -718,6 +836,9 @@ function clearResult(type) {
   document.getElementById(type+'-stats').style.display = 'none';
   document.getElementById(type+'-export').classList.remove('show');
   document.getElementById(type+'-result').innerHTML = `<div class="placeholder"><div class="ph">🔍</div><p>Enter an ID to search</p></div>`;
+  // Hide info panel if exists
+  const infoEl = document.getElementById(type+'-info-panel');
+  if (infoEl) { infoEl.className = 'info-panel'; infoEl.innerHTML = ''; }
   lastResults[type] = [];
 }
 // ── EXPORT CSV ──
