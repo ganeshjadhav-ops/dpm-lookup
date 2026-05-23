@@ -244,6 +244,7 @@ table.dt tbody td:last-child{border-right:none;}
           <div class="stat-box"><div class="stat-head bg-o">OCT24 Amount</div><div class="stat-val vo" id="as5">₹0</div></div>
           <div class="stat-box"><div class="stat-head bg-d">JAN26 Amount</div><div class="stat-val vd" id="as6">₹0</div></div>
         </div>
+        <div class="info-panel" id="appid-info-panel"></div>
         <div class="loading" id="appid-loading"><span class="spinner"></span>Searching...</div>
         <div class="export-row" id="appid-export"><span class="export-label">Export results:</span><button class="export-btn export-csv" onclick="exportCSV('appid')">⬇ Download CSV</button></div>
         <div id="appid-result"><div class="placeholder"><div class="ph">🔍</div><p>Upload Excel files and enter App ID to search</p></div></div>
@@ -559,6 +560,26 @@ function renderStatsAndTable(type, results) {
   }
   statsEl.style.display = 'grid';
   exportEl.classList.add('show');
+
+  // Show GrayQuest info panel for appid search
+  if (type === 'appid') {
+    const infoEl = document.getElementById('appid-info-panel');
+    if (infoEl) {
+      const searchedId = document.getElementById('appid-input').value.trim();
+      infoEl.outerHTML = buildInfoPanel(allMatches, searchedId, results);
+    }
+  }
+
+  // Sort: latest date first within each sheet, then sheets by latest date
+  results.forEach(sheet => {
+    sheet.matches.sort((a, b) => parseRowDate(b) - parseRowDate(a));
+  });
+  results.sort((a, b) => {
+    const la = a.matches.length ? parseRowDate(a.matches[0]) : new Date(0);
+    const lb = b.matches.length ? parseRowDate(b.matches[0]) : new Date(0);
+    return lb - la;
+  });
+
   resultEl.innerHTML = buildTable(results, totalAmt);
 }
 
@@ -781,6 +802,8 @@ function clearResult(type) {
   document.getElementById(type+'-stats').style.display = 'none';
   document.getElementById(type+'-export').classList.remove('show');
   document.getElementById(type+'-result').innerHTML = `<div class="placeholder"><div class="ph">🔍</div><p>Enter an ID to search</p></div>`;
+  const infoEl = document.getElementById(type+'-info-panel');
+  if (infoEl) { infoEl.className = 'info-panel'; infoEl.innerHTML = ''; }
   lastResults[type] = [];
 }
 // ── EXPORT CSV ──
@@ -985,6 +1008,21 @@ const CACHE_KEY = 'dpm_sheet_cache';
 function getSheetCache() { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch { return {}; } }
 function saveSheetCache(key, rows) { const cache = getSheetCache(); cache[key] = { rows, ts: Date.now() }; try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch(e) { console.warn('Cache save failed:', e); } }
 let _currentStatuses = [];
+
+function parseRowDate(row) {
+  const dateKey = Object.keys(row).find(k => /^date$/i.test(friendly(k)));
+  if (!dateKey) return new Date(0);
+  const val = String(row[dateKey]);
+  const m = val.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/);
+  if (m) {
+    const months = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+    const yr = parseInt(m[3]) < 100 ? 2000+parseInt(m[3]) : parseInt(m[3]);
+    return new Date(yr, months[m[2].toLowerCase()]??0, parseInt(m[1]));
+  }
+  const num = parseFloat(val);
+  if (!isNaN(num) && num > 40000) return new Date((num-25569)*86400*1000);
+  return new Date(val);
+}
 
 // ── GQ INFO SHEET FETCH ──
 async function fetchGQInfoSheet() {
